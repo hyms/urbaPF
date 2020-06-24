@@ -48,21 +48,6 @@ class CreateAllTables extends Migration
             $table->smallInteger("tipo");
             $table->text("valor");
             $table->smallInteger("identificador");
-
-            //control de historial
-            $table->smallInteger("estado");
-            $table->boolean("indicador"); //Activo,inactivo
-            $table->integer("secuencia"); //secuencia de uso
-            $table->timestamps();
-
-            $table->foreignId('usuario_adm')->constrained('usuarios');
-        });
-
-        Schema::create('desplegables', function (Blueprint $table) {
-            $table->id()->autoIncrement();
-            $table->string("nombre",200);
-            $table->smallInteger("tipo");  //el tipo determinara que desplegable se mostrara o filtrara
-            $table->text("valor");
             $table->unsignedInteger("id_padre")->nullable();
 
             //control de historial
@@ -74,11 +59,11 @@ class CreateAllTables extends Migration
             $table->foreignId('usuario_adm')->constrained('usuarios');
         });
 
-        Schema::create('dias_festivos', function (Blueprint $table) {
+        Schema::create('agenda', function (Blueprint $table) {
             $table->id()->autoIncrement();
             $table->string("nombre",200);
-            $table->date("fecha");
-            //$table->decimal("dias");
+            $table->dateTime("fecha_inicio");
+            $table->dateTime("fecha_fin");
 
             //control de historial
             $table->smallInteger("estado");
@@ -89,57 +74,16 @@ class CreateAllTables extends Migration
             $table->foreignId('usuario_adm')->constrained('usuarios');
         });
 
-        Schema::create('empresas', function (Blueprint $table) {
-            $table->id()->autoIncrement();
-            $table->string("nombre",100);
-            $table->string("nit",20);
-            $table->string("direccion",200);
-            $table->string("telefono",15);
-            $table->string("celular",15);
-            $table->string("fax",15)->nullable();
-            $table->string("ciudad",50);
-            $table->string("departamento",50);
-            $table->string("gerente",100)->nullable();
-            $table->string("email",100)->nullable();
-            $table->string("web",100)->nullable();
-            $table->date("fecha_nacimiento");
-
-            //control de historial
-            $table->smallInteger("estado");
-            $table->boolean("indicador"); //Activo,inactivo
-            $table->integer("secuencia"); //secuencia de uso
-            $table->timestamps();
-
-            $table->foreignId('usuario_adm')->constrained('usuarios');
-        });
-
-        Schema::create('unidades_negocio', function (Blueprint $table) {
+        Schema::create('Urbanizacion', function (Blueprint $table) {
             $table->id()->autoIncrement();
             $table->string("nombre",100);
             $table->string("direccion",200);
-            $table->string("telefono",15);
-            $table->string("celular",15);
-            $table->string("fax",15)->nullable();
+            $table->string("latitud",200);
+            $table->string("longitud",200);
             $table->string("ciudad",50);
             $table->string("departamento",50);
-            $table->string("encargado",100);
-            $table->string("email",100)->nullable();
-            $table->string("web",100)->nullable();
+            $table->string("presidente",100)->nullable();
             $table->date("fecha_nacimiento");
-
-            //control de historial
-            $table->smallInteger("estado");
-            $table->boolean("indicador"); //Activo,inactivo
-            $table->integer("secuencia"); //secuencia de uso
-            $table->timestamps();
-
-            $table->foreignId('usuario_adm')->constrained('usuarios');
-            $table->foreignId('id_empresa')->constrained('empresas');
-        });
-
-        Schema::create('unidades', function (Blueprint $table) {
-            $table->id()->autoIncrement();
-            $table->string("nombre",100);
             $table->text("detalle");
 
             //control de historial
@@ -148,7 +92,7 @@ class CreateAllTables extends Migration
             $table->integer("secuencia"); //secuencia de uso
             $table->timestamps();
 
-            $table->foreignId('usuario')->constrained('usuarios');
+            $table->foreignId('usuario_adm')->constrained('usuarios');
         });
 
         Schema::create('cargos', function (Blueprint $table) {
@@ -164,10 +108,9 @@ class CreateAllTables extends Migration
             $table->timestamps();
 
             $table->foreignId('usuario_adm')->constrained('usuarios');
-            $table->foreignId('unidad')->constrained('unidades');
         });
 
-        Schema::create('personal', function (Blueprint $table) {
+        Schema::create('vecinos', function (Blueprint $table) {
             $table->id()->autoIncrement();
             $table->string("apellidos",100);
             $table->string("nombres",100);
@@ -178,23 +121,7 @@ class CreateAllTables extends Migration
             $table->date("fecha_ingreso");
             $table->string("profesion",200);
             $table->text("Direccion");
-
-            //control de historial
-            $table->smallInteger("estado");
-            $table->boolean("indicador"); //Activo,inactivo
-            $table->integer("secuencia"); //secuencia de uso
-            $table->timestamps();
-
-            $table->foreignId('usuario_adm')->constrained('usuarios');
-            $table->foreignId('unidad')->constrained('unidades');
-            $table->foreignId('cargo')->constrained('cargos');
-            $table->foreignId('agencia')->constrained('unidades_negocio');
-        });
-
-        Schema::create('tipos_permiso_vacacion', function (Blueprint $table) {
-            $table->id()->autoIncrement();
-            $table->string("nombre",100);
-            $table->text("detalle");
+            $table->unsignedInteger("cargo")->nullable();
 
             //control de historial
             $table->smallInteger("estado");
@@ -205,32 +132,13 @@ class CreateAllTables extends Migration
             $table->foreignId('usuario_adm')->constrained('usuarios');
         });
 
-        Schema::create('permisos', function (Blueprint $table) {
-            $table->id()->autoIncrement();
-            $table->boolean("tiempo_parcial");
-            $table->boolean("tiempo_completo");
-            $table->unsignedDecimal("numero_dias");
-            $table->date("fecha_inicio");
-            $table->date("fecha_fin");
-            $table->text("observaciones");
 
-            //control de historial
-            $table->smallInteger("estado");
-            $table->boolean("indicador"); //Activo,inactivo
-            $table->integer("secuencia"); //secuencia de uso
-            $table->timestamps();
-
-            $table->foreignId('usuario_adm')->constrained('usuarios');
-            $table->foreignId('personal')->constrained('personal');
-            $table->foreignId('tipo_permiso')->constrained('tipos_permiso_vacacion');
-        });
 
         //modulo de asignacion de material
-        Schema::create('equipo', function (Blueprint $table) {
+        Schema::create('Avisos', function (Blueprint $table) {
             $table->id()->autoIncrement();
             $table->string("nombre",100);
             $table->text("detalle");
-            $table->text("observaciones")->nullable();
 
             //control de historial
             $table->smallInteger("estado");
@@ -240,7 +148,7 @@ class CreateAllTables extends Migration
             $table->foreignId('usuario_adm')->constrained('usuarios');
         });
 
-        Schema::create('asignaciones', function (Blueprint $table) {
+        Schema::create('visto_por', function (Blueprint $table) {
             $table->id()->autoIncrement();
 
             //control de historial
@@ -249,9 +157,8 @@ class CreateAllTables extends Migration
             $table->integer("secuencia"); //secuencia de uso
             $table->timestamps();
 
-            $table->foreignId('recibido_por')->constrained('personal');
-            $table->foreignId('entregado_por')->constrained('personal');
-            $table->foreignId('id_material')->constrained('equipo');
+            $table->foreignId('aviso')->constrained('Avisos');
+            $table->foreignId('visto_por')->constrained('vecino');
             $table->foreignId('usuario_adm')->constrained('usuarios');
         });
         //modulo

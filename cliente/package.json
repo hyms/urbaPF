@@ -1,5 +1,5 @@
 {
-  "name": "hrmclient",
+  "name": "urbaPF",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -50,6 +50,6 @@
     "last 2 versions",
     "not dead"
   ],
-  "_id": "hrmclient@0.1.0",
+  "_id": "urbaPF@0.1.0",
   "readme": "ERROR: No README data found!"
 }
