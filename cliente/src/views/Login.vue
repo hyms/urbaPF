@@ -1,45 +1,76 @@
 <template>
-    <div class="account-container">
-        <div class="content clearfix">
-                <form @submit.prevent="login">
-                <h1>Ingresar</h1>
 
-                <div>
-                    <div v-if="m_error">
-                        <b-alert show dismissible variant="danger" v-for="(value, key) in m_error" :key="key">
-                            {{ key }}: {{ value }}
-                        </b-alert>
+<div class="col-sm-12">
+
+    <div class="wrapper-page">
+
+        <div class="m-t-40 card-box">
+            <div class="text-center">
+                <h2 class="text-uppercase m-t-0 m-b-30">
+                    <a href="#" class="text-success">
+                        <span><img :src="images.logo" alt="" height="30"></span>
+                    </a>
+                </h2>
+                <!--<h4 class="text-uppercase font-bold m-b-0">Sign In</h4>-->
+            </div>
+            <div v-if="m_error">
+                <b-alert show dismissible variant="danger" v-for="(value, key) in m_error" :key="key">
+                    {{ key }}: {{ value }}
+                </b-alert>
+            </div>
+            <div class="account-content">
+                <form class="form-horizontal" @submit.prevent="login">
+
+                    <div class="form-group m-b-20">
+                        <div class="col-12">
+                            <label>Email address</label>
+                            <b-form-input v-model="email" placeholder="Usuario"></b-form-input>
+                        </div>
                     </div>
-                    <p>Por favor Ingrese sus datos</p>
-                    <b-form-group>
-                        <b-form-input v-model="email" placeholder="Usuario"></b-form-input>
-                    </b-form-group>
-                    <b-form-group>
-                        <b-form-input type="password" v-model="password" placeholder="Contraseña"></b-form-input>
-                    </b-form-group>
 
-                </div> <!-- /login-fields -->
+                    <div class="form-group m-b-20">
+                        <div class="col-12">
+                            <a href="#" class="text-muted pull-right font-14">Forgot your password?</a>
+                            <label>Password</label>
+                            <b-form-input type="password" v-model="password" placeholder="Contraseña"></b-form-input>
+                        </div>
+                    </div>
 
-                <div class="login-actions">
+                    <div class="form-group m-b-30">
+                        <div class="col-12">
+                            <div class="checkbox checkbox-primary">
+                                <input id="checkbox5" type="checkbox">
+                                <label for="checkbox5">
+                                    Remember me
+                                </label>
+                            </div>
+                        </div>
+                    </div>
 
-				<span class="login-checkbox">
-					<input id="Field" name="Field" type="checkbox" class="field login-checkbox" value="First Choice"
-                           tabindex="4"/>
-					<label class="choice" for="Field">Keep me signed in</label>
-				</span>
-
-                    <b-button type="submit" variant="primary btn-large button">Ingresar</b-button>
-
-                </div> <!-- .actions -->
+                    <div class="form-group account-btn text-center m-t-10">
+                        <div class="col-12">
+                            <b-button type="submit" variant="primary btn-lg btn-block">Ingresar</b-button>
+                        </div>
+                    </div>
 
                 </form>
-        </div> <!-- /content -->
-    </div> <!-- /account-container -->
+
+                <div class="clearfix"></div>
+
+            </div>
+        </div>
+        <!-- end card-box-->
+
+    </div>
+    <!-- end wrapper -->
+
+</div>
+
+
 
 </template>
 
 <script>
-    require('@/assets/css/pages/signin.css');
 
     export default {
         data() {
@@ -47,6 +78,9 @@
                 email: '',
                 password: '',
                 m_error: false,
+                images: {
+                    logo: require('../assets/images/logo.png')
+                }
             }
         },
 

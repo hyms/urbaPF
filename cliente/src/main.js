@@ -6,14 +6,18 @@ import axios from 'axios';
 
 import { BootstrapVue, IconsPlugin } from 'bootstrap-vue'
 import 'bootstrap/dist/css/bootstrap.css'
+import 'bootstrap-vue/dist/bootstrap-vue.css'
 
-require('@/assets/css/style.css');
+import './assets/css/metismenu.min.css'
+import './assets/css/style.css'
+import './assets/scss/style.scss'
+
 
 Vue.config.productionTip = false;
 // Install BootstrapVue
-Vue.use(BootstrapVue)
+Vue.use(BootstrapVue);
 // Optionally install the BootstrapVue icon components plugin
-Vue.use(IconsPlugin)
+Vue.use(IconsPlugin);
 
 new Vue({
     router,
