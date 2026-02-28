@@ -1,0 +1,85 @@
+services:
+  # Backend API - .NET 10 con hot reload
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile.dev
+    ports:
+      - "5000:5000"
+      - "5001:5001"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=urbapf
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - ASPNETCORE_URLS=http://+:5000;https://+:5001
+      - DOTNET_RUNNING_IN_CONTAINER=true
+      - Logging__LogLevel__Default=Debug
+    volumes:
+      - ./backend:/app/backend
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - urbapf-network
+
+  # Frontend Web - Quasar con hot reload
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "9000:9000"
+    environment:
+      - VITE_API_URL=http://localhost:5000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - urbapf-network
+
+  # PostgreSQL con PostGIS
+  db:
+    image: postgis/postgis:15-3.4
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=urbapf
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - urbapf-network
+
+  # MinIO (Storage local) - COMENTADO TEMPORALMENTE
+  # minio:
+  #   image: minio/minio
+  #   ports:
+  #     - "9000:9000"
+  #     - "9001:9001"
+  #   environment:
+  #     - MINIO_ROOT_USER=minioadmin
+  #     - MINIO_ROOT_PASSWORD=minioadmin
+  #   command: server /data --console-address ":9001"
+  #   volumes:
+  #     - miniodata:/data
+  #   networks:
+  #     - urbapf-network
+
+networks:
+  urbapf-network:
+    driver: bridge
+
+volumes:
+  pgdata:
+  # miniodata:

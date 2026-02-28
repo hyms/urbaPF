@@ -1,0 +1,13 @@
+# Development - Quasar con Hot Reload
+FROM node:20-alpine AS build
+WORKDIR /app
+
+# Instalar dependencias primero (para cache)
+COPY package*.json ./
+RUN npm install
+
+# Copiar archivos fuente
+COPY . .
+
+# Desarrollo con Vite hot reload
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]

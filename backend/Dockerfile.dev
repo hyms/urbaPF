@@ -1,0 +1,23 @@
+# Development - .NET 8 con Hot Reload
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS development
+WORKDIR /app
+
+COPY UrbaPF.sln ./
+COPY backend/Api/*.csproj ./backend/Api/
+COPY backend/Domain/*.csproj ./backend/Domain/
+COPY backend/Infrastructure/*.csproj ./backend/Infrastructure/
+COPY backend/tests/*.csproj ./backend/tests/
+RUN dotnet restore
+
+COPY . .
+
+WORKDIR /app/backend/Api
+RUN dotnet build -c Debug
+
+ENV DOTNET_RUNNING_IN_CONTAINER=true
+ENV ASPNETCORE_ENVIRONMENT=Development
+
+EXPOSE 5000
+
+# Ejecutar en modo debug
+CMD ["dotnet", "run", "--no-build", "--urls", "http://+:5000"]

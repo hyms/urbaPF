@@ -1,0 +1,6 @@
+@UrbaPF.Api_HostAddress = http://localhost:5174
+
+GET {{UrbaPF.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
