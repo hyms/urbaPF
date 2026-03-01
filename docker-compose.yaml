@@ -1,5 +1,5 @@
 services:
-  # Backend API - .NET 10 Production
+  # Backend API - .NET 8 Production
   backend:
     build:
       context: .
@@ -29,7 +29,7 @@ services:
     ports:
       - "5173:5173"
     environment:
-      - VITE_API_URL=http://backend:5000
+      - VITE_API_URL=http://localhost:5000/api
     volumes:
       - ./frontend:/app
       - /app/node_modules

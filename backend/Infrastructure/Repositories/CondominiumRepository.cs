@@ -13,13 +13,13 @@ public class CondominiumRepository : BaseRepository, ICondominiumRepository
 
     public async Task<IEnumerable<CondominiumDto>> GetAllAsync()
     {
-        var sql = "SELECT id, name, address, logo_url as LogoUrl, description, rules, monthly_fee as MonthlyFee, currency, created_at as CreatedAt, is_active as IsActive FROM condominiums WHERE is_deleted = false AND is_active = true ORDER BY name";
+        var sql = "SELECT id, name, address, logo_url as LogoUrl, description, rules, monthly_fee as MonthlyFee, currency, created_at as CreatedAt, is_active as IsActive FROM condominiums WHERE deleted_at IS NULL AND is_active = true ORDER BY name";
         return await QueryAsync<CondominiumDto>(sql);
     }
 
     public async Task<CondominiumDto?> GetByIdAsync(Guid id)
     {
-        var sql = "SELECT id, name, address, logo_url as LogoUrl, description, rules, monthly_fee as MonthlyFee, currency, created_at as CreatedAt, is_active as IsActive FROM condominiums WHERE id = @Id AND is_deleted = false";
+        var sql = "SELECT id, name, address, logo_url as LogoUrl, description, rules, monthly_fee as MonthlyFee, currency, created_at as CreatedAt, is_active as IsActive FROM condominiums WHERE id = @Id AND deleted_at IS NULL";
         return await QueryFirstOrDefaultAsync<CondominiumDto>(sql, new { Id = id });
     }
 
@@ -81,13 +81,13 @@ public class CondominiumRepository : BaseRepository, ICondominiumRepository
 
         sql.Add("updated_at = CURRENT_TIMESTAMP");
 
-        var updateSql = $"UPDATE condominiums SET {string.Join(", ", sql)} WHERE id = @Id AND is_deleted = false";
+        var updateSql = $"UPDATE condominiums SET {string.Join(", ", sql)} WHERE id = @Id AND deleted_at IS NULL";
         await ExecuteAsync(updateSql, parameters);
     }
 
     public async Task SoftDeleteAsync(Guid id)
     {
-        var sql = "UPDATE condominiums SET is_deleted = true, deleted_at = CURRENT_TIMESTAMP WHERE id = @Id";
+        var sql = "UPDATE condominiums SET deleted_at = CURRENT_TIMESTAMP WHERE id = @Id";
         await ExecuteAsync(sql, new { Id = id });
     }
 }

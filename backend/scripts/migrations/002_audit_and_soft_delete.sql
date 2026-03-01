@@ -1,35 +1,37 @@
 -- Migration: 002_audit_and_soft_delete
 -- Date: 2026-02-27
--- Description: Add audit tables and soft delete columns
+-- Description: Add audit tables and soft delete columns (using deleted_at only)
 
 -- Add soft delete columns to existing tables
-ALTER TABLE users ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT false;
-ALTER TABLE users ADD COLUMN deleted_at TIMESTAMP WITH TIME ZONE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE;
 ALTER TABLE users ADD COLUMN deleted_by_id UUID REFERENCES users(id);
 
-ALTER TABLE condominiums ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT false;
-ALTER TABLE condominiums ADD COLUMN deleted_at TIMESTAMP WITH TIME ZONE;
+ALTER TABLE condominiums ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE;
 
-ALTER TABLE incidents ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT false;
-ALTER TABLE incidents ADD COLUMN deleted_at TIMESTAMP WITH TIME ZONE;
+ALTER TABLE incidents ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE;
 
-ALTER TABLE posts ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT false;
-ALTER TABLE posts ADD COLUMN deleted_at TIMESTAMP WITH TIME ZONE;
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE;
 
-ALTER TABLE comments ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT false;
-ALTER TABLE comments ADD COLUMN deleted_at TIMESTAMP WITH TIME ZONE;
+ALTER TABLE comments ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE;
 
-ALTER TABLE polls ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT false;
-ALTER TABLE polls ADD COLUMN deleted_at TIMESTAMP WITH TIME ZONE;
+ALTER TABLE polls ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE;
 
-ALTER TABLE votes ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT false;
-ALTER TABLE votes ADD COLUMN deleted_at TIMESTAMP WITH TIME ZONE;
+ALTER TABLE votes ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE;
 
-ALTER TABLE alerts ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT false;
-ALTER TABLE alerts ADD COLUMN deleted_at TIMESTAMP WITH TIME ZONE;
+ALTER TABLE alerts ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE;
 
-ALTER TABLE expenses ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT false;
-ALTER TABLE expenses ADD COLUMN deleted_at TIMESTAMP WITH TIME ZONE;
+ALTER TABLE expenses ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE;
+
+-- Drop old is_deleted columns if they exist (optional - comment out if you want to keep them)
+ALTER TABLE users DROP COLUMN IF EXISTS is_deleted;
+ALTER TABLE condominiums DROP COLUMN IF EXISTS is_deleted;
+ALTER TABLE incidents DROP COLUMN IF EXISTS is_deleted;
+ALTER TABLE posts DROP COLUMN IF EXISTS is_deleted;
+ALTER TABLE comments DROP COLUMN IF EXISTS is_deleted;
+ALTER TABLE polls DROP COLUMN IF EXISTS is_deleted;
+ALTER TABLE votes DROP COLUMN IF EXISTS is_deleted;
+ALTER TABLE alerts DROP COLUMN IF EXISTS is_deleted;
+ALTER TABLE expenses DROP COLUMN IF EXISTS is_deleted;
 
 -- Audit log table
 CREATE TABLE IF NOT EXISTS audit_logs (
@@ -114,13 +116,13 @@ DROP TRIGGER IF EXISTS audit_expenses_trigger ON expenses;
 CREATE TRIGGER audit_expenses_trigger AFTER INSERT OR UPDATE OR DELETE ON expenses
 FOR EACH ROW EXECUTE FUNCTION audit_trigger_function();
 
--- Soft delete indexes
-CREATE INDEX IF NOT EXISTS idx_users_deleted ON users(is_deleted) WHERE is_deleted = false;
-CREATE INDEX IF NOT EXISTS idx_condominiums_deleted ON condominiums(is_deleted) WHERE is_deleted = false;
-CREATE INDEX IF NOT EXISTS idx_incidents_deleted ON incidents(is_deleted) WHERE is_deleted = false;
-CREATE INDEX IF NOT EXISTS idx_posts_deleted ON posts(is_deleted) WHERE is_deleted = false;
-CREATE INDEX IF NOT EXISTS idx_comments_deleted ON comments(is_deleted) WHERE is_deleted = false;
-CREATE INDEX IF NOT EXISTS idx_polls_deleted ON polls(is_deleted) WHERE is_deleted = false;
-CREATE INDEX IF NOT EXISTS idx_votes_deleted ON votes(is_deleted) WHERE is_deleted = false;
-CREATE INDEX IF NOT EXISTS idx_alerts_deleted ON alerts(is_deleted) WHERE is_deleted = false;
-CREATE INDEX IF NOT EXISTS idx_expenses_deleted ON expenses(is_deleted) WHERE is_deleted = false;
+-- Soft delete indexes (using deleted_at)
+CREATE INDEX IF NOT EXISTS idx_users_deleted ON users(deleted_at) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_condominiums_deleted ON condominiums(deleted_at) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_incidents_deleted ON incidents(deleted_at) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_posts_deleted ON posts(deleted_at) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_comments_deleted ON comments(deleted_at) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_polls_deleted ON polls(deleted_at) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_votes_deleted ON votes(deleted_at) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_alerts_deleted ON alerts(deleted_at) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_expenses_deleted ON expenses(deleted_at) WHERE deleted_at IS NULL;

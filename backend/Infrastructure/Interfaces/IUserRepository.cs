@@ -12,4 +12,5 @@ public interface IUserRepository
     Task UpdateAsync(Guid id, UpdateUserDto dto);
     Task SoftDeleteAsync(Guid id);
     Task UpdateLastLoginAsync(Guid id);
+    Task UpdatePasswordHashAsync(Guid id, string passwordHash);
 }

@@ -22,7 +22,7 @@ public class IncidentRepository : BaseRepository, IIncidentRepository
                    u.full_name as ReportedByName
             FROM incidents i
             JOIN users u ON i.reported_by_id = u.id
-            WHERE i.is_deleted = false
+            WHERE i.deleted_at IS NULL
             ORDER BY i.priority DESC, i.created_at DESC";
         return await QueryAsync<IncidentDto>(sql);
     }
@@ -38,10 +38,10 @@ public class IncidentRepository : BaseRepository, IIncidentRepository
                    u.full_name as ReportedByName
             FROM incidents i
             JOIN users u ON i.reported_by_id = u.id
-            WHERE i.condominium_id = @CondominiumId AND i.is_deleted = false";
+            WHERE i.condominium_id = @CondominiumId AND i.deleted_at IS NULL";
         
         if (status.HasValue)
-            sql += " AND i.status = @Status";
+            sql += " AND status = @Status";
         
         sql += " ORDER BY i.priority DESC, i.created_at DESC";
         
@@ -59,7 +59,7 @@ public class IncidentRepository : BaseRepository, IIncidentRepository
                    u.full_name as ReportedByName
             FROM incidents i
             JOIN users u ON i.reported_by_id = u.id
-            WHERE i.id = @Id AND i.is_deleted = false";
+            WHERE i.id = @Id AND i.deleted_at IS NULL";
         return await QueryFirstOrDefaultAsync<IncidentDto>(sql, new { Id = id });
     }
 
@@ -117,7 +117,7 @@ public class IncidentRepository : BaseRepository, IIncidentRepository
 
         sql.Add("updated_at = CURRENT_TIMESTAMP");
 
-        var updateSql = $"UPDATE incidents SET {string.Join(", ", sql)} WHERE id = @Id AND is_deleted = false";
+        var updateSql = $"UPDATE incidents SET {string.Join(", ", sql)} WHERE id = @Id AND deleted_at IS NULL";
         await ExecuteAsync(updateSql, parameters);
     }
 
@@ -131,7 +131,7 @@ public class IncidentRepository : BaseRepository, IIncidentRepository
 
     public async Task SoftDeleteAsync(Guid id)
     {
-        var sql = "UPDATE incidents SET is_deleted = true, deleted_at = CURRENT_TIMESTAMP WHERE id = @Id";
+        var sql = "UPDATE incidents SET deleted_at IS NOT NULL, deleted_at = CURRENT_TIMESTAMP WHERE id = @Id";
         await ExecuteAsync(sql, new { Id = id });
     }
 }

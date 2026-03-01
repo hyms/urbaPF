@@ -19,7 +19,7 @@ public class CommentRepository : BaseRepository, ICommentRepository
                    u.full_name as AuthorName
             FROM comments c
             JOIN users u ON c.author_id = u.id
-            WHERE c.post_id = @PostId AND c.is_deleted = false
+            WHERE c.post_id = @PostId AND deleted_at IS NULL
             ORDER BY c.credibility_level DESC, c.created_at DESC";
         return await QueryAsync<CommentDto>(sql, new { PostId = postId });
     }
@@ -32,7 +32,7 @@ public class CommentRepository : BaseRepository, ICommentRepository
                    u.full_name as AuthorName
             FROM comments c
             JOIN users u ON c.author_id = u.id
-            WHERE c.id = @Id AND c.is_deleted = false";
+            WHERE c.id = @Id AND c.deleted_at IS NULL";
         return await QueryFirstOrDefaultAsync<CommentDto>(sql, new { Id = id });
     }
 
@@ -54,7 +54,7 @@ public class CommentRepository : BaseRepository, ICommentRepository
 
     public async Task SoftDeleteAsync(Guid id)
     {
-        var sql = "UPDATE comments SET is_deleted = true, deleted_at = CURRENT_TIMESTAMP WHERE id = @Id";
+        var sql = "UPDATE comments SET deleted_at IS NOT NULL, deleted_at = CURRENT_TIMESTAMP WHERE id = @Id";
         await ExecuteAsync(sql, new { Id = id });
     }
 }

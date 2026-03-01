@@ -29,14 +29,14 @@
                 <q-item-section avatar>
                   <q-icon name="person" />
                 </q-item-section>
-                <q-item-section>Perfil</q-item-section>
+                <q-item-section>{{ t('common.profile') }}</q-item-section>
               </q-item>
               <q-separator />
               <q-item clickable v-close-popup @click="logout">
                 <q-item-section avatar>
                   <q-icon name="logout" />
                 </q-item-section>
-                <q-item-section>Cerrar sesión</q-item-section>
+                <q-item-section>{{ t('common.logout') }}</q-item-section>
               </q-item>
             </q-list>
           </q-menu>
@@ -49,10 +49,11 @@
       show-if-above
       bordered
       class="bg-grey-1"
+      v-if="authStore.isAuthenticated"
     >
       <q-list>
         <q-item-label header class="text-grey-8">
-          Menú Principal
+          {{ t('common.menu') }}
         </q-item-label>
 
         <q-item clickable v-ripple to="/" exact active-class="text-primary bg-blue-1">
@@ -60,7 +61,7 @@
             <q-icon name="dashboard" />
           </q-item-section>
           <q-item-section>
-            <q-item-label>Dashboard</q-item-label>
+            <q-item-label>{{ t('common.dashboard') }}</q-item-label>
           </q-item-section>
         </q-item>
 
@@ -69,7 +70,7 @@
             <q-icon name="home_work" />
           </q-item-section>
           <q-item-section>
-            <q-item-label>Condominios</q-item-label>
+            <q-item-label>{{ t('common.condominiums') }}</q-item-label>
           </q-item-section>
         </q-item>
 
@@ -78,7 +79,7 @@
             <q-icon name="article" />
           </q-item-section>
           <q-item-section>
-            <q-item-label>Publicaciones</q-item-label>
+            <q-item-label>{{ t('common.posts') }}</q-item-label>
           </q-item-section>
         </q-item>
 
@@ -87,7 +88,7 @@
             <q-icon name="warning" color="orange" />
           </q-item-section>
           <q-item-section>
-            <q-item-label>Incidentes</q-item-label>
+            <q-item-label>{{ t('common.incidents') }}</q-item-label>
           </q-item-section>
         </q-item>
 
@@ -96,7 +97,7 @@
             <q-icon name="poll" color="purple" />
           </q-item-section>
           <q-item-section>
-            <q-item-label>Votaciones</q-item-label>
+            <q-item-label>{{ t('common.polls') }}</q-item-label>
           </q-item-section>
         </q-item>
 
@@ -105,14 +106,14 @@
             <q-icon name="notifications_active" color="red" />
           </q-item-section>
           <q-item-section>
-            <q-item-label>Alertas</q-item-label>
+            <q-item-label>{{ t('common.alerts') }}</q-item-label>
           </q-item-section>
         </q-item>
 
         <q-separator class="q-my-md" />
 
         <q-item-label header class="text-grey-8" v-if="authStore.isAdmin">
-          Administración
+          {{ t('common.admin') }}
         </q-item-label>
 
         <q-item clickable v-ripple to="/users" v-if="authStore.isAdmin" active-class="text-primary bg-blue-1">
@@ -120,7 +121,16 @@
             <q-icon name="people" />
           </q-item-section>
           <q-item-section>
-            <q-item-label>Usuarios</q-item-label>
+            <q-item-label>{{ t('common.users') }}</q-item-label>
+          </q-item-section>
+        </q-item>
+
+        <q-item clickable v-ripple to="/settings" active-class="text-primary bg-blue-1">
+          <q-item-section avatar>
+            <q-icon name="settings" />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>{{ t('common.settings') }}</q-item-label>
           </q-item-section>
         </q-item>
       </q-list>
@@ -133,12 +143,16 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
+import { useQuasar } from 'quasar'
 import { useAuthStore } from '../stores/auth'
+import { useI18n } from '../composables/useI18n'
 
 const router = useRouter()
+const $q = useQuasar()
 const authStore = useAuthStore()
+const { t } = useI18n()
 
 const leftDrawerOpen = ref(false)
 
@@ -150,6 +164,11 @@ const userInitials = computed(() => {
   }
   return name.substring(0, 2).toUpperCase()
 })
+
+watchEffect(() => {
+  console.log('Current User Role (watchEffect):', authStore.currentUser?.role);
+  console.log('Is Admin (watchEffect):', authStore.isAdmin);
+});
 
 function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value

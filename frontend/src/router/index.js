@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
 
 const routes = [
   {
@@ -52,6 +51,11 @@ const routes = [
         name: 'users',
         component: () => import('../pages/UsersPage.vue'),
         meta: { requiresAdmin: true }
+      },
+      {
+        path: 'settings',
+        name: 'settings',
+        component: () => import('../pages/SettingsPage.vue')
       }
     ]
   }
@@ -63,15 +67,15 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const authStore = useAuthStore()
-  const requiresAuth = to.meta.requiresAuth !== false
-  const requiresAdmin = to.meta.requiresAdmin === true
+  const token = localStorage.getItem('token')
+  const isAuthenticated = !!token
+  
+  const publicPaths = ['/login', '/register']
+  const isPublicPath = publicPaths.includes(to.path)
 
-  if (requiresAuth && !authStore.isAuthenticated) {
+  if (!isAuthenticated && !isPublicPath) {
     next('/login')
-  } else if (requiresAdmin && !authStore.isAdmin) {
-    next('/')
-  } else if ((to.path === '/login' || to.path === '/register') && authStore.isAuthenticated) {
+  } else if (isAuthenticated && isPublicPath) {
     next('/')
   } else {
     next()

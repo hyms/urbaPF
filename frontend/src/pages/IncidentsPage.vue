@@ -1,9 +1,9 @@
 <template>
   <q-page class="q-pa-md">
     <div class="row items-center q-mb-md">
-      <div class="text-h4">Incidentes</div>
+      <div class="text-h4">{{ t('incidents.title') }}</div>
       <q-space />
-      <q-btn color="primary" icon="add" label="Reportar" @click="showCreateDialog = true" />
+      <q-btn color="primary" icon="add" :label="t('incidents.report')" @click="showCreateDialog = true" />
     </div>
 
     <q-card class="q-mb-md">
@@ -13,7 +13,7 @@
             <q-select
               v-model="filterStatus"
               :options="statusOptions"
-              label="Filtrar por estado"
+              :label="t('incidents.filterStatus')"
               emit-value
               map-options
               clearable
@@ -27,42 +27,25 @@
 
     <q-card>
       <q-list separator>
-        <q-item v-for="incident in filteredIncidents" :key="incident.id" clickable v-ripple>
-          <q-item-section avatar>
-            <q-avatar :color="getPriorityColor(incident.priority)" text-color="white">
-              <q-icon name="warning" />
-            </q-avatar>
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>{{ incident.title }}</q-item-label>
-            <q-item-label caption>
-              {{ incident.description }}<br>
-              Reportado por: {{ incident.reportedByName }} | {{ formatDate(incident.createdAt) }}
-            </q-item-label>
-          </q-item-section>
-          <q-item-section side>
-            <q-chip :color="getStatusColor(incident.status)" text-color="white" size="sm">
-              {{ getStatusLabel(incident.status) }}
-            </q-chip>
-          </q-item-section>
-          <q-item-section side>
-            <q-btn flat round dense icon="more_vert">
+        <IncidentItem v-for="incident in filteredIncidents" :key="incident.id" :incident="incident" @click="viewIncident">
+          <template #menu>
+            <q-btn flat round dense icon="more_vert" @click.stop>
               <q-menu>
                 <q-list dense style="min-width: 150px">
                   <q-item clickable v-close-popup @click="viewIncident(incident)">
-                    <q-item-section>Ver detalles</q-item-section>
+                    <q-item-section>{{ t('incidents.viewDetails') }}</q-item-section>
                   </q-item>
                   <q-item clickable v-close-popup @click="updateStatus(incident)" v-if="authStore.isManager">
-                    <q-item-section>Actualizar estado</q-item-section>
+                    <q-item-section>{{ t('incidents.updateStatus') }}</q-item-section>
                   </q-item>
                 </q-list>
               </q-menu>
             </q-btn>
-          </q-item-section>
-        </q-item>
+          </template>
+        </IncidentItem>
         <q-item v-if="filteredIncidents.length === 0">
           <q-item-section class="text-grey text-center">
-            No hay incidentes
+            {{ t('incidents.noIncidents') }}
           </q-item-section>
         </q-item>
       </q-list>
@@ -71,7 +54,7 @@
     <q-dialog v-model="showCreateDialog" persistent>
       <q-card style="min-width: 400px">
         <q-card-section>
-          <div class="text-h6">Reportar Incidente</div>
+          <div class="text-h6">{{ t('incidents.reportTitle') }}</div>
         </q-card-section>
 
         <q-card-section>
@@ -80,19 +63,19 @@
               v-model="newIncident.title"
               label="Título"
               outlined
-              :rules="[val => !!val || 'Requerido']"
+              :rules="[val => !!val || t('common.required')]"
             />
             <q-input
               v-model="newIncident.description"
-              label="Descripción"
+              :label="t('incidents.description')"
               type="textarea"
               outlined
-              :rules="[val => !!val || 'Requerido']"
+              :rules="[val => !!val || t('common.required')]"
             />
             <q-select
               v-model="newIncident.type"
               :options="typeOptions"
-              label="Tipo"
+              :label="t('incidents.type')"
               outlined
               emit-value
               map-options
@@ -100,19 +83,19 @@
             <q-select
               v-model="newIncident.priority"
               :options="priorityOptions"
-              label="Prioridad"
+              :label="t('incidents.priority')"
               outlined
               emit-value
               map-options
             />
             <q-input
               v-model="newIncident.locationDescription"
-              label="Ubicación"
+              :label="t('incidents.location')"
               outlined
             />
             <q-input
               v-model="newIncident.occurredAt"
-              label="Fecha del incidente"
+              :label="t('incidents.date')"
               type="datetime-local"
               outlined
             />
@@ -120,8 +103,8 @@
         </q-card-section>
 
         <q-card-actions align="right">
-          <q-btn flat label="Cancelar" v-close-popup />
-          <q-btn color="primary" label="Reportar" @click="createIncident" :loading="loading" />
+          <q-btn flat :label="t('common.cancel')" v-close-popup />
+          <q-btn color="primary" :label="t('incidents.report')" @click="createIncident" :loading="loading" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -133,10 +116,16 @@ import { ref, computed, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useIncidentStore } from '../stores/incident'
 import { useAuthStore } from '../stores/auth'
+import { useCondominiumStore } from '../stores/condominium'
+import { useI18n } from '../composables/useI18n'
+import IncidentItem from '../components/IncidentItem.vue'
+import { getIncidentStatusLabel, getPriorityLabel } from '../utils/format'
 
 const $q = useQuasar()
 const incidentStore = useIncidentStore()
 const authStore = useAuthStore()
+const condoStore = useCondominiumStore()
+const { t } = useI18n()
 
 const incidents = ref([])
 const filterStatus = ref(null)
@@ -180,7 +169,7 @@ const filteredIncidents = computed(() => {
 })
 
 onMounted(async () => {
-  const condos = await useCondominiumStore().fetchAll()
+  const condos = await condoStore.fetchAll()
   if (condos.length > 0) {
     incidents.value = await incidentStore.fetchByCondominium(condos[0].id)
   }
@@ -189,7 +178,7 @@ onMounted(async () => {
 async function createIncident() {
   loading.value = true
   try {
-    const condos = await useCondominiumStore().fetchAll()
+    const condos = await condoStore.fetchAll()
     if (condos.length > 0) {
       await incidentStore.create(condos[0].id, {
         ...newIncident.value,
@@ -197,12 +186,12 @@ async function createIncident() {
         priority: parseInt(newIncident.value.priority),
         occurredAt: new Date(newIncident.value.occurredAt).toISOString()
       })
-      $q.notify({ type: 'positive', message: 'Incidente reportado exitosamente' })
+      $q.notify({ type: 'positive', message: t('incidents.reportSuccess') })
       showCreateDialog.value = false
       incidents.value = await incidentStore.fetchByCondominium(condos[0].id)
     }
   } catch (e) {
-    $q.notify({ type: 'negative', message: 'Error al reportar incidente' })
+    $q.notify({ type: 'negative', message: t('incidents.reportError') })
   } finally {
     loading.value = false
   }
@@ -211,14 +200,14 @@ async function createIncident() {
 function viewIncident(incident) {
   $q.dialog({
     title: incident.title,
-    message: `${incident.description}\n\nReportado por: ${incident.reportedByName}\nEstado: ${getStatusLabel(incident.status)}\nPrioridad: ${getPriorityLabel(incident.priority)}`,
-    ok: 'Cerrar'
+    message: `${incident.description}\n\n${t('incidents.reportedBy')}: ${incident.reportedByName}\n${t('incidents.status')}: ${getIncidentStatusLabel(incident.status)}\n${t('incidents.priority')}: ${getPriorityLabel(incident.priority)}`,
+    ok: t('common.yes')
   })
 }
 
 function updateStatus(incident) {
   $q.dialog({
-    title: 'Actualizar Estado',
+    title: t('incidents.updateStatus'),
     options: {
       type: 'radio',
       model: incident.status,
@@ -227,32 +216,10 @@ function updateStatus(incident) {
     cancel: true
   }).onOk(async (status) => {
     await incidentStore.updateStatus(incident.id, status)
-    const condos = await useCondominiumStore().fetchAll()
+    const condos = await condoStore.fetchAll()
     if (condos.length > 0) {
       incidents.value = await incidentStore.fetchByCondominium(condos[0].id)
     }
   })
-}
-
-function getStatusLabel(status) {
-  return incidentStore.getStatusLabel(status)
-}
-
-function getStatusColor(status) {
-  const colors = { 1: 'blue', 2: 'orange', 3: 'yellow', 4: 'green', 5: 'grey', 6: 'red' }
-  return colors[status] || 'grey'
-}
-
-function getPriorityLabel(priority) {
-  return incidentStore.getPriorityLabel(priority)
-}
-
-function getPriorityColor(priority) {
-  const colors = { 1: 'green', 2: 'yellow', 3: 'orange', 4: 'red' }
-  return colors[priority] || 'green'
-}
-
-function formatDate(date) {
-  return new Date(date).toLocaleDateString('es-ES')
 }
 </script>

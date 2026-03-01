@@ -13,6 +13,7 @@ public class User
     public Guid? CondominiumId { get; set; }
     public string? LotNumber { get; set; }
     public string? StreetAddress { get; set; }
+    public string? PhotoUrl { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
     public DateTime? LastLoginAt { get; set; }

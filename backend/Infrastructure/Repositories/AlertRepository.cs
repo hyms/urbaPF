@@ -21,7 +21,7 @@ public class AlertRepository : BaseRepository, IAlertRepository
                    u.full_name as CreatedByName
             FROM alerts a
             JOIN users u ON a.created_by_id = u.id
-            WHERE a.is_deleted = false
+            WHERE a.deleted_at IS NULL
             ORDER BY a.created_at DESC";
         return await QueryAsync<AlertDto>(sql);
     }
@@ -37,8 +37,8 @@ public class AlertRepository : BaseRepository, IAlertRepository
             FROM alerts a
             JOIN users u ON a.created_by_id = u.id
             WHERE a.condominium_id = @CondominiumId 
-              AND a.status NOT IN (5, 6)
-              AND a.is_deleted = false
+              AND status NOT IN (5, 6)
+              AND deleted_at IS NULL
             ORDER BY a.created_at DESC";
         return await QueryAsync<AlertDto>(sql, new { CondominiumId = condominiumId });
     }
@@ -53,7 +53,7 @@ public class AlertRepository : BaseRepository, IAlertRepository
                    u.full_name as CreatedByName
             FROM alerts a
             JOIN users u ON a.created_by_id = u.id
-            WHERE a.id = @Id AND a.is_deleted = false";
+            WHERE a.id = @Id AND a.deleted_at IS NULL";
         return await QueryFirstOrDefaultAsync<AlertDto>(sql, new { Id = id });
     }
 
@@ -119,7 +119,7 @@ public class AlertRepository : BaseRepository, IAlertRepository
 
         sql.Add("updated_at = CURRENT_TIMESTAMP");
 
-        var updateSql = $"UPDATE alerts SET {string.Join(", ", sql)} WHERE id = @Id AND is_deleted = false";
+        var updateSql = $"UPDATE alerts SET {string.Join(", ", sql)} WHERE id = @Id AND deleted_at IS NULL";
         await ExecuteAsync(updateSql, parameters);
     }
 
@@ -136,7 +136,7 @@ public class AlertRepository : BaseRepository, IAlertRepository
 
     public async Task SoftDeleteAsync(Guid id)
     {
-        var sql = "UPDATE alerts SET is_deleted = true, deleted_at = CURRENT_TIMESTAMP WHERE id = @Id";
+        var sql = "UPDATE alerts SET deleted_at IS NOT NULL, deleted_at = CURRENT_TIMESTAMP WHERE id = @Id";
         await ExecuteAsync(sql, new { Id = id });
     }
 }

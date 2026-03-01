@@ -20,7 +20,7 @@ public class PostRepository : BaseRepository, IPostRepository
                    u.full_name as AuthorName
             FROM posts p
             JOIN users u ON p.author_id = u.id
-            WHERE p.is_deleted = false
+            WHERE p.deleted_at IS NULL
             ORDER BY p.is_pinned DESC, p.created_at DESC";
         return await QueryAsync<PostDto>(sql);
     }
@@ -34,7 +34,7 @@ public class PostRepository : BaseRepository, IPostRepository
                    u.full_name as AuthorName
             FROM posts p
             JOIN users u ON p.author_id = u.id
-            WHERE p.condominium_id = @CondominiumId AND p.is_deleted = false
+            WHERE p.condominium_id = @CondominiumId AND p.deleted_at IS NULL
             ORDER BY p.is_pinned DESC, p.created_at DESC";
         return await QueryAsync<PostDto>(sql, new { CondominiumId = condominiumId });
     }
@@ -48,7 +48,7 @@ public class PostRepository : BaseRepository, IPostRepository
                    u.full_name as AuthorName
             FROM posts p
             JOIN users u ON p.author_id = u.id
-            WHERE p.id = @Id AND p.is_deleted = false";
+            WHERE p.id = @Id AND p.deleted_at IS NULL";
         return await QueryFirstOrDefaultAsync<PostDto>(sql, new { Id = id });
     }
 
@@ -110,13 +110,13 @@ public class PostRepository : BaseRepository, IPostRepository
         if (sql.Count == 0) return;
 
         sql.Add("updated_at = CURRENT_TIMESTAMP");
-        var updateSql = $"UPDATE posts SET {string.Join(", ", sql)} WHERE id = @Id AND is_deleted = false";
+        var updateSql = $"UPDATE posts SET {string.Join(", ", sql)} WHERE id = @Id AND deleted_at IS NULL";
         await ExecuteAsync(updateSql, parameters);
     }
 
     public async Task SoftDeleteAsync(Guid id)
     {
-        var sql = "UPDATE posts SET is_deleted = true, deleted_at = CURRENT_TIMESTAMP WHERE id = @Id";
+        var sql = "UPDATE posts SET deleted_at IS NOT NULL, deleted_at = CURRENT_TIMESTAMP WHERE id = @Id";
         await ExecuteAsync(sql, new { Id = id });
     }
 

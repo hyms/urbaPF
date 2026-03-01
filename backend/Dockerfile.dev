@@ -3,15 +3,15 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS development
 WORKDIR /app
 
 COPY UrbaPF.sln ./
-COPY backend/Api/*.csproj ./backend/Api/
-COPY backend/Domain/*.csproj ./backend/Domain/
-COPY backend/Infrastructure/*.csproj ./backend/Infrastructure/
-COPY backend/tests/*.csproj ./backend/tests/
+COPY Api/*.csproj ./Api/
+COPY Domain/*.csproj ./Domain/
+COPY Infrastructure/*.csproj ./Infrastructure/
+COPY tests/*.csproj ./tests/
 RUN dotnet restore
 
 COPY . .
 
-WORKDIR /app/backend/Api
+WORKDIR /app/Api
 RUN dotnet build -c Debug
 
 ENV DOTNET_RUNNING_IN_CONTAINER=true

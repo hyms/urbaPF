@@ -13,6 +13,7 @@ public class UserDto
     public Guid? CondominiumId { get; set; }
     public string? LotNumber { get; set; }
     public string? StreetAddress { get; set; }
+    public string? PhotoUrl { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? LastLoginAt { get; set; }
     public bool IsValidated { get; set; }
@@ -27,6 +28,7 @@ public class CreateUserDto
     public Guid? CondominiumId { get; set; }
     public string? LotNumber { get; set; }
     public string? StreetAddress { get; set; }
+    public string? PhotoUrl { get; set; }
 }
 
 public class UpdateUserDto
@@ -38,5 +40,12 @@ public class UpdateUserDto
     public Guid? CondominiumId { get; set; }
     public string? LotNumber { get; set; }
     public string? StreetAddress { get; set; }
+    public string? PhotoUrl { get; set; }
     public string? FcmToken { get; set; }
+}
+
+public class ChangePasswordDto
+{
+    public string OldPassword { get; set; } = string.Empty;
+    public string NewPassword { get; set; } = string.Empty;
 }

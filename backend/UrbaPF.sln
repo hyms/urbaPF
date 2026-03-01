@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UrbaPF.Api", "backend\Api\UrbaPF.Api.csproj", "{6078DE40-497D-4CF7-88B0-68D6E73E7D39}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UrbaPF.Api", "Api\UrbaPF.Api.csproj", "{6078DE40-497D-4CF7-88B0-68D6E73E7D39}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UrbaPF.Domain", "backend\Domain\UrbaPF.Domain.csproj", "{54576864-E92B-4111-BCC9-E9AABB427B7F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UrbaPF.Domain", "Domain\UrbaPF.Domain.csproj", "{54576864-E92B-4111-BCC9-E9AABB427B7F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UrbaPF.Infrastructure", "backend\Infrastructure\UrbaPF.Infrastructure.csproj", "{02CBBE72-BBC2-43E7-A262-C7D229E92B48}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UrbaPF.Infrastructure", "Infrastructure\UrbaPF.Infrastructure.csproj", "{02CBBE72-BBC2-43E7-A262-C7D229E92B48}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UrbaPF.Tests", "backend\tests\UrbaPF.Tests.csproj", "{3A3EB683-4086-43FB-8828-C9D89A5DFE7E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UrbaPF.Tests", "tests\UrbaPF.Tests.csproj", "{3A3EB683-4086-43FB-8828-C9D89A5DFE7E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

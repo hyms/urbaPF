@@ -20,7 +20,7 @@ public class VoteRepository : BaseRepository, IVoteRepository
                    u.full_name as UserName
             FROM votes v
             JOIN users u ON v.user_id = u.id
-            WHERE v.poll_id = @PollId AND v.is_deleted = false
+            WHERE v.poll_id = @PollId AND deleted_at IS NULL
             ORDER BY v.voted_at DESC";
         return await QueryAsync<VoteDto>(sql, new { PollId = pollId });
     }
@@ -34,7 +34,7 @@ public class VoteRepository : BaseRepository, IVoteRepository
                    u.full_name as UserName
             FROM votes v
             JOIN users u ON v.user_id = u.id
-            WHERE v.id = @Id AND v.is_deleted = false";
+            WHERE v.id = @Id AND v.deleted_at IS NULL";
         return await QueryFirstOrDefaultAsync<VoteDto>(sql, new { Id = id });
     }
 
@@ -56,7 +56,7 @@ public class VoteRepository : BaseRepository, IVoteRepository
 
     public async Task<bool> HasUserVotedAsync(Guid pollId, Guid userId)
     {
-        var sql = "SELECT COUNT(1) FROM votes WHERE poll_id = @PollId AND user_id = @UserId AND is_deleted = false";
+        var sql = "SELECT COUNT(1) FROM votes WHERE poll_id = @PollId AND user_id = @UserId AND deleted_at IS NULL";
         var count = await ExecuteScalarAsync<int>(sql, new { PollId = pollId, UserId = userId });
         return count > 0;
     }
@@ -66,7 +66,7 @@ public class VoteRepository : BaseRepository, IVoteRepository
         var sql = @"
             SELECT option_index, COUNT(*) as vote_count
             FROM votes
-            WHERE poll_id = @PollId AND is_deleted = false
+            WHERE poll_id = @PollId AND deleted_at IS NULL
             GROUP BY option_index";
         var results = await QueryAsync<(int OptionIndex, int VoteCount)>(sql, new { PollId = pollId });
         return results.ToDictionary(r => r.OptionIndex, r => r.VoteCount);

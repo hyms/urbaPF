@@ -12,9 +12,10 @@ export const useAuthStore = defineStore('auth', {
   getters: {
     isAuthenticated: (state) => !!state.token,
     currentUser: (state) => state.user,
-    isAdmin: (state) => state.user?.role === 0,
-    isManager: (state) => state.user?.role === 1,
-    isResident: (state) => state.user?.role === 2
+    isAdmin: (state) => state.user?.role === 4,
+    isManager: (state) => state.user?.role === 3,
+    isNeighbor: (state) => state.user?.role === 2,
+    isGuard: (state) => state.user?.role === 1
   },
 
   actions: {
@@ -28,10 +29,10 @@ export const useAuthStore = defineStore('auth', {
         
         const payload = JSON.parse(atob(this.token.split('.')[1]))
         this.user = {
-          id: payload.nameid,
+          id: payload.id,
           email: payload.email,
           role: parseInt(payload.role),
-          fullName: payload.name
+          fullName: payload.fullName
         }
         localStorage.setItem('user', JSON.stringify(this.user))
         

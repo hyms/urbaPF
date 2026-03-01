@@ -57,6 +57,21 @@ public class AuthService : IAuthService
         return (userId, null);
     }
 
+    public async Task<(bool Success, string? Error)> ChangePasswordAsync(Guid userId, string oldPassword, string newPassword)
+    {
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null)
+            return (false, "Usuario no encontrado.");
+
+        var userWithHash = await _userRepository.GetByEmailWithPasswordAsync(user.Email);
+        if (userWithHash == null || !BCrypt.Net.BCrypt.Verify(oldPassword, userWithHash.PasswordHash))
+            return (false, "Contraseña antigua incorrecta.");
+
+        var newPasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword, 11);
+        await _userRepository.UpdatePasswordHashAsync(userId, newPasswordHash);
+        return (true, null);
+    }
+
     private string GenerateJwtToken(Guid userId, string email, int role, string fullName)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSecret));
@@ -64,10 +79,10 @@ public class AuthService : IAuthService
 
         var claims = new[]
         {
-            new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-            new Claim(ClaimTypes.Email, email),
-            new Claim(ClaimTypes.Role, role.ToString()),
-            new Claim(ClaimTypes.Name, fullName)
+            new Claim("id", userId.ToString()),
+            new Claim("email", email),
+            new Claim("role", role.ToString()),
+            new Claim("fullName", fullName)
         };
 
         var token = new JwtSecurityToken(

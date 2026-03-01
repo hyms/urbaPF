@@ -22,7 +22,7 @@ public class PollRepository : BaseRepository, IPollRepository
                    u.full_name as CreatedByName
             FROM polls p
             JOIN users u ON p.created_by_id = u.id
-            WHERE p.is_deleted = false
+            WHERE p.deleted_at IS NULL
             ORDER BY p.created_at DESC";
         return await QueryAsync<PollDto>(sql);
     }
@@ -38,7 +38,7 @@ public class PollRepository : BaseRepository, IPollRepository
                    u.full_name as CreatedByName
             FROM polls p
             JOIN users u ON p.created_by_id = u.id
-            WHERE p.condominium_id = @CondominiumId AND p.is_deleted = false
+            WHERE p.condominium_id = @CondominiumId AND deleted_at IS NULL
             ORDER BY p.created_at DESC";
         return await QueryAsync<PollDto>(sql, new { CondominiumId = condominiumId });
     }
@@ -54,7 +54,7 @@ public class PollRepository : BaseRepository, IPollRepository
                    u.full_name as CreatedByName
             FROM polls p
             JOIN users u ON p.created_by_id = u.id
-            WHERE p.id = @Id AND p.is_deleted = false";
+            WHERE p.id = @Id AND p.deleted_at IS NULL";
         return await QueryFirstOrDefaultAsync<PollDto>(sql, new { Id = id });
     }
 
@@ -65,7 +65,7 @@ public class PollRepository : BaseRepository, IPollRepository
         var sql = @"
             INSERT INTO polls (condominium_id, title, description, options, poll_type, starts_at, ends_at,
                               requires_justification, min_role_to_vote, server_secret, status, created_by_id)
-            VALUES (@CondominiumId, @Title, @Description, @Options, @PollType, @StartsAt, @EndsAt,
+            VALUES (@CondominiumId, @Title, @Description, @Options::jsonb, @PollType, @StartsAt, @EndsAt,
                    @RequiresJustification, @MinRoleToVote, @ServerSecret, 2, @CreatedById)
             RETURNING id";
         return await ExecuteScalarAsync<Guid>(sql, new 
@@ -125,13 +125,13 @@ public class PollRepository : BaseRepository, IPollRepository
 
         sql.Add("updated_at = CURRENT_TIMESTAMP");
 
-        var updateSql = $"UPDATE polls SET {string.Join(", ", sql)} WHERE id = @Id AND is_deleted = false";
+        var updateSql = $"UPDATE polls SET {string.Join(", ", sql)} WHERE id = @Id AND deleted_at IS NULL";
         await ExecuteAsync(updateSql, parameters);
     }
 
     public async Task SoftDeleteAsync(Guid id)
     {
-        var sql = "UPDATE polls SET is_deleted = true, deleted_at = CURRENT_TIMESTAMP WHERE id = @Id";
+        var sql = "UPDATE polls SET deleted_at IS NOT NULL, deleted_at = CURRENT_TIMESTAMP WHERE id = @Id";
         await ExecuteAsync(sql, new { Id = id });
     }
 }

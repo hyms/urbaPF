@@ -16,10 +16,10 @@ public class UserRepository : BaseRepository, IUserRepository
         var sql = @"
             SELECT id, email, full_name as FullName, phone, role, credibility_level as CredibilityLevel,
                    status, condominium_id as CondominiumId, lot_number as LotNumber,
-                   street_address as StreetAddress, created_at as CreatedAt, last_login_at as LastLoginAt,
+                   street_address as StreetAddress, photo_url as PhotoUrl, created_at as CreatedAt, last_login_at as LastLoginAt,
                    is_validated as IsValidated, manager_votes as ManagerVotes
             FROM users 
-            WHERE is_deleted = false
+            WHERE deleted_at IS NULL
             ORDER BY created_at DESC";
         return await QueryAsync<UserDto>(sql);
     }
@@ -29,10 +29,10 @@ public class UserRepository : BaseRepository, IUserRepository
         var sql = @"
             SELECT id, email, full_name as FullName, phone, role, credibility_level as CredibilityLevel,
                    status, condominium_id as CondominiumId, lot_number as LotNumber,
-                   street_address as StreetAddress, created_at as CreatedAt, last_login_at as LastLoginAt,
+                   street_address as StreetAddress, photo_url as PhotoUrl, created_at as CreatedAt, last_login_at as LastLoginAt,
                    is_validated as IsValidated, manager_votes as ManagerVotes
             FROM users 
-            WHERE id = @Id AND is_deleted = false";
+            WHERE id = @Id AND deleted_at IS NULL";
         return await QueryFirstOrDefaultAsync<UserDto>(sql, new { Id = id });
     }
 
@@ -41,10 +41,10 @@ public class UserRepository : BaseRepository, IUserRepository
         var sql = @"
             SELECT id, email, full_name as FullName, phone, role, credibility_level as CredibilityLevel,
                    status, condominium_id as CondominiumId, lot_number as LotNumber,
-                   street_address as StreetAddress, created_at as CreatedAt, last_login_at as LastLoginAt,
+                   street_address as StreetAddress, photo_url as PhotoUrl, created_at as CreatedAt, last_login_at as LastLoginAt,
                    is_validated as IsValidated, manager_votes as ManagerVotes
             FROM users 
-            WHERE email = @Email AND is_deleted = false";
+            WHERE email = @Email AND deleted_at IS NULL";
         return await QueryFirstOrDefaultAsync<UserDto>(sql, new { Email = email });
     }
 
@@ -56,15 +56,15 @@ public class UserRepository : BaseRepository, IUserRepository
                    lot_number as LotNumber, street_address as StreetAddress, created_at as CreatedAt, 
                    last_login_at as LastLoginAt, is_validated as IsValidated, manager_votes as ManagerVotes
             FROM users 
-            WHERE email = @Email AND is_deleted = false";
+            WHERE email = @Email AND deleted_at IS NULL";
         return await QueryFirstOrDefaultAsync<UserDto>(sql, new { Email = email });
     }
 
     public async Task<Guid> CreateAsync(CreateUserDto dto, string passwordHash)
     {
         var sql = @"
-            INSERT INTO users (email, password_hash, full_name, phone, role, credibility_level, status, 
-                              condominium_id, lot_number, street_address, is_validated, manager_votes)
+            INSERT INTO users (email, password_hash, full_name, phone, role, credibility_level, status,
+                               condominium_id, lot_number, street_address, photo_url, is_validated, manager_votes)
             VALUES (@Email, @PasswordHash, @FullName, @Phone, 0, 1, 0, @CondominiumId, @LotNumber, 
                     @StreetAddress, false, 0)
             RETURNING id";
@@ -77,7 +77,8 @@ public class UserRepository : BaseRepository, IUserRepository
             dto.Phone, 
             dto.CondominiumId, 
             dto.LotNumber, 
-            dto.StreetAddress 
+            dto.StreetAddress,
+            dto.PhotoUrl
         });
     }
 
@@ -122,6 +123,11 @@ public class UserRepository : BaseRepository, IUserRepository
             sql.Add("street_address = @StreetAddress");
             parameters.Add("StreetAddress", dto.StreetAddress);
         }
+        if (!string.IsNullOrEmpty(dto.PhotoUrl))
+        {
+            sql.Add("photo_url = @PhotoUrl");
+            parameters.Add("PhotoUrl", dto.PhotoUrl);
+        }
         if (!string.IsNullOrEmpty(dto.FcmToken))
         {
             sql.Add("fcm_token = @FcmToken");
@@ -132,7 +138,7 @@ public class UserRepository : BaseRepository, IUserRepository
 
         sql.Add("updated_at = CURRENT_TIMESTAMP");
 
-        var updateSql = $"UPDATE users SET {string.Join(", ", sql)} WHERE id = @Id AND is_deleted = false";
+        var updateSql = $"UPDATE users SET {string.Join(", ", sql)} WHERE id = @Id AND deleted_at IS NULL";
         await ExecuteAsync(updateSql, parameters);
     }
 
@@ -140,7 +146,7 @@ public class UserRepository : BaseRepository, IUserRepository
     {
         var sql = @"
             UPDATE users 
-            SET is_deleted = true, deleted_at = CURRENT_TIMESTAMP 
+            SET deleted_at IS NOT NULL, deleted_at = CURRENT_TIMESTAMP 
             WHERE id = @Id";
         await ExecuteAsync(sql, new { Id = id });
     }
@@ -149,5 +155,11 @@ public class UserRepository : BaseRepository, IUserRepository
     {
         var sql = "UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = @Id";
         await ExecuteAsync(sql, new { Id = id });
+    }
+
+    public async Task UpdatePasswordHashAsync(Guid id, string passwordHash)
+    {
+        var sql = "UPDATE users SET password_hash = @PasswordHash, updated_at = CURRENT_TIMESTAMP WHERE id = @Id AND deleted_at IS NULL";
+        await ExecuteAsync(sql, new { Id = id, PasswordHash = passwordHash });
     }
 }
