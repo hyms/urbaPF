@@ -159,6 +159,58 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+
+    <!-- Diálogo para cambiar contraseña -->
+    <q-dialog v-model="showChangePasswordDialog" persistent>
+      <q-card style="min-width: 400px">
+        <q-card-section>
+          <div class="text-h6">{{ t('users.changePassword') }}</div>
+        </q-card-section>
+
+        <q-card-section>
+          <q-form class="q-gutter-md" @submit="changePasswordUser">
+            <!-- Contraseña antigua (solo para Neighbor editando su propio perfil) -->
+            <q-input
+              v-if="authStore.isNeighbor && editingUser?.id === authStore.currentUser?.id"
+              v-model="passwordForm.oldPassword"
+              :label="t('users.oldPassword')"
+              type="password"
+              outlined
+              :rules="[v => !!v || t('common.required')]"
+            />
+
+            <!-- Nueva contraseña -->
+            <q-input
+              v-model="passwordForm.newPassword"
+              :label="t('users.newPassword')"
+              type="password"
+              outlined
+              :rules="[
+                v => !!v || t('common.required'),
+                v => v.length >= 6 || t('users.passwordMinLength')
+              ]"
+            />
+
+            <!-- Confirmar nueva contraseña -->
+            <q-input
+              v-model="passwordForm.confirmPassword"
+              :label="t('users.confirmNewPassword')"
+              type="password"
+              outlined
+              :rules="[
+                v => !!v || t('common.required'),
+                v => v === passwordForm.newPassword || t('users.passwordsMatch')
+              ]"
+            />
+
+            <q-card-actions align="right">
+              <q-btn flat :label="t('common.cancel')" @click="showChangePasswordDialog = false" />
+              <q-btn color="primary" :label="t('common.save')" type="submit" :loading="loading" />
+            </q-card-actions>
+          </q-form>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -253,8 +305,10 @@ function editUser(user) {
     fullName: user.fullName,
     phone: user.phone || '',
     role: user.role,
-    lotNumber: user.lotNumber || '',
-    password: ''
+    address: user.streetAddress || '', // Mapear a address
+    password: '', // No precargar la contraseña
+    photo: null, // Resetear archivo de foto
+    photoUrl: user.photoUrl || '' // Cargar URL de foto existente
   }
   showCreateDialog.value = true
 }
@@ -262,20 +316,68 @@ function editUser(user) {
 async function saveUser() {
   loading.value = true
   try {
-    if (editingUser.value) {
-      await userStore.update(editingUser.value.id, userForm.value)
-      $q.notify({ type: 'positive', message: t('common.success') })
-    } else {
-      await userStore.create(userForm.value)
-      $q.notify({ type: 'positive', message: t('common.success') })
+    let finalPhotoUrl = userForm.value.photoUrl; // Mantener la URL existente por defecto
+
+    // 1. Si hay una nueva foto, subirla primero
+    if (userForm.value.photo) {
+      const uploadResult = await userStore.uploadPhoto(editingUser.value.id, userForm.value.photo);
+      if (!uploadResult.success) {
+        $q.notify({ type: 'negative', message: uploadResult.message });
+        return; // Detener si la subida falla
+      }
+      finalPhotoUrl = uploadResult.photoUrl; // Usar la URL de la foto recién subida
     }
+
+    // 2. Preparar los datos para la actualización del usuario
+    const updateData = {
+      fullName: userForm.value.fullName,
+      phone: userForm.value.phone,
+      address: userForm.value.address, // Esto se mapea a streetAddress en el store
+      photoUrl: finalPhotoUrl // Usar la URL final de la foto
+    };
+
+    // Para Admin, también permite actualizar el rol
+    if (authStore.isAdmin) {
+      updateData.role = userForm.value.role;
+      updateData.email = userForm.value.email; // Admin puede editar el email
+    }
+
+    // 3. Realizar la actualización del usuario
+    if (editingUser.value) {
+      const updateResult = await userStore.update(editingUser.value.id, updateData);
+      if (!updateResult) {
+        $q.notify({ type: 'negative', message: userStore.error || t('common.error') });
+        return;
+      }
+      $q.notify({ type: 'positive', message: t('common.success') });
+    } else {
+      // Lógica para crear un nuevo usuario (ya existente, solo asegurar que PhotoUrl y Address se pasan)
+      const createData = {
+        email: userForm.value.email,
+        password: userForm.value.password,
+        fullName: userForm.value.fullName,
+        phone: userForm.value.phone,
+        role: userForm.value.role,
+        streetAddress: userForm.value.address, // Asegurarse de pasar la dirección
+        photoUrl: finalPhotoUrl // Asegurarse de pasar la URL de la foto (si hay)
+      };
+      const createResult = await userStore.create(createData);
+      if (!createResult) {
+        $q.notify({ type: 'negative', message: userStore.error || t('common.error') });
+        return;
+      }
+      $q.notify({ type: 'positive', message: t('common.success') });
+    }
+
     showCreateDialog.value = false
-    users.value = await userStore.fetchAll()
+    users.value = await userStore.fetchAll() // Refrescar la lista de usuarios
   } catch (e) {
+    console.error('Error al guardar usuario:', e);
     $q.notify({ type: 'negative', message: t('common.error') })
   } finally {
     loading.value = false
     editingUser.value = null
+    userForm.value.photo = null; // Limpiar el archivo de foto después de guardar
   }
 }
 
@@ -289,6 +391,54 @@ async function deleteUser(user) {
     users.value = await userStore.fetchAll()
     $q.notify({ type: 'positive', message: t('common.success') })
   })
+}
+
+function removePhoto() {
+  userForm.value.photo = null;
+  userForm.value.photoUrl = '';
+  // TODO: Si fuera necesario, se podría llamar a un endpoint para eliminar la foto del almacenamiento
+}
+
+function openChangePasswordDialog(userId) {
+  editingUser.value = users.value.find(u => u.id === userId); // Asegurarse de tener el usuario correcto
+  passwordForm.value = {
+    oldPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  };
+  showChangePasswordDialog.value = true;
+}
+
+async function changePasswordUser() {
+  loading.value = true;
+  try {
+    if (passwordForm.value.newPassword !== passwordForm.value.confirmPassword) {
+      $q.notify({ type: 'negative', message: t('users.passwordsMatch') });
+      return;
+    }
+
+    const userIdToUpdate = editingUser.value.id; // Puede ser el propio usuario o uno que el admin edita
+    const isOwner = authStore.isNeighbor && userIdToUpdate === authStore.currentUser?.id;
+
+    // Si no es admin y es el propio usuario, se requiere la contraseña antigua
+    const oldPassword = isOwner ? passwordForm.value.oldPassword : '';
+    const newPassword = passwordForm.value.newPassword;
+
+    const result = await userStore.changePassword(userIdToUpdate, oldPassword, newPassword);
+
+    if (result.success) {
+      $q.notify({ type: 'positive', message: result.message });
+      showChangePasswordDialog.value = false;
+      passwordForm.value = { oldPassword: '', newPassword: '', confirmPassword: '' }; // Limpiar formulario
+    } else {
+      $q.notify({ type: 'negative', message: result.message });
+    }
+  } catch (e) {
+    console.error('Error al cambiar contraseña:', e);
+    $q.notify({ type: 'negative', message: t('common.error') });
+  } finally {
+    loading.value = false;
+  }
 }
 
 function getRoleLabel(role) {

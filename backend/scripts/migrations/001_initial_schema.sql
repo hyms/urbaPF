@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS users (
     condominium_id UUID REFERENCES condominiums(id) ON DELETE SET NULL,
     lot_number VARCHAR(50),
     street_address VARCHAR(255),
+    photo_url TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE,
     last_login_at TIMESTAMP WITH TIME ZONE,
