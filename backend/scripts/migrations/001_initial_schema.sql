@@ -1,11 +1,5 @@
--- Migration: 001_initial_schema
--- Date: 2026-02-27
--- Description: Initial database schema for UrbaPF
-
--- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Condominiums (Conjuntos residenciales)
 CREATE TABLE IF NOT EXISTS condominiums (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(255) NOT NULL,
@@ -20,7 +14,6 @@ CREATE TABLE IF NOT EXISTS condominiums (
     is_active BOOLEAN DEFAULT true
 );
 
--- Users
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     email VARCHAR(255) NOT NULL UNIQUE,
@@ -33,7 +26,6 @@ CREATE TABLE IF NOT EXISTS users (
     condominium_id UUID REFERENCES condominiums(id) ON DELETE SET NULL,
     lot_number VARCHAR(50),
     street_address VARCHAR(255),
-    photo_url TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE,
     last_login_at TIMESTAMP WITH TIME ZONE,
@@ -42,7 +34,6 @@ CREATE TABLE IF NOT EXISTS users (
     manager_votes INTEGER DEFAULT 0
 );
 
--- Incidents
 CREATE TABLE IF NOT EXISTS incidents (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     condominium_id UUID NOT NULL REFERENCES condominiums(id) ON DELETE CASCADE,
@@ -62,7 +53,6 @@ CREATE TABLE IF NOT EXISTS incidents (
     resolution_notes TEXT
 );
 
--- Posts
 CREATE TABLE IF NOT EXISTS posts (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     condominium_id UUID NOT NULL REFERENCES condominiums(id) ON DELETE CASCADE,
@@ -81,7 +71,6 @@ CREATE TABLE IF NOT EXISTS posts (
     approved_at TIMESTAMP WITH TIME ZONE
 );
 
--- Comments
 CREATE TABLE IF NOT EXISTS comments (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     post_id UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
@@ -95,7 +84,6 @@ CREATE TABLE IF NOT EXISTS comments (
     updated_at TIMESTAMP WITH TIME ZONE
 );
 
--- Polls (Asambleas virtuales)
 CREATE TABLE IF NOT EXISTS polls (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     condominium_id UUID NOT NULL REFERENCES condominiums(id) ON DELETE CASCADE,
@@ -110,80 +98,73 @@ CREATE TABLE IF NOT EXISTS polls (
     server_secret VARCHAR(255) NOT NULL,
     status INTEGER DEFAULT 1 CHECK (status BETWEEN 1 AND 5),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE,
     created_by_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Votes
 CREATE TABLE IF NOT EXISTS votes (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     poll_id UUID NOT NULL REFERENCES polls(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     option_index INTEGER NOT NULL,
     digital_signature VARCHAR(255) NOT NULL,
-    voted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    ip_address VARCHAR(45),
-    UNIQUE(poll_id, user_id)
+    voted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Alerts (En Camino)
 CREATE TABLE IF NOT EXISTS alerts (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     condominium_id UUID NOT NULL REFERENCES condominiums(id) ON DELETE CASCADE,
     created_by_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    alert_type INTEGER NOT NULL CHECK (alert_type BETWEEN 1 AND 4),
+    alert_type INTEGER DEFAULT 1 CHECK (alert_type BETWEEN 1 AND 5),
     message TEXT NOT NULL,
     latitude DOUBLE PRECISION,
     longitude DOUBLE PRECISION,
-    destination_address TEXT,
+    destination_address VARCHAR(500),
     estimated_arrival TIMESTAMP WITH TIME ZONE NOT NULL,
-    status INTEGER DEFAULT 1 CHECK (status BETWEEN 1 AND 6),
+    status INTEGER DEFAULT 1 CHECK (status BETWEEN 1 AND 5),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE,
     acknowledged_at TIMESTAMP WITH TIME ZONE,
     arrived_at TIMESTAMP WITH TIME ZONE
 );
 
--- Expenses (Expensas)
 CREATE TABLE IF NOT EXISTS expenses (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     condominium_id UUID NOT NULL REFERENCES condominiums(id) ON DELETE CASCADE,
-    description TEXT NOT NULL,
+    recorded_by_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
     amount DECIMAL(12, 2) NOT NULL,
-    category VARCHAR(100) NOT NULL,
-    due_date TIMESTAMP WITH TIME ZONE NOT NULL,
+    currency VARCHAR(3) DEFAULT 'BOB',
+    expense_type INTEGER DEFAULT 1 CHECK (expense_type BETWEEN 1 AND 5),
+    status INTEGER DEFAULT 1 CHECK (status BETWEEN 1 AND 5),
+    due_date TIMESTAMP WITH TIME ZONE,
     paid_at TIMESTAMP WITH TIME ZONE,
-    paid_by_id UUID REFERENCES users(id) ON DELETE SET NULL,
-    receipt_url TEXT,
-    status INTEGER DEFAULT 1 CHECK (status BETWEEN 1 AND 4),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE
 );
 
--- Indexes for performance
-CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
-CREATE INDEX IF NOT EXISTS idx_users_condominium ON users(condominium_id);
-CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
-CREATE INDEX IF NOT EXISTS idx_incidents_condominium ON incidents(condominium_id);
-CREATE INDEX IF NOT EXISTS idx_incidents_status ON incidents(status);
-CREATE INDEX IF NOT EXISTS idx_posts_condominium ON posts(condominium_id);
-CREATE INDEX IF NOT EXISTS idx_posts_author ON posts(author_id);
-CREATE INDEX IF NOT EXISTS idx_posts_status ON posts(status);
-CREATE INDEX IF NOT EXISTS idx_comments_post ON comments(post_id);
-CREATE INDEX IF NOT EXISTS idx_comments_credibility ON comments(credibility_level DESC, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_polls_condominium ON polls(condominium_id);
-CREATE INDEX IF NOT EXISTS idx_polls_status ON polls(status);
-CREATE INDEX IF NOT EXISTS idx_votes_poll ON votes(poll_id);
-CREATE INDEX IF NOT EXISTS idx_alerts_condominium ON alerts(condominium_id);
-CREATE INDEX IF NOT EXISTS idx_alerts_status ON alerts(status);
-CREATE INDEX IF NOT EXISTS idx_expenses_condominium ON expenses(condominium_id);
-CREATE INDEX IF NOT EXISTS idx_expenses_status ON expenses(status);
+CREATE INDEX idx_users_email ON users(email);
+CREATE UNIQUE INDEX idx_users_email_unique ON users(email);
+CREATE INDEX idx_users_condominium ON users(condominium_id);
+CREATE INDEX idx_users_role ON users(role);
+CREATE INDEX idx_incidents_condominium ON incidents(condominium_id);
+CREATE INDEX idx_incidents_status ON incidents(status);
+CREATE INDEX idx_posts_condominium ON posts(condominium_id);
+CREATE INDEX idx_posts_author ON posts(author_id);
+CREATE INDEX idx_posts_status ON posts(status);
+CREATE INDEX idx_comments_post ON comments(post_id);
+CREATE INDEX idx_comments_author ON comments(author_id);
+CREATE INDEX idx_comments_credibility ON comments(credibility_level);
+CREATE INDEX idx_polls_condominium ON polls(condominium_id);
+CREATE INDEX idx_polls_status ON polls(status);
+CREATE INDEX idx_polls_created_by ON polls(created_by_id);
+CREATE INDEX idx_votes_poll ON votes(poll_id);
+CREATE INDEX idx_votes_user ON votes(user_id);
+CREATE INDEX idx_alerts_condominium ON alerts(condominium_id);
+CREATE INDEX idx_alerts_created_by ON alerts(created_by_id);
+CREATE INDEX idx_alerts_status ON alerts(status);
+CREATE INDEX idx_expenses_condominium ON expenses(condominium_id);
+CREATE INDEX idx_expenses_created_by ON expenses(recorded_by_id);
+CREATE INDEX idx_expenses_status ON expenses(status);
 
--- Insert default admin user (password: Admin123!)
-INSERT INTO users (id, email, password_hash, full_name, role, status, is_validated)
-VALUES (
-    uuid_generate_v4(),
-    'admin@urbapf.local',
-    '$2a$11$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYI6eKqW.yy', -- Admin123!
-    'Administrator',
-    4, -- Administrator
-    1, -- Active
-    true
-) ON CONFLICT (email) DO NOTHING;

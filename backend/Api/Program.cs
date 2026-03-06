@@ -1,7 +1,7 @@
 using UrbaPF.Infrastructure.Data;
 using UrbaPF.Infrastructure.Interfaces;
 using UrbaPF.Infrastructure.Repositories;
-using UrbaPF.Infrastructure.Services; // Added for UserService
+using UrbaPF.Infrastructure.Services;
 using UrbaPF.Api.DTOs;
 using UrbaPF.Api.Routes;
 using System.Security.Claims;
@@ -10,6 +10,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using FluentMigrator.Runner;
+using UrbaPF.Infrastructure.Migrations;
+using UrbaPF.Api.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,9 +30,25 @@ builder.Services.AddScoped<IPollRepository, PollRepository>();
 builder.Services.AddScoped<IVoteRepository, VoteRepository>();
 builder.Services.AddScoped<IAlertRepository, AlertRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IUserService, UserService>(); // Registering the new UserService
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 builder.Services.AddHttpClient<IOneSignalService, OneSignalService>();
+
+// Build connection string from environment variables
+var host = builder.Configuration["DB_HOST"] ?? "localhost";
+var port = builder.Configuration["DB_PORT"] ?? "5432";
+var database = builder.Configuration["DB_NAME"] ?? "urbapf";
+var user = builder.Configuration["DB_USER"] ?? "postgres";
+var password = builder.Configuration["DB_PASSWORD"] ?? "postgres";
+var connectionString = $"Host={host};Port={port};Database={database};Username={user};Password={password}";
+
+// Configure FluentMigrator for data migrations only
+builder.Services.AddFluentMigratorCore()
+    .ConfigureRunner(rb => rb
+        .AddPostgres()
+        .WithGlobalConnectionString(connectionString)
+        .ScanIn(typeof(M000_InitialData).Assembly).For.Migrations())
+    .AddLogging(lb => lb.AddFluentMigratorConsole());
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -77,6 +96,9 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+// Run migrations
+app.RunMigrations();
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
@@ -97,5 +119,4 @@ app.MapIncidentRoutes();
 app.MapPollRoutes();
 app.MapAlertRoutes();
 
-// Ensure app.Run() is the last call
 app.Run();

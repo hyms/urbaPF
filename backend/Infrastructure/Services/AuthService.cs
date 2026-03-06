@@ -41,7 +41,7 @@ public class AuthService : IAuthService
         if (user == null)
             return (null, "Usuario no encontrado");
 
-        if (!VerifyPassword(password, user.PasswordHash))
+        if (user.PasswordHash == null || !VerifyPassword(password, user.PasswordHash))
             return (null, "Contraseña incorrecta");
 
         if (user.Status != 1)

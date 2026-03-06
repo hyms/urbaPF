@@ -65,7 +65,7 @@ public class UserRepository : BaseRepository, IUserRepository
         var sql = @"
             INSERT INTO users (email, password_hash, full_name, phone, role, credibility_level, status,
                                condominium_id, lot_number, street_address, photo_url, is_validated, manager_votes)
-            VALUES (@Email, @PasswordHash, @FullName, @Phone, 0, 1, 0, @CondominiumId, @LotNumber, 
+            VALUES (@Email, @PasswordHash, @FullName, @Phone, 0, 1, 1, @CondominiumId, @LotNumber, 
                     @StreetAddress, @PhotoUrl, false, 0)
             RETURNING id";
         
@@ -146,7 +146,7 @@ public class UserRepository : BaseRepository, IUserRepository
     {
         var sql = @"
             UPDATE users 
-            SET deleted_at IS NOT NULL, deleted_at = CURRENT_TIMESTAMP 
+            SET deleted_at = CURRENT_TIMESTAMP 
             WHERE id = @Id";
         await ExecuteAsync(sql, new { Id = id });
     }
