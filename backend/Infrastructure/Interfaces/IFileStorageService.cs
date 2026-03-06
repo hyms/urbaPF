@@ -1,8 +1,10 @@
+using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+
 namespace UrbaPF.Infrastructure.Interfaces;
 
 public interface IFileStorageService
 {
-    // Este método recibirá un stream de bytes y el nombre del archivo
-    // y devolverá la URL donde se almacenó.
-    Task<(string? Url, string? Error)> SaveFileAsync(Stream fileStream, string fileName, string contentType);
+    Task<string?> UploadFileAsync(IFormFile file, string path);
 }

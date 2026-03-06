@@ -1,3 +1,4 @@
+using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -11,14 +12,27 @@ namespace UrbaPF.Infrastructure.Services;
 public class AuthService : IAuthService
 {
     private readonly IUserRepository _userRepository;
+    private readonly IConfiguration _configuration; // Added IConfiguration field
     private readonly string _jwtSecret;
     private readonly int _jwtExpiryDays;
 
     public AuthService(IUserRepository userRepository, IConfiguration configuration)
     {
-        _userRepository = userRepository;
-        _jwtSecret = configuration["JWT_SECRET"] ?? "UrbaPFSuperSecretKey2026!ThisMustBeLongEnough";
-        _jwtExpiryDays = int.Parse(configuration["JWT_EXPIRY_DAYS"] ?? "7");
+        _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+        _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration)); // Initialize IConfiguration
+        _jwtSecret = _configuration["JWT_SECRET"] ?? "UrbaPFSuperSecretKey2026!ThisMustBeLongEnough";
+        _jwtExpiryDays = int.Parse(_configuration["JWT_EXPIRY_DAYS"] ?? "7");
+    }
+
+    private string HashPassword(string password)
+    {
+        // Consider adding salt rounds as a configurable value
+        return BCrypt.Net.BCrypt.HashPassword(password, 11);
+    }
+
+    private bool VerifyPassword(string providedPassword, string storedHash)
+    {
+        return BCrypt.Net.BCrypt.Verify(providedPassword, storedHash);
     }
 
     public async Task<(string? Token, string? Error)> LoginAsync(string email, string password)
@@ -27,7 +41,7 @@ public class AuthService : IAuthService
         if (user == null)
             return (null, "Usuario no encontrado");
 
-        if (!BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
+        if (!VerifyPassword(password, user.PasswordHash))
             return (null, "Contraseña incorrecta");
 
         if (user.Status != 1)
@@ -45,7 +59,7 @@ public class AuthService : IAuthService
         if (existingUser != null)
             return (null, "El email ya está registrado");
 
-        var passwordHash = BCrypt.Net.BCrypt.HashPassword(password, 11);
+        var passwordHash = HashPassword(password);
         var createDto = new CreateUserDto 
         { 
             Email = email, 
@@ -64,10 +78,10 @@ public class AuthService : IAuthService
             return (false, "Usuario no encontrado.");
 
         var userWithHash = await _userRepository.GetByEmailWithPasswordAsync(user.Email);
-        if (userWithHash == null || !BCrypt.Net.BCrypt.Verify(oldPassword, userWithHash.PasswordHash))
+        if (userWithHash == null || !VerifyPassword(oldPassword, userWithHash.PasswordHash))
             return (false, "Contraseña antigua incorrecta.");
 
-        var newPasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword, 11);
+        var newPasswordHash = HashPassword(newPassword);
         await _userRepository.UpdatePasswordHashAsync(userId, newPasswordHash);
         return (true, null);
     }

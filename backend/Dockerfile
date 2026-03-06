@@ -24,10 +24,8 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 
 # Instalar utilitarios necesarios para salud y diagnóstico
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    procps \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y postgresql-client curl procps && rm -rf /var/lib/apt/lists/*
+
 
 # Configuración de seguridad: Usuario no-root
 # Nota: dotnet 8+ ya trae un usuario 'app' por defecto, pero creamos uno personalizado por consistencia

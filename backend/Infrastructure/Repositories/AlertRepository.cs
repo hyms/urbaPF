@@ -37,8 +37,8 @@ public class AlertRepository : BaseRepository, IAlertRepository
             FROM alerts a
             JOIN users u ON a.created_by_id = u.id
             WHERE a.condominium_id = @CondominiumId 
-              AND status NOT IN (5, 6)
-              AND deleted_at IS NULL
+              AND a.status NOT IN (5, 6)
+              AND a.deleted_at IS NULL
             ORDER BY a.created_at DESC";
         return await QueryAsync<AlertDto>(sql, new { CondominiumId = condominiumId });
     }

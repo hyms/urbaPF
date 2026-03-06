@@ -2,6 +2,9 @@ using UrbaPF.Infrastructure.Interfaces;
 using UrbaPF.Infrastructure.DTOs;
 using UrbaPF.Api.DTOs;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using UrbaPF.Infrastructure.Services; // Added for UserService
 
 namespace UrbaPF.Api.Routes;
 
@@ -63,30 +66,14 @@ public static class UserRoutes
             return Results.Ok(new { message = "Contraseña actualizada con éxito" });
         }).RequireAuthorization();
 
-        app.MapPost("/api/users/{id:guid}/photo", async (Guid id, IFormFile file, ClaimsPrincipal user, IFileStorageService fileStorageService, IUserRepository userRepository) =>
+        app.MapPost("/api/users/{id:guid}/photo", async (Guid id, IFormFile file, ClaimsPrincipal user, IUserService userService) =>
         {
-            var currentUserId = Guid.Parse(user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? throw new UnauthorizedAccessException());
-            var currentUserRole = int.Parse(user.FindFirst(ClaimTypes.Role)?.Value ?? throw new UnauthorizedAccessException());
-
-            if (currentUserId != id && currentUserRole != 4) // Only owner or Admin can upload photo
+            var userId = await userService.UploadUserPhotoAsync(id, file, user);
+            if (userId == null)
             {
-                return Results.Forbid();
+                return Results.Problem("Failed to upload photo.", statusCode: StatusCodes.Status500InternalServerError);
             }
-
-            // Use the new FileStorageService to save the file
-            using var stream = file.OpenReadStream();
-            var (photoUrl, error) = await fileStorageService.SaveFileAsync(stream, file.FileName, file.ContentType);
-
-            if (photoUrl == null)
-            {
-                return Results.BadRequest(new { message = error });
-            }
-
-            // Update the user's PhotoUrl in the database
-            var updateDto = new UpdateUserDto { PhotoUrl = photoUrl };
-            await userRepository.UpdateAsync(id, updateDto);
-
-            return Results.Ok(new { photoUrl = photoUrl, message = "Foto de perfil actualizada con éxito" });
+            return Results.Ok(new { Message = "Photo uploaded successfully.", UserId = userId });
         }).DisableAntiforgery().RequireAuthorization();
     }
 }

@@ -66,7 +66,7 @@ public class UserRepository : BaseRepository, IUserRepository
             INSERT INTO users (email, password_hash, full_name, phone, role, credibility_level, status,
                                condominium_id, lot_number, street_address, photo_url, is_validated, manager_votes)
             VALUES (@Email, @PasswordHash, @FullName, @Phone, 0, 1, 0, @CondominiumId, @LotNumber, 
-                    @StreetAddress, false, 0)
+                    @StreetAddress, @PhotoUrl, false, 0)
             RETURNING id";
         
         return await ExecuteScalarAsync<Guid>(sql, new 
@@ -162,4 +162,13 @@ public class UserRepository : BaseRepository, IUserRepository
         var sql = "UPDATE users SET password_hash = @PasswordHash, updated_at = CURRENT_TIMESTAMP WHERE id = @Id AND deleted_at IS NULL";
         await ExecuteAsync(sql, new { Id = id, PasswordHash = passwordHash });
     }
-}
+
+    public async Task UpdateUserPhotoUrlAsync(Guid userId, string photoUrl)
+    {
+        const string sql = "UPDATE users SET photo_url = @PhotoUrl, updated_at = CURRENT_TIMESTAMP WHERE id = @Id AND deleted_at IS NULL";
+        await ExecuteAsync(sql, new { PhotoUrl = photoUrl, Id = userId });
+    }
+
+
+    }
+

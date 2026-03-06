@@ -1,25 +1,43 @@
-using UrbaPF.Infrastructure.Interfaces;
+using System;
 using System.IO;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using UrbaPF.Infrastructure.Interfaces; // Added for IFileStorageService
 
 namespace UrbaPF.Infrastructure.Services;
 
 public class FileStorageService : IFileStorageService
 {
-    public Task<(string? Url, string? Error)> SaveFileAsync(Stream fileStream, string fileName, string contentType)
+    public async Task<string?> UploadFileAsync(IFormFile file, string path)
     {
-        // TODO: Implement actual file storage (e.g., MinIO, S3, Azure Blob Storage)
-        // For now, we'll simulate storage and generate a dummy URL.
+        if (file == null || file.Length == 0)
+            return null;
 
-        if (fileStream == null || fileStream.Length == 0)
-            return Task.FromResult<(string?, string?)>((null, "No se ha proporcionado un archivo."));
+        // In a real application, you would save the file to a persistent storage (e.g., Azure Blob Storage, AWS S3, local disk).
+        // For this example, we'll just simulate saving and return a placeholder URL.
+        // IMPORTANT: For actual file saving, ensure the target directory exists and handle permissions.
+        var safeFileName = Path.GetFileName(file.FileName); // Basic sanitization
+        var destinationPath = Path.Combine(path, safeFileName);
 
-        // Simulate storage and generate a URL
-        var dummyUrl = $"/uploads/{Guid.NewGuid()}-{fileName}";
-        
-        // In a real implementation, you would save the fileStream here.
-        // Example: using var fileStream = new FileStream(filePath, FileMode.Create);
-        //          await fileStream.CopyToAsync(fileStream);
+        // Example: Simulate saving to a local directory (ensure this directory exists or is created)
+        // In a containerized environment, this might be a mounted volume.
+        try
+        {
+            // Ensure directory exists (this might require more robust handling in production)
+            Directory.CreateDirectory(path);
 
-        return Task.FromResult<(string?, string?)>((dummyUrl, null));
+            using (var stream = new FileStream(destinationPath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+            // Return a simulated URL. In a real scenario, this would be the actual URL to access the file.
+            return $"/storage/{destinationPath}"; 
+        }
+        catch (Exception ex)
+        {
+            // Log the exception
+            Console.WriteLine($"Error uploading file: {ex.Message}");
+            return null;
+        }
     }
 }

@@ -19,7 +19,7 @@ public class CommentRepository : BaseRepository, ICommentRepository
                    u.full_name as AuthorName
             FROM comments c
             JOIN users u ON c.author_id = u.id
-            WHERE c.post_id = @PostId AND deleted_at IS NULL
+            WHERE c.post_id = @PostId AND c.deleted_at IS NULL
             ORDER BY c.credibility_level DESC, c.created_at DESC";
         return await QueryAsync<CommentDto>(sql, new { PostId = postId });
     }

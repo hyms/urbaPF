@@ -1,13 +1,15 @@
+using UrbaPF.Infrastructure.Data;
+using UrbaPF.Infrastructure.Interfaces;
+using UrbaPF.Infrastructure.Repositories;
+using UrbaPF.Infrastructure.Services; // Added for UserService
+using UrbaPF.Api.DTOs;
+using UrbaPF.Api.Routes;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using UrbaPF.Infrastructure.Data;
-using UrbaPF.Infrastructure.Interfaces;
-using UrbaPF.Infrastructure.Repositories;
-using UrbaPF.Infrastructure.Services;
-using UrbaPF.Api.DTOs;
-using UrbaPF.Api.Routes;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +27,7 @@ builder.Services.AddScoped<IPollRepository, PollRepository>();
 builder.Services.AddScoped<IVoteRepository, VoteRepository>();
 builder.Services.AddScoped<IAlertRepository, AlertRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserService, UserService>(); // Registering the new UserService
 builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 builder.Services.AddHttpClient<IOneSignalService, OneSignalService>();
 

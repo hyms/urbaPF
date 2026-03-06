@@ -74,6 +74,7 @@ public class RepositoryIntegrationTests : IAsyncLifetime
                 password_hash VARCHAR(255) NOT NULL,
                 full_name VARCHAR(255) NOT NULL,
                 phone VARCHAR(50),
+                photo_url VARCHAR(500),
                 role INTEGER DEFAULT 1,
                 credibility_level INTEGER DEFAULT 1,
                 status INTEGER DEFAULT 1,
@@ -137,6 +138,7 @@ public class RepositoryIntegrationTests : IAsyncLifetime
                 server_secret VARCHAR(255) NOT NULL DEFAULT 'default-secret',
                 status INTEGER DEFAULT 1,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP,
                 created_by_id UUID NOT NULL REFERENCES users(id),
                 deleted_at TIMESTAMP
             );
@@ -165,6 +167,7 @@ public class RepositoryIntegrationTests : IAsyncLifetime
                 estimated_arrival TIMESTAMP NOT NULL,
                 status INTEGER DEFAULT 1,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP,
                 acknowledged_at TIMESTAMP,
                 arrived_at TIMESTAMP,
                 deleted_at TIMESTAMP
