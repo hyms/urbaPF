@@ -60,9 +60,9 @@ public class AlertRepository : BaseRepository, IAlertRepository
     public async Task<Guid> CreateAsync(CreateAlertDto dto, Guid userId, Guid condominiumId)
     {
         var sql = @"
-            INSERT INTO alerts (condominium_id, created_by_id, alert_type, message, latitude, longitude,
+            INSERT INTO alerts (id, condominium_id, created_by_id, alert_type, message, latitude, longitude,
                               destination_address, estimated_arrival, status)
-            VALUES (@CondominiumId, @CreatedById, @AlertType, @Message, @Latitude, @Longitude,
+            VALUES (gen_random_uuid(), @CondominiumId, @CreatedById, @AlertType, @Message, @Latitude, @Longitude,
                    @DestinationAddress, @EstimatedArrival, 1)
             RETURNING id";
         return await ExecuteScalarAsync<Guid>(sql, new 

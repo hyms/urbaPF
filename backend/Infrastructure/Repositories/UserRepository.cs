@@ -63,9 +63,9 @@ public class UserRepository : BaseRepository, IUserRepository
     public async Task<Guid> CreateAsync(CreateUserDto dto, string passwordHash)
     {
         var sql = @"
-            INSERT INTO users (email, password_hash, full_name, phone, role, credibility_level, status,
+            INSERT INTO users (id, email, password_hash, full_name, phone, role, credibility_level, status,
                                condominium_id, lot_number, street_address, photo_url, is_validated, manager_votes)
-            VALUES (@Email, @PasswordHash, @FullName, @Phone, 0, 1, 1, @CondominiumId, @LotNumber, 
+            VALUES (gen_random_uuid(), @Email, @PasswordHash, @FullName, @Phone, 0, 1, 1, @CondominiumId, @LotNumber, 
                     @StreetAddress, @PhotoUrl, false, 0)
             RETURNING id";
         

@@ -55,8 +55,8 @@ public class PostRepository : BaseRepository, IPostRepository
     public async Task<Guid> CreateAsync(CreatePostDto dto, Guid authorId, Guid condominiumId)
     {
         var sql = @"
-            INSERT INTO posts (condominium_id, author_id, title, content, category, is_pinned, is_announcement, status)
-            VALUES (@CondominiumId, @AuthorId, @Title, @Content, @Category, @IsPinned, @IsAnnouncement, 2)
+            INSERT INTO posts (id, condominium_id, author_id, title, content, category, is_pinned, is_announcement, status)
+            VALUES (gen_random_uuid(), @CondominiumId, @AuthorId, @Title, @Content, @Category, @IsPinned, @IsAnnouncement, 2)
             RETURNING id";
         return await ExecuteScalarAsync<Guid>(sql, new 
         { 

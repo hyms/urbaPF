@@ -17,3 +17,6 @@ public record UpdatePollRequest(string? Title, string? Description, string? Opti
 public record CreateVoteRequest(int OptionIndex);
 public record CreateAlertRequest(int AlertType, string Message, double? Latitude, double? Longitude, string? DestinationAddress, DateTime EstimatedArrival);
 public record UpdateAlertStatusRequest(int Status);
+public record CreateExpenseRequest(Guid CondominiumId, string Description, decimal Amount, string Category, DateTime DueDate);
+public record UpdateExpenseRequest(string? Description, decimal? Amount, string? Category, DateTime? DueDate, int? Status, string? ReceiptUrl);
+public record PayExpenseRequest(Guid PaidById, string? ReceiptUrl);

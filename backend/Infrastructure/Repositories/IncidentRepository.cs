@@ -66,9 +66,9 @@ public class IncidentRepository : BaseRepository, IIncidentRepository
     public async Task<Guid> CreateAsync(CreateIncidentDto dto, Guid reportedById, Guid condominiumId)
     {
         var sql = @"
-            INSERT INTO incidents (condominium_id, reported_by_id, title, description, type, priority, status,
+            INSERT INTO incidents (id, condominium_id, reported_by_id, title, description, type, priority, status,
                                  latitude, longitude, location_description, occurred_at)
-            VALUES (@CondominiumId, @ReportedById, @Title, @Description, @Type, @Priority, 1,
+            VALUES (gen_random_uuid(), @CondominiumId, @ReportedById, @Title, @Description, @Type, @Priority, 1,
                    @Latitude, @Longitude, @LocationDescription, @OccurredAt)
             RETURNING id";
         return await ExecuteScalarAsync<Guid>(sql, new 

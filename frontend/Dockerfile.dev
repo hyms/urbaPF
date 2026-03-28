@@ -2,12 +2,15 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 
+# Instalar pnpm
+RUN npm install -g pnpm
+
 # Instalar dependencias primero (para cache)
-COPY package*.json ./
-RUN npm install --legacy-peer-deps
+COPY package*.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 
 # Copiar archivos fuente
 COPY . .
 
 # Desarrollo con Vite hot reload
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+CMD ["pnpm", "run", "dev", "--", "--host", "0.0.0.0"]

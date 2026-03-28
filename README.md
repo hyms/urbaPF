@@ -8,15 +8,96 @@ UrbaPF no es solo una app de reportes; es un sistema de identidad donde la parti
 
 🛠 Stack Técnico
 
-Backend: .NET 8.0 LTS (Minimal APIs) con Clean Architecture (3 Capas).
+Backend: .NET 10.0 LTS (Minimal APIs) con Clean Architecture (3 Capas).
 
 Frontend: Quasar Framework (Vue 3 + TypeScript) para despliegue multiplataforma (Web, Android, iOS).
 
 Base de Datos: PostgreSQL + PostGIS (Geolocalización avanzada).
 
-ORM: Dapper (Performance) y EF Core (Migraciones).
+ORM: Dapper (Performance) y FluentMigrator (Migraciones).
 
 Principios de Diseño: YAGNI, DRY, SOLID (S-O).
+
+---
+
+## ✅ Checklist de Desarrollo
+
+### Backend - Módulos API
+
+| Módulo | Endpoint Base | Estado | Descripción |
+|--------|--------------|--------|-------------|
+| Auth | `/api/auth` | ✅ Completo | Login, Register, JWT |
+| Users | `/api/users` | ✅ Completo | CRUD, foto, contraseña |
+| Condominiums | `/api/condominiums` | ✅ Completo | CRUD de condominios |
+| Posts | `/api/posts` | ✅ Completo | Tablón de anuncios |
+| Comments | `/api/comments` | ✅ Completo | Comentarios en posts |
+| Incidents | `/api/incidents` | ✅ Completo | Reporte de incidentes |
+| Polls | `/api/polls` | ✅ Completo | Votaciones |
+| Votes | `/api/votes` | ✅ Completo | Votos en encuestas |
+| Alerts | `/api/alerts` | ✅ Completo | Alertas de seguridad |
+| Expenses | `/api/expenses` | ✅ Completo | Gastos del condo |
+| **Vobo** | `/api/vobos` | ❌ Pendiente | Validación de identidad |
+| **Credibilidad** | `/api/credibilidad` | ❌ Pendiente | Sistema de reputación |
+
+### Frontend - Páginas
+
+| Página | Ruta | Estado | Descripción |
+|--------|------|--------|-------------|
+| Login | `/login` | ✅ Completo | Autenticación |
+| Register | `/register` | ✅ Completo | Registro de usuarios |
+| Dashboard | `/` | ✅ Completo | Panel principal |
+| Users | `/users` | ✅ Completo | Gestión de vecinos |
+| Condominiums | `/condominiums` | ✅ Completo | Admin de condominios |
+| Posts | `/posts` | ✅ Completo | Tablón de anuncios |
+| Incidents | `/incidents` | ✅ Completo | Reporte de incidentes |
+| Polls | `/polls` | ✅ Completo | Votaciones |
+| Alerts | `/alerts` | ✅ Completo | Alertas de seguridad |
+| Settings | `/settings` | ✅ Completo | Configuración |
+| Expenses | `/expenses` | ❌ Pendiente | Gastos del condo |
+
+### Frontend - Stores (Pinia)
+
+| Store | Estado |
+|-------|--------|
+| auth.js | ✅ Completo |
+| user.js | ✅ Completo |
+| condominium.js | ✅ Completo |
+| post.js | ✅ Completo |
+| incident.js | ✅ Completo |
+| poll.js | ✅ Completo |
+| alert.js | ✅ Completo |
+| expense.js | ❌ Pendiente |
+
+### Frontend - Componentes
+
+| Componente | Estado |
+|------------|--------|
+| PostItem.vue | ✅ Completo |
+| IncidentItem.vue | ✅ Completo |
+| PollItem.vue | ✅ Completo |
+| AlertItem.vue | ✅ Completo |
+| CondoItem.vue | ✅ Completo |
+| ExpenseItem.vue | ❌ Pendiente |
+
+### Features de Gobernanza
+
+| Feature | Estado |
+|---------|--------|
+| Validación de Identidad (Vobo) | ❌ Pendiente |
+| Niveles de Credibilidad (1-5) | ❌ Pendiente |
+| Colapsado de contenido Nivel 1 | ❌ Pendiente |
+| Respuesta de Emergencia (Guard) | ❌ Pendiente |
+
+### Configuración y Herramientas
+
+| Herramienta | Estado |
+|-------------|--------|
+| TypeScript | ✅ Configurado |
+| ESLint | ✅ Configurado |
+| Prettier | ✅ Configurado |
+| pnpm | ✅ Configurado |
+| Vitest (Tests) | ❌ Pendiente |
+| Docker | ⚙️ Configuración existente |
 
 🛡️ Reglas de Gobernanza (SCZ logic)
 

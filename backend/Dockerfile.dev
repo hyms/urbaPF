@@ -1,15 +1,15 @@
-# Development - .NET 8 con Hot Reload
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS development
+# Development - .NET 10 con Hot Reload
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS development
 WORKDIR /app
 
-COPY UrbaPF.sln ./
-COPY Api/*.csproj ./Api/
-COPY Domain/*.csproj ./Domain/
-COPY Infrastructure/*.csproj ./Infrastructure/
-COPY tests/*.csproj ./tests/
+COPY backend/UrbaPF.sln ./
+COPY backend/Api/*.csproj ./Api/
+COPY backend/Domain/*.csproj ./Domain/
+COPY backend/Infrastructure/*.csproj ./Infrastructure/
+COPY backend/tests/*.csproj ./tests/
 RUN dotnet restore
 
-COPY . .
+COPY backend/ .
 
 WORKDIR /app/Api
 RUN dotnet build -c Debug

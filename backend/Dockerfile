@@ -1,5 +1,5 @@
-# Build stage - .NET 8 SDK
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+# Build stage - .NET 10 SDK
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 # 1. Copiar la solución y los proyectos desde la carpeta backend
@@ -19,8 +19,8 @@ COPY backend/ .
 WORKDIR "/src/Api"
 RUN dotnet publish "UrbaPF.Api.csproj" -c Release -o /app/publish
 
-# Final stage - .NET 8 Runtime
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+# Final stage - .NET 10 Runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 
 # Instalar utilitarios necesarios para salud y diagnóstico

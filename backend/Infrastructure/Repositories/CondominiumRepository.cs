@@ -26,8 +26,8 @@ public class CondominiumRepository : BaseRepository, ICondominiumRepository
     public async Task<Guid> CreateAsync(CreateCondominiumDto dto)
     {
         var sql = @"
-            INSERT INTO condominiums (name, address, description, rules, monthly_fee, currency)
-            VALUES (@Name, @Address, @Description, @Rules, @MonthlyFee, @Currency)
+            INSERT INTO condominiums (id, name, address, description, rules, monthly_fee, currency)
+            VALUES (gen_random_uuid(), @Name, @Address, @Description, @Rules, @MonthlyFee, @Currency)
             RETURNING id";
         return await ExecuteScalarAsync<Guid>(sql, new 
         { 

@@ -41,8 +41,8 @@ public class VoteRepository : BaseRepository, IVoteRepository
     public async Task<Guid> CreateAsync(Guid userId, Guid pollId, int optionIndex, string signature, string ipAddress)
     {
         var sql = @"
-            INSERT INTO votes (poll_id, user_id, option_index, digital_signature, ip_address)
-            VALUES (@PollId, @UserId, @OptionIndex, @DigitalSignature, @IpAddress)
+            INSERT INTO votes (id, poll_id, user_id, option_index, digital_signature, ip_address)
+            VALUES (gen_random_uuid(), @PollId, @UserId, @OptionIndex, @DigitalSignature, @IpAddress)
             RETURNING id";
         return await ExecuteScalarAsync<Guid>(sql, new 
         { 

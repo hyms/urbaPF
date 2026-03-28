@@ -63,9 +63,9 @@ public class PollRepository : BaseRepository, IPollRepository
         var serverSecret = Convert.ToHexString(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
         
         var sql = @"
-            INSERT INTO polls (condominium_id, title, description, options, poll_type, starts_at, ends_at,
+            INSERT INTO polls (id, condominium_id, title, description, options, poll_type, starts_at, ends_at,
                               requires_justification, min_role_to_vote, server_secret, status, created_by_id)
-            VALUES (@CondominiumId, @Title, @Description, @Options::jsonb, @PollType, @StartsAt, @EndsAt,
+            VALUES (gen_random_uuid(), @CondominiumId, @Title, @Description, @Options::jsonb, @PollType, @StartsAt, @EndsAt,
                    @RequiresJustification, @MinRoleToVote, @ServerSecret, 2, @CreatedById)
             RETURNING id";
         return await ExecuteScalarAsync<Guid>(sql, new 

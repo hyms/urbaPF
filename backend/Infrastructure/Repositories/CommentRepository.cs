@@ -39,8 +39,8 @@ public class CommentRepository : BaseRepository, ICommentRepository
     public async Task<Guid> CreateAsync(CreateCommentDto dto, Guid authorId, Guid postId)
     {
         var sql = @"
-            INSERT INTO comments (post_id, author_id, parent_comment_id, content, credibility_level)
-            VALUES (@PostId, @AuthorId, @ParentCommentId, @Content, 
+            INSERT INTO comments (id, post_id, author_id, parent_comment_id, content, credibility_level)
+            VALUES (gen_random_uuid(), @PostId, @AuthorId, @ParentCommentId, @Content, 
                     (SELECT credibility_level FROM users WHERE id = @AuthorId))
             RETURNING id";
         return await ExecuteScalarAsync<Guid>(sql, new 

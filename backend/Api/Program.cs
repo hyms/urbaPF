@@ -29,6 +29,7 @@ builder.Services.AddScoped<IIncidentRepository, IncidentRepository>();
 builder.Services.AddScoped<IPollRepository, PollRepository>();
 builder.Services.AddScoped<IVoteRepository, VoteRepository>();
 builder.Services.AddScoped<IAlertRepository, AlertRepository>();
+builder.Services.AddScoped<IExpenseRepository, ExpenseRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IFileStorageService, FileStorageService>();
@@ -47,7 +48,7 @@ builder.Services.AddFluentMigratorCore()
     .ConfigureRunner(rb => rb
         .AddPostgres()
         .WithGlobalConnectionString(connectionString)
-        .ScanIn(typeof(M000_InitialData).Assembly).For.Migrations())
+        .ScanIn(typeof(M001_CreateAllTables).Assembly).For.Migrations())
     .AddLogging(lb => lb.AddFluentMigratorConsole());
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -118,5 +119,6 @@ app.MapPostRoutes();
 app.MapIncidentRoutes();
 app.MapPollRoutes();
 app.MapAlertRoutes();
+app.MapExpenseRoutes();
 
 app.Run();
