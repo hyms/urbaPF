@@ -54,7 +54,7 @@ public class CommentRepository : BaseRepository, ICommentRepository
 
     public async Task SoftDeleteAsync(Guid id)
     {
-        var sql = "UPDATE comments SET deleted_at IS NOT NULL, deleted_at = CURRENT_TIMESTAMP WHERE id = @Id";
+        var sql = "UPDATE comments SET deleted_at = CURRENT_TIMESTAMP WHERE id = @Id";
         await ExecuteAsync(sql, new { Id = id });
     }
 }

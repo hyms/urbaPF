@@ -12,6 +12,7 @@ public class PollDto
     public DateTime EndsAt { get; set; }
     public bool RequiresJustification { get; set; }
     public int MinRoleToVote { get; set; }
+    public string ServerSecret { get; set; } = string.Empty;
     public int Status { get; set; }
     public DateTime CreatedAt { get; set; }
     public Guid CreatedById { get; set; }
@@ -28,6 +29,7 @@ public class CreatePollDto
     public DateTime EndsAt { get; set; }
     public bool RequiresJustification { get; set; }
     public int MinRoleToVote { get; set; }
+    public int Status { get; set; }
 }
 
 public class UpdatePollDto

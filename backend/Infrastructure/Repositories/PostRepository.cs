@@ -52,11 +52,11 @@ public class PostRepository : BaseRepository, IPostRepository
         return await QueryFirstOrDefaultAsync<PostDto>(sql, new { Id = id });
     }
 
-    public async Task<Guid> CreateAsync(CreatePostDto dto, Guid authorId, Guid condominiumId)
+    public async Task<Guid> CreateAsync(CreatePostDto dto, Guid authorId, Guid condominiumId, int status = 0)
     {
         var sql = @"
             INSERT INTO posts (id, condominium_id, author_id, title, content, category, is_pinned, is_announcement, status)
-            VALUES (gen_random_uuid(), @CondominiumId, @AuthorId, @Title, @Content, @Category, @IsPinned, @IsAnnouncement, 2)
+            VALUES (gen_random_uuid(), @CondominiumId, @AuthorId, @Title, @Content, @Category, @IsPinned, @IsAnnouncement, @Status)
             RETURNING id";
         return await ExecuteScalarAsync<Guid>(sql, new 
         { 
@@ -66,7 +66,8 @@ public class PostRepository : BaseRepository, IPostRepository
             dto.Content, 
             dto.Category, 
             dto.IsPinned, 
-            dto.IsAnnouncement 
+            dto.IsAnnouncement,
+            Status = status
         });
     }
 
@@ -116,7 +117,7 @@ public class PostRepository : BaseRepository, IPostRepository
 
     public async Task SoftDeleteAsync(Guid id)
     {
-        var sql = "UPDATE posts SET deleted_at IS NOT NULL, deleted_at = CURRENT_TIMESTAMP WHERE id = @Id";
+        var sql = "UPDATE posts SET deleted_at = CURRENT_TIMESTAMP WHERE id = @Id";
         await ExecuteAsync(sql, new { Id = id });
     }
 

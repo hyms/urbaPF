@@ -117,11 +117,13 @@
 import { ref, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useAuthStore } from '../stores/auth'
+import { useUserStore } from '../stores/user'
 import { useCondominiumStore } from '../stores/condominium'
 import { useI18n } from '../composables/useI18n'
 
 const $q = useQuasar()
 const authStore = useAuthStore()
+const userStore = useUserStore()
 const condoStore = useCondominiumStore()
 const { t } = useI18n()
 
@@ -187,7 +189,22 @@ async function loadCondoSettings() {
 async function saveProfile() {
   loading.value = true
   try {
-    $q.notify({ type: 'positive', message: t('common.success') })
+    const userId = authStore.currentUser?.id
+    if (!userId) {
+      $q.notify({ type: 'negative', message: t('common.error') })
+      return
+    }
+    const success = await userStore.update(userId, {
+      fullName: profile.value.fullName,
+      phone: profile.value.phone
+    })
+    if (success) {
+      authStore.user = { ...authStore.user, fullName: profile.value.fullName, phone: profile.value.phone }
+      localStorage.setItem('user', JSON.stringify(authStore.user))
+      $q.notify({ type: 'positive', message: t('common.success') })
+    } else {
+      $q.notify({ type: 'negative', message: userStore.error || t('common.error') })
+    }
   } catch (e) {
     $q.notify({ type: 'negative', message: t('common.error') })
   } finally {
@@ -202,8 +219,18 @@ async function changePassword() {
   }
   loading.value = true
   try {
-    $q.notify({ type: 'positive', message: t('common.success') })
-    password.value = { current: '', new: '', confirm: '' }
+    const userId = authStore.currentUser?.id
+    if (!userId) {
+      $q.notify({ type: 'negative', message: t('common.error') })
+      return
+    }
+    const result = await userStore.changePassword(userId, password.value.current, password.value.new)
+    if (result.success) {
+      $q.notify({ type: 'positive', message: result.message })
+      password.value = { current: '', new: '', confirm: '' }
+    } else {
+      $q.notify({ type: 'negative', message: result.message })
+    }
   } catch (e) {
     $q.notify({ type: 'negative', message: t('common.error') })
   } finally {

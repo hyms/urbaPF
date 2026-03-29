@@ -32,19 +32,9 @@ const routes = [
         component: () => import('../pages/PostsPage.vue')
       },
       {
-        path: 'incidents',
-        name: 'incidents',
-        component: () => import('../pages/IncidentsPage.vue')
-      },
-      {
         path: 'polls',
         name: 'polls',
         component: () => import('../pages/PollsPage.vue')
-      },
-      {
-        path: 'alerts',
-        name: 'alerts',
-        component: () => import('../pages/AlertsPage.vue')
       },
       {
         path: 'users',

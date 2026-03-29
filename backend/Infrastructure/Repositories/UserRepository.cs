@@ -60,12 +60,12 @@ public class UserRepository : BaseRepository, IUserRepository
         return await QueryFirstOrDefaultAsync<UserDto>(sql, new { Email = email });
     }
 
-    public async Task<Guid> CreateAsync(CreateUserDto dto, string passwordHash)
+    public async Task<Guid> CreateAsync(CreateUserDto dto, string passwordHash, int role = 2)
     {
         var sql = @"
             INSERT INTO users (id, email, password_hash, full_name, phone, role, credibility_level, status,
                                condominium_id, lot_number, street_address, photo_url, is_validated, manager_votes)
-            VALUES (gen_random_uuid(), @Email, @PasswordHash, @FullName, @Phone, 0, 1, 1, @CondominiumId, @LotNumber, 
+            VALUES (gen_random_uuid(), @Email, @PasswordHash, @FullName, @Phone, @Role, 1, 1, @CondominiumId, @LotNumber, 
                     @StreetAddress, @PhotoUrl, false, 0)
             RETURNING id";
         
@@ -75,6 +75,7 @@ public class UserRepository : BaseRepository, IUserRepository
             PasswordHash = passwordHash, 
             dto.FullName, 
             dto.Phone, 
+            Role = role,
             dto.CondominiumId, 
             dto.LotNumber, 
             dto.StreetAddress,

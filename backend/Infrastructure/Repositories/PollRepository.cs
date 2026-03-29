@@ -17,8 +17,8 @@ public class PollRepository : BaseRepository, IPollRepository
             SELECT p.id, p.condominium_id as CondominiumId, p.created_by_id as CreatedById, p.title, 
                    p.description, p.options, p.poll_type as PollType, p.starts_at as StartsAt, 
                    p.ends_at as EndsAt, p.requires_justification as RequiresJustification, 
-                   p.min_role_to_vote as MinRoleToVote, p.status, p.created_at as CreatedAt, 
-                   p.updated_at as UpdatedAt,
+                   p.min_role_to_vote as MinRoleToVote, p.server_secret as ServerSecret, p.status, 
+                   p.created_at as CreatedAt, p.updated_at as UpdatedAt,
                    u.full_name as CreatedByName
             FROM polls p
             JOIN users u ON p.created_by_id = u.id
@@ -33,8 +33,8 @@ public class PollRepository : BaseRepository, IPollRepository
             SELECT p.id, p.condominium_id as CondominiumId, p.created_by_id as CreatedById, p.title, 
                    p.description, p.options, p.poll_type as PollType, p.starts_at as StartsAt, 
                    p.ends_at as EndsAt, p.requires_justification as RequiresJustification, 
-                   p.min_role_to_vote as MinRoleToVote, p.status, p.created_at as CreatedAt, 
-                   p.updated_at as UpdatedAt,
+                   p.min_role_to_vote as MinRoleToVote, p.server_secret as ServerSecret, p.status, 
+                   p.created_at as CreatedAt, p.updated_at as UpdatedAt,
                    u.full_name as CreatedByName
             FROM polls p
             JOIN users u ON p.created_by_id = u.id
@@ -49,8 +49,8 @@ public class PollRepository : BaseRepository, IPollRepository
             SELECT p.id, p.condominium_id as CondominiumId, p.created_by_id as CreatedById, p.title, 
                    p.description, p.options, p.poll_type as PollType, p.starts_at as StartsAt, 
                    p.ends_at as EndsAt, p.requires_justification as RequiresJustification, 
-                   p.min_role_to_vote as MinRoleToVote, p.status, p.created_at as CreatedAt, 
-                   p.updated_at as UpdatedAt,
+                   p.min_role_to_vote as MinRoleToVote, p.server_secret as ServerSecret, p.status, 
+                   p.created_at as CreatedAt, p.updated_at as UpdatedAt,
                    u.full_name as CreatedByName
             FROM polls p
             JOIN users u ON p.created_by_id = u.id
@@ -58,7 +58,7 @@ public class PollRepository : BaseRepository, IPollRepository
         return await QueryFirstOrDefaultAsync<PollDto>(sql, new { Id = id });
     }
 
-    public async Task<Guid> CreateAsync(CreatePollDto dto, Guid userId, Guid condominiumId)
+    public async Task<Guid> CreateAsync(CreatePollDto dto, Guid userId, Guid condominiumId, int status = 0)
     {
         var serverSecret = Convert.ToHexString(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
         
@@ -66,7 +66,7 @@ public class PollRepository : BaseRepository, IPollRepository
             INSERT INTO polls (id, condominium_id, title, description, options, poll_type, starts_at, ends_at,
                               requires_justification, min_role_to_vote, server_secret, status, created_by_id)
             VALUES (gen_random_uuid(), @CondominiumId, @Title, @Description, @Options::jsonb, @PollType, @StartsAt, @EndsAt,
-                   @RequiresJustification, @MinRoleToVote, @ServerSecret, 2, @CreatedById)
+                   @RequiresJustification, @MinRoleToVote, @ServerSecret, @Status, @CreatedById)
             RETURNING id";
         return await ExecuteScalarAsync<Guid>(sql, new 
         { 
@@ -80,6 +80,7 @@ public class PollRepository : BaseRepository, IPollRepository
             dto.RequiresJustification,
             dto.MinRoleToVote,
             ServerSecret = serverSecret,
+            dto.Status,
             CreatedById = userId
         });
     }
@@ -131,7 +132,7 @@ public class PollRepository : BaseRepository, IPollRepository
 
     public async Task SoftDeleteAsync(Guid id)
     {
-        var sql = "UPDATE polls SET deleted_at IS NOT NULL, deleted_at = CURRENT_TIMESTAMP WHERE id = @Id";
+        var sql = "UPDATE polls SET deleted_at = CURRENT_TIMESTAMP WHERE id = @Id";
         await ExecuteAsync(sql, new { Id = id });
     }
 }

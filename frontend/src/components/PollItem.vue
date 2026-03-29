@@ -48,39 +48,54 @@
   </q-card>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { usePollStore } from '../stores/poll'
 import { useI18n } from '../composables/useI18n'
 import { formatDate } from '../utils/format'
+import { PollStatusLabel, PollStatusColor } from '../utils/appEnums'
 
-const props = defineProps({
-  poll: { type: Object, required: true },
-  selectedOption: { type: Number, default: undefined },
-  hasVoted: { type: Boolean, default: false },
-  showAdminControls: { type: Boolean, default: false }
-})
+interface Poll {
+  id: string
+  title: string
+  description?: string
+  options: string
+  status: number
+  startsAt: string
+  endsAt: string
+}
 
-const emit = defineEmits(['update:selectedOption', 'vote', 'view-results', 'edit', 'delete'])
+const props = defineProps<{
+  poll: Poll
+  selectedOption?: number
+  hasVoted: boolean
+  showAdminControls: boolean
+}>()
 
-const pollStore = usePollStore()
+const emit = defineEmits<{
+  (e: 'update:selectedOption', value: number): void
+  (e: 'vote', poll: Poll): void
+  (e: 'view-results', poll: Poll): void
+  (e: 'edit', poll: Poll): void
+  (e: 'delete', poll: Poll): void
+}>()
+
 const { t } = useI18n()
 
 const parsedOptions = computed(() => {
   try {
     const options = JSON.parse(props.poll.options)
-    return options.map((opt, idx) => ({ label: opt, value: idx }))
+    return options.map((opt: string, idx: number) => ({ label: opt, value: idx }))
   } catch {
     return []
   }
 })
 
-function getStatusLabel(status) {
-  return pollStore.getStatusLabel(status)
+function getStatusLabel(status: number): string {
+  return PollStatusLabel(status)
 }
 
-function getStatusColor(status) {
-  const colors = { 1: 'grey', 2: 'green', 3: 'red', 4: 'orange' }
-  return colors[status] || 'grey'
+function getStatusColor(status: number): string {
+  return PollStatusColor(status)
 }
 </script>

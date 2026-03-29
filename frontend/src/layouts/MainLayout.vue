@@ -15,11 +15,18 @@
           UrbaPF
         </q-toolbar-title>
 
-        <q-btn flat round dense icon="notifications" class="q-mr-xs">
+        <q-btn 
+          flat 
+          round 
+          dense 
+          icon="notifications" 
+          class="q-mr-xs"
+          aria-label="Notificaciones"
+        >
           <q-badge color="red" floating>3</q-badge>
         </q-btn>
 
-        <q-btn flat round dense>
+        <q-btn flat round dense aria-label="Menú de usuario">
           <q-avatar size="32px" color="white" text-color="primary">
             {{ userInitials }}
           </q-avatar>
@@ -56,7 +63,7 @@
           {{ t('common.menu') }}
         </q-item-label>
 
-        <q-item clickable v-ripple to="/" exact active-class="text-primary bg-blue-1">
+        <q-item clickable v-ripple to="/" exact active-class="text-primary bg-blue-1" aria-label="Ir al dashboard">
           <q-item-section avatar>
             <q-icon name="dashboard" />
           </q-item-section>
@@ -65,7 +72,7 @@
           </q-item-section>
         </q-item>
 
-        <q-item clickable v-ripple to="/condominiums" active-class="text-primary bg-blue-1">
+        <q-item clickable v-ripple to="/condominiums" active-class="text-primary bg-blue-1" aria-label="Ir a condominios">
           <q-item-section avatar>
             <q-icon name="home_work" />
           </q-item-section>
@@ -74,7 +81,7 @@
           </q-item-section>
         </q-item>
 
-        <q-item clickable v-ripple to="/posts" active-class="text-primary bg-blue-1">
+        <q-item clickable v-ripple to="/posts" active-class="text-primary bg-blue-1" aria-label="Ir a publicaciones">
           <q-item-section avatar>
             <q-icon name="article" />
           </q-item-section>
@@ -83,30 +90,12 @@
           </q-item-section>
         </q-item>
 
-        <q-item clickable v-ripple to="/incidents" active-class="text-primary bg-blue-1">
-          <q-item-section avatar>
-            <q-icon name="warning" color="orange" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>{{ t('common.incidents') }}</q-item-label>
-          </q-item-section>
-        </q-item>
-
-        <q-item clickable v-ripple to="/polls" active-class="text-primary bg-blue-1">
+        <q-item clickable v-ripple to="/polls" active-class="text-primary bg-blue-1" aria-label="Ir a votaciones">
           <q-item-section avatar>
             <q-icon name="poll" color="purple" />
           </q-item-section>
           <q-item-section>
             <q-item-label>{{ t('common.polls') }}</q-item-label>
-          </q-item-section>
-        </q-item>
-
-        <q-item clickable v-ripple to="/alerts" active-class="text-primary bg-blue-1">
-          <q-item-section avatar>
-            <q-icon name="notifications_active" color="red" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>{{ t('common.alerts') }}</q-item-label>
           </q-item-section>
         </q-item>
 
@@ -116,7 +105,7 @@
           {{ t('common.admin') }}
         </q-item-label>
 
-        <q-item clickable v-ripple to="/users" v-if="authStore.isAdmin" active-class="text-primary bg-blue-1">
+        <q-item clickable v-ripple to="/users" v-if="authStore.isAdmin" active-class="text-primary bg-blue-1" aria-label="Ir a gestión de usuarios">
           <q-item-section avatar>
             <q-icon name="people" />
           </q-item-section>
@@ -125,7 +114,7 @@
           </q-item-section>
         </q-item>
 
-        <q-item clickable v-ripple to="/settings" active-class="text-primary bg-blue-1">
+        <q-item clickable v-ripple to="/settings" active-class="text-primary bg-blue-1" aria-label="Ir a configuración">
           <q-item-section avatar>
             <q-icon name="settings" />
           </q-item-section>
@@ -139,11 +128,20 @@
     <q-page-container>
       <router-view />
     </q-page-container>
+
+    <q-footer v-if="authStore.isAuthenticated" class="lt-md bg-white text-primary shadow-3">
+      <q-tabs no-caps active-color="primary" indicator-color="primary" class="text-grey">
+        <q-route-tab to="/" icon="dashboard" label="Inicio" />
+        <q-route-tab to="/posts" icon="article" label="Avisos" />
+        <q-route-tab to="/polls" icon="poll" label="Votaciones" />
+        <q-route-tab to="/settings" icon="settings" label="Ajustes" />
+      </q-tabs>
+    </q-footer>
   </q-layout>
 </template>
 
 <script setup>
-import { ref, computed, watchEffect } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useAuthStore } from '../stores/auth'
@@ -164,11 +162,6 @@ const userInitials = computed(() => {
   }
   return name.substring(0, 2).toUpperCase()
 })
-
-watchEffect(() => {
-  console.log('Current User Role (watchEffect):', authStore.currentUser?.role);
-  console.log('Is Admin (watchEffect):', authStore.isAdmin);
-});
 
 function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value

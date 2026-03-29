@@ -123,7 +123,12 @@ const confirmPassword = ref('')
 const showPassword = ref(false)
 
 async function onSubmit() {
-  const success = await authStore.register(email.value, password.value, fullName.value, phone.value)
+  const success = await authStore.register({
+    email: email.value,
+    password: password.value,
+    fullName: fullName.value,
+    phone: phone.value || undefined
+  })
   if (success) {
     $q.notify({
       type: 'positive',

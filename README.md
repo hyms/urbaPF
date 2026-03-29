@@ -1,134 +1,89 @@
-UrbaPF - Sistema de Coordinación Vecinal
+# UrbaPF - Sistema de Coordinación Vecinal (Santa Cruz)
 
-Plataforma de gestión comunitaria y seguridad ciudadana diseñada específicamente para barrios y condominios en Santa Cruz, Bolivia. El sistema reemplaza la fragmentación de los grupos de chat tradicionales por una estructura de gobernanza digital robusta y democrática.
+Plataforma integral de gestión comunitaria diseñada para centralizar la seguridad, la comunicación y la democracia participativa en barrios y condominios de Santa Cruz, Bolivia.
 
-🚀 Visión del Proyecto
+## 🌟 Visión de Negocio
 
-UrbaPF no es solo una app de reportes; es un sistema de identidad donde la participación social y política del vecino está validada por la propia comunidad, garantizando que solo residentes reales tomen decisiones sobre su entorno.
+Digitalizar la convivencia vecinal reduciendo la fricción de los grupos de WhatsApp y profesionalizando la respuesta ante emergencias y la toma de decisiones.
 
-🛠 Stack Técnico
+## 🛡️ Reglas de Gobernanza y Roles
 
-Backend: .NET 10.0 LTS (Minimal APIs) con Clean Architecture (3 Capas).
+### 1\. Jerarquía de Usuarios
 
-Frontend: Quasar Framework (Vue 3 + TypeScript) para despliegue multiplataforma (Web, Android, iOS).
+-   ****Visitante:**** Modo lectura. Solo ve Publicaciones y Emergencias. No interactúa.
+-   ****Acceso Restringido:**** Rol inicial tras registro. Sin interacción social.
+-   ****Vecino (Validado):**** Requiere ****2 Votos de Encargados****. Puede publicar, votar y comentar.
+-   ****Guardia:**** Rol operativo. Botón exclusivo "En Camino" para emergencias. No vota ni accede al Tablón Social privado.
+-   ****Encargado/Admin:**** Moderación, aprobaciones de contenido y gestión de staff.
 
-Base de Datos: PostgreSQL + PostGIS (Geolocalización avanzada).
+### 2\. Niveles de Credibilidad (1-5)
 
-ORM: Dapper (Performance) y FluentMigrator (Migraciones).
+Sistema conductual que afecta la visibilidad:
 
-Principios de Diseño: YAGNI, DRY, SOLID (S-O).
+-   ****Nivel 5 (Referente):**** Máxima prioridad en comentarios.
+-   ****Nivel 1 (Irreverente):**** Contenido colapsado/oculto por defecto. Requiere filtro previo para alertas.
 
----
+## 🗳️ Sistema de Votaciones
 
-## ✅ Checklist de Desarrollo
+### Reglas de Participación
 
-### Backend - Módulos API
+-   ****Votantes:**** Solo ****Vecinos**** y ****Encargados**** pueden votar. El ****Admin**** crea y gestiona pero no emite voto.
+-   ****Creación:****
+-   -   ****Vecinos:**** Crean propuestas __Pendientes__ que requieren ****2 aprobaciones de Encargados**** para activarse.
+    -   ****Encargados:**** Publican directamente (Activa o Programada).
 
-| Módulo | Endpoint Base | Estado | Descripción |
-|--------|--------------|--------|-------------|
-| Auth | `/api/auth` | ✅ Completo | Login, Register, JWT |
-| Users | `/api/users` | ✅ Completo | CRUD, foto, contraseña |
-| Condominiums | `/api/condominiums` | ✅ Completo | CRUD de condominios |
-| Posts | `/api/posts` | ✅ Completo | Tablón de anuncios |
-| Comments | `/api/comments` | ✅ Completo | Comentarios en posts |
-| Incidents | `/api/incidents` | ✅ Completo | Reporte de incidentes |
-| Polls | `/api/polls` | ✅ Completo | Votaciones |
-| Votes | `/api/votes` | ✅ Completo | Votos en encuestas |
-| Alerts | `/api/alerts` | ✅ Completo | Alertas de seguridad |
-| Expenses | `/api/expenses` | ✅ Completo | Gastos del condo |
-| **Vobo** | `/api/vobos` | ❌ Pendiente | Validación de identidad |
-| **Credibilidad** | `/api/credibilidad` | ❌ Pendiente | Sistema de reputación |
+### Alcance y Restricciones
 
-### Frontend - Páginas
+-   ****Destinatarios:**** Las votaciones pueden ser dirigidas a todos los vecinos/encargados o a grupos específicos.
+-   ****Configuración Obligatoria:**** Al crear se debe indicar: Rol mínimo para votar, Justificación, Tipo (única/múltiple), Fechas de vigencia y Restricciones específicas.
 
-| Página | Ruta | Estado | Descripción |
-|--------|------|--------|-------------|
-| Login | `/login` | ✅ Completo | Autenticación |
-| Register | `/register` | ✅ Completo | Registro de usuarios |
-| Dashboard | `/` | ✅ Completo | Panel principal |
-| Users | `/users` | ✅ Completo | Gestión de vecinos |
-| Condominiums | `/condominiums` | ✅ Completo | Admin de condominios |
-| Posts | `/posts` | ✅ Completo | Tablón de anuncios |
-| Incidents | `/incidents` | ✅ Completo | Reporte de incidentes |
-| Polls | `/polls` | ✅ Completo | Votaciones |
-| Alerts | `/alerts` | ✅ Completo | Alertas de seguridad |
-| Settings | `/settings` | ✅ Completo | Configuración |
-| Expenses | `/expenses` | ❌ Pendiente | Gastos del condo |
+### Ciclo de Vida y Notificaciones
 
-### Frontend - Stores (Pinia)
+-   ****Vigencia:**** Período definido por `StartsAt` y `EndsAt`.
+-   ****Segmentación de Avisos:**** Las notificaciones solo llegan a los usuarios que participan en esa votación específica.
+-   ****Recordatorio Crítico:**** 30 min antes del cierre, se envía notificación push a todos los que ****no han votado**** todavía.
+-   ****Cierre:**** Al finalizar, se anuncia automáticamente el cierre a todos los participantes.
+-   ****Resultados:**** Se notifican los resultados finales únicamente al ****creador**** de la votación.
 
-| Store | Estado |
-|-------|--------|
-| auth.js | ✅ Completo |
-| user.js | ✅ Completo |
-| condominium.js | ✅ Completo |
-| post.js | ✅ Completo |
-| incident.js | ✅ Completo |
-| poll.js | ✅ Completo |
-| alert.js | ✅ Completo |
-| expense.js | ❌ Pendiente |
+### Inmutabilidad y Control
 
-### Frontend - Componentes
+-   ****Edición/Eliminación:**** Prohibido editar o eliminar votaciones una vez están en estado __Activa__ o __Cerrada__.
+-   ****Eliminación por Manager:**** Un Encargado solo puede borrar una votación si ****nadie ha votado**** aún.
 
-| Componente | Estado |
-|------------|--------|
-| PostItem.vue | ✅ Completo |
-| IncidentItem.vue | ✅ Completo |
-| PollItem.vue | ✅ Completo |
-| AlertItem.vue | ✅ Completo |
-| CondoItem.vue | ✅ Completo |
-| ExpenseItem.vue | ❌ Pendiente |
+## 🚨 Protocolo de Emergencia
 
-### Features de Gobernanza
+-   ****Ubicación:**** Georeferencia obligatoria mediante Google Maps.
+-   ****Respuesta:**** Notificación persistente cada 1 min a los Encargados hasta que la alerta sea procesada.
+-   ****Cierre:**** Solo el autor o el Staff pueden finalizar un incidente.
 
-| Feature | Estado |
-|---------|--------|
-| Validación de Identidad (Vobo) | ❌ Pendiente |
-| Niveles de Credibilidad (1-5) | ❌ Pendiente |
-| Colapsado de contenido Nivel 1 | ❌ Pendiente |
-| Respuesta de Emergencia (Guard) | ❌ Pendiente |
+## 🚀 Estado del Proyecto y Funcionalidades
 
-### Configuración y Herramientas
+### ✅ Módulos Completados
+-   ****Autenticación y Seguridad:****
+    -   Registro y Login de usuarios.
+    -   JWT con Refresh Tokens para persistencia en PWA/Mobile.
+    -   Password Hashing robusto usando PBKDF2 (HMAC-SHA256).
+-   ****Gestión de Usuarios:****
+    -   Roles y jerarquías (Admin, Encargado, Vecino, Guardia).
+    -   Perfil de usuario con subida de fotos a almacenamiento local (interfaz lista para S3).
+    -   Validación de vecinos por votación de encargados.
+-   ****Publicaciones y Tablón Social:****
+    -   CRUD de publicaciones con categorías y estados.
+    -   Moderación de contenido (ocultar/mostrar).
+    -   Sistema de comentarios con jerarquía (respuestas).
+-   ****Votaciones (Polls) - Backend:****
+    -   Gobernanza comunitaria con inmutabilidad de votaciones activas.
+    -   Firma digital SHA256 para cada voto (Integridad Electoral).
+    -   Restricciones por rol y fecha de vigencia.
 
-| Herramienta | Estado |
-|-------------|--------|
-| TypeScript | ✅ Configurado |
-| ESLint | ✅ Configurado |
-| Prettier | ✅ Configurado |
-| pnpm | ✅ Configurado |
-| Vitest (Tests) | ❌ Pendiente |
-| Docker | ⚙️ Configuración existente |
+### ⏳ Próximos Pasos (Pendiente)
+-   ****Votaciones (Polls) - Frontend:**** Integración completa de la UI con el servicio de firmas digitales.
+-   ****Protocolo de Emergencia:**** Alertas en tiempo real con geolocalización.
+-   ****Gestión de Incidentes:**** Reportes vecinales con seguimiento de estado.
+-   ****Expensas y Finanzas:**** Control de pagos y cuotas mensuales.
+-   ****Notificaciones Push:**** Integración final con OneSignal para recordatorios críticos.
 
-🛡️ Reglas de Gobernanza (SCZ logic)
+## 🛠️ Stack Tecnológico
+-   ****Backend:**** .NET 10 (Arquitectura de 3 capas), Dapper, FluentMigrator, PostgreSQL + PostGIS, NUnit + Moq.
+-   ****Frontend:**** Quasar v3 (Vue 3 + TypeScript), Pinia, Axios, Vitest.
 
-El proyecto implementa un modelo de "Confianza Escalonada":
-
-Validación de Identidad (Vobos):
-
-Un nuevo usuario inicia como Acceso Restringido.
-
-Para ascender a Vecino, requiere el Vobo (Visto Bueno) de 2 Encargados y la aprobación final del Administrador.
-
-Niveles de Credibilidad (1 a 5):
-
-Los comentarios en el tablón se ordenan por nivel de reputación.
-
-Los usuarios de Nivel 1 (Irreverentes) tienen su contenido colapsado para reducir el "ruido" en la comunidad.
-
-Respuesta de Emergencia:
-
-Rol de Guardia con capacidad exclusiva para marcar incidentes como "En Camino".
-
-🏗️ Estructura del Repositorio
-
-/backend/Api: Capa de presentación y contratos.
-
-/backend/Domain: Entidades, interfaces de dominio y lógica de negocio.
-
-/backend/Infrastructure: Persistencia, base de datos y servicios externos.
-
-/frontend: Aplicación Quasar (Vue.js).
-
-🐳 Despliegue con Docker
-
-El proyecto está optimizado para ejecutarse en contenedores Linux, separando el entorno de desarrollo (Hot Reload) y el de producción (optimizado para bajos recursos en VPS).

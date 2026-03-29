@@ -4,7 +4,7 @@ using Npgsql;
 
 namespace UrbaPF.Infrastructure.Data;
 
-public class DbConnectionFactory
+public class DbConnectionFactory : IDbConnectionFactory
 {
     private readonly string _connectionString;
 

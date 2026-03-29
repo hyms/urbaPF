@@ -11,9 +11,9 @@ public static class AuthRoutes
     {
         app.MapPost("/api/auth/login", async (IAuthService authService, LoginRequest request) =>
         {
-            var (token, error) = await authService.LoginAsync(request.Email, request.Password);
-            return token is not null 
-                ? Results.Ok(new { token, message = "Login exitoso" })
+            var (response, error) = await authService.LoginAsync(request.Email, request.Password);
+            return response is not null 
+                ? Results.Ok(response)
                 : Results.Unauthorized();
         });
 
@@ -24,5 +24,33 @@ public static class AuthRoutes
                 ? Results.Created($"/api/users/{userId}", new { id = userId, message = "Usuario registrado" })
                 : Results.BadRequest(new { error });
         });
+
+        app.MapPost("/api/auth/refresh", async (IAuthService authService, RefreshTokenRequest request) =>
+        {
+            var (response, error) = await authService.RefreshTokenAsync(request.RefreshToken);
+            return response is not null
+                ? Results.Ok(response)
+                : Results.Unauthorized();
+        });
+
+        app.MapPost("/api/auth/revoke", async (IAuthService authService, RefreshTokenRequest request) =>
+        {
+            var (success, error) = await authService.RevokeRefreshTokenAsync(request.RefreshToken);
+            return success
+                ? Results.Ok(new { message = "Token revoked" })
+                : Results.BadRequest(new { error });
+        });
+
+        app.MapPost("/api/auth/change-password", async (IAuthService authService, ClaimsPrincipal user, ChangePasswordRequest request) =>
+        {
+            var userIdClaim = user.FindFirst("id")?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+                return Results.Unauthorized();
+
+            var (success, error) = await authService.ChangePasswordAsync(userId, request.OldPassword, request.NewPassword);
+            return success
+                ? Results.Ok(new { message = "Contraseña actualizada" })
+                : Results.BadRequest(new { error });
+        }).RequireAuthorization();
     }
 }

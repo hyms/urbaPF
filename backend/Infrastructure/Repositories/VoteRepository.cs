@@ -61,6 +61,13 @@ public class VoteRepository : BaseRepository, IVoteRepository
         return count > 0;
     }
 
+    public async Task<bool> HasAnyVotesAsync(Guid pollId)
+    {
+        var sql = "SELECT COUNT(1) FROM votes WHERE poll_id = @PollId AND deleted_at IS NULL";
+        var count = await ExecuteScalarAsync<int>(sql, new { PollId = pollId });
+        return count > 0;
+    }
+
     public async Task<Dictionary<int, int>> GetResultsAsync(Guid pollId)
     {
         var sql = @"

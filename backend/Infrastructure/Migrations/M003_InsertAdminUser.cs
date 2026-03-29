@@ -1,4 +1,5 @@
 using FluentMigrator;
+using UrbaPF.Infrastructure.Services;
 
 namespace UrbaPF.Infrastructure.Migrations;
 
@@ -7,7 +8,8 @@ public class M003_InsertAdminUser : Migration
 {
     public override void Up()
     {
-        string adminPasswordHash = BCrypt.Net.BCrypt.HashPassword("123abc", 11);
+        var hasher = new PasswordHasher();
+        string adminPasswordHash = hasher.Hash("123abc");
         Insert.IntoTable("users").Row(new
         {
             id = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",

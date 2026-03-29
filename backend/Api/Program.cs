@@ -20,20 +20,17 @@ var jwtSecret = builder.Configuration["JWT_SECRET"] ?? "UrbaPFSuperSecretKey2026
 var jwtIssuer = "UrbaPF";
 var jwtAudience = "UrbaPF";
 
-builder.Services.AddSingleton<DbConnectionFactory>();
+builder.Services.AddSingleton<IDbConnectionFactory, DbConnectionFactory>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ICondominiumRepository, CondominiumRepository>();
 builder.Services.AddScoped<IPostRepository, PostRepository>();
 builder.Services.AddScoped<ICommentRepository, CommentRepository>();
-builder.Services.AddScoped<IIncidentRepository, IncidentRepository>();
 builder.Services.AddScoped<IPollRepository, PollRepository>();
 builder.Services.AddScoped<IVoteRepository, VoteRepository>();
-builder.Services.AddScoped<IAlertRepository, AlertRepository>();
-builder.Services.AddScoped<IExpenseRepository, ExpenseRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IPollService, PollService>();
 builder.Services.AddScoped<IFileStorageService, FileStorageService>();
-builder.Services.AddHttpClient<IOneSignalService, OneSignalService>();
 
 // Build connection string from environment variables
 var host = builder.Configuration["DB_HOST"] ?? "localhost";
@@ -116,9 +113,6 @@ app.MapAuthRoutes();
 app.MapUserRoutes();
 app.MapCondominiumRoutes();
 app.MapPostRoutes();
-app.MapIncidentRoutes();
 app.MapPollRoutes();
-app.MapAlertRoutes();
-app.MapExpenseRoutes();
 
 app.Run();

@@ -11,7 +11,7 @@ public interface IUserRepository
     Task<UserDto?> GetByIdAsync(Guid id);
     Task<UserDto?> GetByEmailAsync(string email);
     Task<UserDto?> GetByEmailWithPasswordAsync(string email);
-    Task<Guid> CreateAsync(CreateUserDto dto, string passwordHash);
+    Task<Guid> CreateAsync(CreateUserDto dto, string passwordHash, int role = 2);
     Task UpdateAsync(Guid id, UpdateUserDto dto);
     Task SoftDeleteAsync(Guid id);
     Task UpdateLastLoginAsync(Guid userId);

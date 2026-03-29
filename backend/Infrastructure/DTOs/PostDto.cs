@@ -24,6 +24,7 @@ public class CreatePostDto
     public int Category { get; set; }
     public bool IsPinned { get; set; }
     public bool IsAnnouncement { get; set; }
+    public int Status { get; set; } = 0;
 }
 
 public class UpdatePostDto

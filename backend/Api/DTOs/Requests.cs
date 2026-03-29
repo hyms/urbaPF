@@ -2,8 +2,9 @@ namespace UrbaPF.Api.DTOs;
 
 public record LoginRequest(string Email, string Password);
 public record RegisterRequest(string Email, string Password, string FullName, string? Phone);
+public record RefreshTokenRequest(string RefreshToken);
 public record CreateUserRequest(string Email, string Password, string FullName, string? Phone);
-public record UpdateUserRequest(string? FullName, string? Phone, string? FcmToken, string? StreetAddress, string? PhotoUrl);
+public record UpdateUserRequest(string? FullName, string? Phone, string? FcmToken, string? StreetAddress, string? PhotoUrl, int? Role = null);
 public record ChangePasswordRequest(string OldPassword, string NewPassword);
 public record CreateCondominiumRequest(string Name, string Address, string? Description, string? Rules, decimal MonthlyFee, string? Currency);
 public record UpdateCondominiumRequest(string? Name, string? Address, string? Description, string? Rules, decimal? MonthlyFee, bool? IsActive);

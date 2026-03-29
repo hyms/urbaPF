@@ -5,9 +5,9 @@ namespace UrbaPF.Infrastructure.Repositories;
 
 public class BaseRepository
 {
-    protected readonly DbConnectionFactory _connectionFactory;
+    protected readonly IDbConnectionFactory _connectionFactory;
 
-    public BaseRepository(DbConnectionFactory connectionFactory)
+    public BaseRepository(IDbConnectionFactory connectionFactory)
     {
         _connectionFactory = connectionFactory;
     }
