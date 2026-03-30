@@ -18,6 +18,7 @@ public class UserDto
     public DateTime? LastLoginAt { get; set; }
     public bool IsValidated { get; set; }
     public int ManagerVotes { get; set; }
+    public string? FcmToken { get; set; }
 }
 
 public class CreateUserDto

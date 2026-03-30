@@ -99,11 +99,47 @@
           </q-item-section>
         </q-item>
 
+        <q-item clickable v-ripple to="/incidents" active-class="text-primary bg-blue-1" aria-label="Ir a incidentes">
+          <q-item-section avatar>
+            <q-icon name="warning" color="orange" />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>{{ t('common.incidents') }}</q-item-label>
+          </q-item-section>
+        </q-item>
+
+        <q-item clickable v-ripple to="/emergency" active-class="text-primary bg-red-1" aria-label="Emergencia">
+          <q-item-section avatar>
+            <q-icon name="emergency" color="red" />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label class="text-red">Emergencia</q-item-label>
+          </q-item-section>
+        </q-item>
+
         <q-separator class="q-my-md" />
 
         <q-item-label header class="text-grey-8" v-if="authStore.isAdmin">
           {{ t('common.admin') }}
         </q-item-label>
+
+        <q-item clickable v-ripple to="/alerts" v-if="authStore.isManager" active-class="text-primary bg-blue-1" aria-label="Ir a alertas">
+          <q-item-section avatar>
+            <q-icon name="notifications_active" color="red" />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>Alertas</q-item-label>
+          </q-item-section>
+        </q-item>
+
+        <q-item clickable v-ripple to="/security" v-if="authStore.isManager" active-class="text-primary bg-blue-1" aria-label="Ir a dashboard de seguridad">
+          <q-item-section avatar>
+            <q-icon name="security" color="green" />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>Seguridad</q-item-label>
+          </q-item-section>
+        </q-item>
 
         <q-item clickable v-ripple to="/users" v-if="authStore.isAdmin" active-class="text-primary bg-blue-1" aria-label="Ir a gestión de usuarios">
           <q-item-section avatar>
@@ -134,6 +170,8 @@
         <q-route-tab to="/" icon="dashboard" label="Inicio" />
         <q-route-tab to="/posts" icon="article" label="Avisos" />
         <q-route-tab to="/polls" icon="poll" label="Votaciones" />
+        <q-route-tab to="/incidents" icon="warning" label="Incidentes" />
+        <q-route-tab to="/emergency" icon="emergency" label="Emergencia" class="text-red" />
         <q-route-tab to="/settings" icon="settings" label="Ajustes" />
       </q-tabs>
     </q-footer>

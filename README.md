@@ -8,82 +8,110 @@ Digitalizar la convivencia vecinal reduciendo la fricción de los grupos de What
 
 ## 🛡️ Reglas de Gobernanza y Roles
 
-### 1\. Jerarquía de Usuarios
+### 1. Jerarquía de Usuarios
 
--   ****Visitante:**** Modo lectura. Solo ve Publicaciones y Emergencias. No interactúa.
--   ****Acceso Restringido:**** Rol inicial tras registro. Sin interacción social.
--   ****Vecino (Validado):**** Requiere ****2 Votos de Encargados****. Puede publicar, votar y comentar.
--   ****Guardia:**** Rol operativo. Botón exclusivo "En Camino" para emergencias. No vota ni accede al Tablón Social privado.
--   ****Encargado/Admin:**** Moderación, aprobaciones de contenido y gestión de staff.
+-   **Visitante:** Modo lectura. Solo ve Publicaciones y Emergencias. No interactúa.
+-   **Acceso Restringido:** Rol inicial tras registro. Sin interacción social.
+-   **Vecino (Validado):** Requiere **2 Votos de Encargados**. Puede publicar, votar y comentar.
+-   **Guardia:** Rol operativo. Botón exclusivo "En Camino" para emergencias. No vota ni accede al Tablón Social privado.
+-   **Encargado/Admin:** Moderación, aprobaciones de contenido y gestión de staff.
 
-### 2\. Niveles de Credibilidad (1-5)
+### 2. Niveles de Credibilidad (1-5)
 
 Sistema conductual que afecta la visibilidad:
 
--   ****Nivel 5 (Referente):**** Máxima prioridad en comentarios.
--   ****Nivel 1 (Irreverente):**** Contenido colapsado/oculto por defecto. Requiere filtro previo para alertas.
+-   **Nivel 5 (Referente):** Máxima prioridad en comentarios.
+-   **Nivel 1 (Irreverente):** Contenido colapsado/oculto por defecto.
+
+### 3. Sistema de Reputación para Emergencias
+
+-   **Buena reputación (nivel >= 4):** La alerta de emergencia llega **directamente a los guardias**.
+-   **Mala reputación (nivel < 4):** La alerta requiere **aprobación del Manager** para distribuirse a los vecinos.
+-   **Re-notificación:** El creador del ticket puede "re-notificar" para enviar nuevamente la alerta a todos los vecinos.
 
 ## 🗳️ Sistema de Votaciones
 
 ### Reglas de Participación
 
--   ****Votantes:**** Solo ****Vecinos**** y ****Encargados**** pueden votar. El ****Admin**** crea y gestiona pero no emite voto.
--   ****Creación:****
--   -   ****Vecinos:**** Crean propuestas __Pendientes__ que requieren ****2 aprobaciones de Encargados**** para activarse.
-    -   ****Encargados:**** Publican directamente (Activa o Programada).
-
-### Alcance y Restricciones
-
--   ****Destinatarios:**** Las votaciones pueden ser dirigidas a todos los vecinos/encargados o a grupos específicos.
--   ****Configuración Obligatoria:**** Al crear se debe indicar: Rol mínimo para votar, Justificación, Tipo (única/múltiple), Fechas de vigencia y Restricciones específicas.
-
-### Ciclo de Vida y Notificaciones
-
--   ****Vigencia:**** Período definido por `StartsAt` y `EndsAt`.
--   ****Segmentación de Avisos:**** Las notificaciones solo llegan a los usuarios que participan en esa votación específica.
--   ****Recordatorio Crítico:**** 30 min antes del cierre, se envía notificación push a todos los que ****no han votado**** todavía.
--   ****Cierre:**** Al finalizar, se anuncia automáticamente el cierre a todos los participantes.
--   ****Resultados:**** Se notifican los resultados finales únicamente al ****creador**** de la votación.
+-   **Votantes:** Solo **Vecinos** y **Encargados** pueden votar. El **Admin** crea y gestiona pero no emite voto.
+-   **Creación:**
+    -   **Vecinos:** Crean propuestas __Pendientes__ que requieren **2 aprobaciones de Encargados** para activarse.
+    -   **Encargados:** Publican directamente (Activa o Programada).
 
 ### Inmutabilidad y Control
 
--   ****Edición/Eliminación:**** Prohibido editar o eliminar votaciones una vez están en estado __Activa__ o __Cerrada__.
--   ****Eliminación por Manager:**** Un Encargado solo puede borrar una votación si ****nadie ha votado**** aún.
+-   **Edición/Eliminación:** Prohibido editar o eliminar votaciones una vez están en estado __Activa__ o __Cerrada__.
+-   **Integridad:** Cada voto genera una firma digital SHA256 (UserId + OptionId + Timestamp + Secret) para auditoría posterior.
 
-## 🚨 Protocolo de Emergencia
-
--   ****Ubicación:**** Georeferencia obligatoria mediante Google Maps.
--   ****Respuesta:**** Notificación persistente cada 1 min a los Encargados hasta que la alerta sea procesada.
--   ****Cierre:**** Solo el autor o el Staff pueden finalizar un incidente.
-
-## 🚀 Estado del Proyecto y Funcionalidades
+## 🚀 Estado del Proyecto (v1.1.0)
 
 ### ✅ Módulos Completados
--   ****Autenticación y Seguridad:****
-    -   Registro y Login de usuarios.
-    -   JWT con Refresh Tokens para persistencia en PWA/Mobile.
-    -   Password Hashing robusto usando PBKDF2 (HMAC-SHA256).
--   ****Gestión de Usuarios:****
-    -   Roles y jerarquías (Admin, Encargado, Vecino, Guardia).
-    -   Perfil de usuario con subida de fotos a almacenamiento local (interfaz lista para S3).
-    -   Validación de vecinos por votación de encargados.
--   ****Publicaciones y Tablón Social:****
-    -   CRUD de publicaciones con categorías y estados.
-    -   Moderación de contenido (ocultar/mostrar).
-    -   Sistema de comentarios con jerarquía (respuestas).
--   ****Votaciones (Polls) - Backend:****
-    -   Gobernanza comunitaria con inmutabilidad de votaciones activas.
-    -   Firma digital SHA256 para cada voto (Integridad Electoral).
-    -   Restricciones por rol y fecha de vigencia.
+-   **Autenticación y Seguridad:**
+    -   Registro y Login con flujo de **Refresh Tokens**.
+    -   Password Hashing con **PBKDF2 (HMAC-SHA256)** @ 100k iteraciones.
+-   **Gestión de Usuarios:**
+    -   Perfiles con subida de fotos (Storage Local escalable a S3).
+    -   Lógica de validación por votos de confianza.
+-   **Tablón Social (Posts):**
+    -   CRUD completo con categorías y estados.
+    -   Comentarios jerárquicos y moderación (Soft Delete).
+-   **Votaciones (Backend + Frontend):**
+    -   Motor de gobernanza con inmutabilidad y firmas digitales.
+    -   UI con tabs (Activas, Finalizadas, Mis Propuestas).
+    -   Visualización de resultados con barras de progreso.
+-   **Gestión de Condominios:**
+    -   Selección de condominio activo.
+    -   CRUD de condominios.
 
-### ⏳ Próximos Pasos (Pendiente)
--   ****Votaciones (Polls) - Frontend:**** Integración completa de la UI con el servicio de firmas digitales.
--   ****Protocolo de Emergencia:**** Alertas en tiempo real con geolocalización.
--   ****Gestión de Incidentes:**** Reportes vecinales con seguimiento de estado.
--   ****Expensas y Finanzas:**** Control de pagos y cuotas mensuales.
--   ****Notificaciones Push:**** Integración final con OneSignal para recordatorios críticos.
+### ⏳ Módulo de Incidentes y Emergencias (En Desarrollo)
 
-## 🛠️ Stack Tecnológico
--   ****Backend:**** .NET 10 (Arquitectura de 3 capas), Dapper, FluentMigrator, PostgreSQL + PostGIS, NUnit + Moq.
--   ****Frontend:**** Quasar v3 (Vue 3 + TypeScript), Pinia, Axios, Vitest.
+**Fase 5.1: Infraestructura** (Completada)
+-   Almacenamiento multimedia local.
+-   Componentes base para Incidentes y Alertas.
 
+**Fase 5.2: Reporte de Incidentes** (Pendiente)
+-   GPS automático con opción de edición manual.
+-   Integración con Leaflet/OpenStreetMap.
+-   Límite de 3 archivos por incidente (preparado para video).
+
+**Fase 5.3: Protocolo de Emergencia** (Pendiente)
+-   Botón de pánico (3 segundos de presión).
+-   Sistema de reputación aplicado a alertas.
+-   Aprobación por Manager antes de broadcast global.
+
+**Fase 5.4: Dashboard de Seguridad** (Pendiente)
+-   Mapa en tiempo real de incidentes y alertas.
+-   Workflow de resolución (Reportado -> En Proceso -> Resuelto -> Cerrado).
+
+### 🛠️ Stack Tecnológico Actualizado
+
+### Backend (.NET 10.0)
+-   **Core:** .NET 10.0 (Native AOT compatible).
+-   **ORM/Data:** Dapper **2.1.72**, Npgsql **10.0.2**, FluentMigrator **8.0.1**.
+-   **Seguridad:** Microsoft.AspNetCore.Authentication.JwtBearer **10.0.5**, System.IdentityModel.Tokens.Jwt **8.17.0**.
+-   **Tests:** NUnit **4.5.1**, Moq **4.20.72**, FluentAssertions **8.9.0**.
+
+### Frontend (Quasar v2)
+-   **Core:** Vue **3.5.31**, Vite **8.0.3**.
+-   **State:** Pinia **3.0.4**.
+-   **Router:** Vue Router **5.0.4**.
+-   **Language:** TypeScript **6.0.2**.
+-   **Tests:** Vitest **4.1.2**.
+-   **API:** Axios **1.14.0**.
+-   **Maps:** Leaflet + OpenStreetMap.
+
+## 📂 Estructura del Proyecto
+
+El sistema sigue una arquitectura modular y limpia, separando responsabilidades de forma estricta:
+
+### 🖥️ Backend (.NET 10)
+-   **`Api/`**: Capa de presentación con Minimal APIs y definición de rutas.
+-   **`Domain/`**: Lógica de negocio pura, entidades de dominio y reglas de gobernanza.
+-   **`Infrastructure/`**: Implementación de persistencia (Dapper), migraciones y servicios externos.
+-   **`tests/`**: Suite de pruebas unitarias organizada por servicios y dominio.
+
+### 🎨 Frontend (Quasar)
+-   **`src/pages/`**: Vistas principales de la aplicación.
+-   **`src/components/`**: Componentes de UI modulares y reutilizables.
+-   **`src/stores/`**: Gestión de estado global mediante Pinia.
+-   **`src/boot/`**: Configuraciones de inicio (Axios/API interceptors).

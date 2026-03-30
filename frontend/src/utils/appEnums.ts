@@ -1,4 +1,3 @@
-// Categorías de Publicaciones
 export const PostCategoryLabel = (category: number): string => {
   const labels: Record<number, string> = {
     1: 'General',
@@ -47,7 +46,6 @@ export const PostCategoryIcon = (category: number): string => {
   return icons[category] || 'article'
 }
 
-// Estado de Publicaciones (Backend: 0=Pending, 1=Approved, 2=Rejected)
 export const PostStatusLabel = (status: number): string => {
   const labels: Record<number, string> = {
     0: 'Pendiente',
@@ -66,109 +64,6 @@ export const PostStatusColor = (status: number): string => {
   return colors[status] || 'grey'
 }
 
-// Prioridad de Incidentes
-export const IncidentPriorityLabel = (priority: number): string => {
-  const labels: Record<number, string> = {
-    1: 'Baja',
-    2: 'Media',
-    3: 'Alta',
-    4: 'Urgente'
-  }
-  return labels[priority] || 'Baja'
-}
-
-export const IncidentPriorityColor = (priority: number): string => {
-  const colors: Record<number, string> = {
-    1: 'green',
-    2: 'yellow',
-    3: 'orange',
-    4: 'red'
-  }
-  return colors[priority] || 'green'
-}
-
-// Estado de Incidentes
-export const IncidentStatusLabel = (status: number): string => {
-  const labels: Record<number, string> = {
-    1: 'Reportado',
-    2: 'En Proceso',
-    3: 'Pendiente',
-    4: 'Resuelto',
-    5: 'Cerrado',
-    6: 'Cancelado'
-  }
-  return labels[status] || 'Desconocido'
-}
-
-export const IncidentStatusColor = (status: number): string => {
-  const colors: Record<number, string> = {
-    1: 'blue',
-    2: 'orange',
-    3: 'yellow',
-    4: 'green',
-    5: 'grey',
-    6: 'red'
-  }
-  return colors[status] || 'grey'
-}
-
-// Tipo de Alertas
-export const AlertTypeLabel = (type: number): string => {
-  const labels: Record<number, string> = {
-    1: 'En Camino',
-    2: 'Emergencia',
-    3: 'Check-In',
-    4: 'Patrulla'
-  }
-  return labels[type] || 'Desconocido'
-}
-
-export const AlertTypeColor = (type: number): string => {
-  const colors: Record<number, string> = {
-    1: 'blue',
-    2: 'red',
-    3: 'orange',
-    4: 'grey'
-  }
-  return colors[type] || 'grey'
-}
-
-export const AlertTypeIcon = (type: number): string => {
-  const icons: Record<number, string> = {
-    1: 'directions_car',
-    2: 'emergency',
-    3: 'check_circle',
-    4: 'local_police'
-  }
-  return icons[type] || 'notifications'
-}
-
-// Estado de Alertas
-export const AlertStatusLabel = (status: number): string => {
-  const labels: Record<number, string> = {
-    1: 'Pendiente',
-    2: 'Acknowledged',
-    3: 'En Camino',
-    4: 'Llegó',
-    5: 'Completada',
-    6: 'Cancelada'
-  }
-  return labels[status] || 'Desconocido'
-}
-
-export const AlertStatusColor = (status: number): string => {
-  const colors: Record<number, string> = {
-    1: 'red',
-    2: 'orange',
-    3: 'blue',
-    4: 'green',
-    5: 'grey',
-    6: 'black'
-  }
-  return colors[status] || 'grey'
-}
-
-// Tipo de Votaciones
 export const PollTypeLabel = (type: number): string => {
   const labels: Record<number, string> = {
     1: 'Opción Única',
@@ -179,7 +74,6 @@ export const PollTypeLabel = (type: number): string => {
   return labels[type] || 'Desconocido'
 }
 
-// Estado de Votaciones
 export const PollStatusLabel = (status: number): string => {
   const labels: Record<number, string> = {
     1: 'Borrador',
@@ -200,6 +94,72 @@ export const PollStatusColor = (status: number): string => {
     4: 'red',
     5: 'orange',
     6: 'warning'
+  }
+  return colors[status] || 'grey'
+}
+
+export const IncidentTypeLabel = (type: number): string => {
+  const labels: Record<number, string> = {
+    1: 'Mantenimiento',
+    2: 'Seguridad',
+    3: 'Limpieza',
+    4: 'Infraestructura',
+    5: 'Otro'
+  }
+  return labels[type] || 'Otro'
+}
+
+export const IncidentTypeIcon = (type: number): string => {
+  const icons: Record<number, string> = {
+    1: 'build',
+    2: 'security',
+    3: 'cleaning_services',
+    4: 'infrastructure',
+    5: 'more_horiz'
+  }
+  return icons[type] || 'report_problem'
+}
+
+export const IncidentPriorityLabel = (priority: number): string => {
+  const labels: Record<number, string> = {
+    1: 'Baja',
+    2: 'Media',
+    3: 'Alta',
+    4: 'Urgente'
+  }
+  return labels[priority] || 'Media'
+}
+
+export const IncidentPriorityColor = (priority: number): string => {
+  const colors: Record<number, string> = {
+    1: 'green',
+    2: 'yellow',
+    3: 'orange',
+    4: 'red'
+  }
+  return colors[priority] || 'yellow'
+}
+
+export const IncidentStatusLabel = (status: number): string => {
+  const labels: Record<number, string> = {
+    1: 'Reportado',
+    2: 'En Proceso',
+    3: 'Pendiente',
+    4: 'Resuelto',
+    5: 'Cerrado',
+    6: 'Cancelado'
+  }
+  return labels[status] || 'Desconocido'
+}
+
+export const IncidentStatusColor = (status: number): string => {
+  const colors: Record<number, string> = {
+    1: 'blue',
+    2: 'orange',
+    3: 'yellow',
+    4: 'green',
+    5: 'grey',
+    6: 'red'
   }
   return colors[status] || 'grey'
 }

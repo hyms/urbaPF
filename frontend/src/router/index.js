@@ -37,6 +37,28 @@ const routes = [
         component: () => import('../pages/PollsPage.vue')
       },
       {
+        path: 'incidents',
+        name: 'incidents',
+        component: () => import('../pages/IncidentsPage.vue')
+      },
+      {
+        path: 'emergency',
+        name: 'emergency',
+        component: () => import('../pages/EmergencyPage.vue')
+      },
+      {
+        path: 'security',
+        name: 'security',
+        component: () => import('../pages/SecurityPage.vue'),
+        meta: { requiresManager: true }
+      },
+      {
+        path: 'alerts',
+        name: 'alerts',
+        component: () => import('../pages/AlertsPage.vue'),
+        meta: { requiresManager: true }
+      },
+      {
         path: 'users',
         name: 'users',
         component: () => import('../pages/UsersPage.vue'),

@@ -160,6 +160,17 @@ export const useAuthStore = defineStore('auth', {
           this.clearAuth()
         }
       }
+    },
+
+    async updateFcmToken(fcmToken: string | null): Promise<boolean> {
+      if (!this.user) return false
+      try {
+        await api.put(`/api/users/${this.user.id}/fcm-token`, { fcmToken })
+        return true
+      } catch (error) {
+        console.error('Failed to update FCM token:', error)
+        return false
+      }
     }
   }
 })

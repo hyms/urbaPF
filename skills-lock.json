@@ -11,6 +11,11 @@
       "sourceType": "github",
       "computedHash": "af77b8995f255140f1643de753007baf87b734e8b87175489524aadc3559c42a"
     },
+    "csharp-nunit": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "computedHash": "2026047ba0a3b1f3b7d68fd87d35a55ed8592c075979c14a3fcf2fa8c8b9fc3a"
+    },
     "dotnet-best-practices": {
       "source": "github/awesome-copilot",
       "sourceType": "github",

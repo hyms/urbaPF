@@ -1,7 +1,7 @@
 <template>
   <q-card>
     <q-card-section>
-      <div class="row items-center">
+      <div class="row items-center q-mb-sm">
         <div class="col">
           <div class="text-h6">{{ poll.title }}</div>
           <div class="text-caption text-grey">{{ poll.description }}</div>
@@ -9,51 +9,80 @@
         <q-chip :color="getStatusColor(poll.status)" text-color="white" size="sm">
           {{ getStatusLabel(poll.status) }}
         </q-chip>
-        <q-btn flat round dense icon="more_vert" v-if="showAdminControls">
+      </div>
+      <div class="row items-center text-caption text-grey">
+        <q-icon name="schedule" class="q-mr-xs" />
+        {{ formatDate(poll.startsAt) }} - {{ formatDate(poll.endsAt) }}
+        <q-space />
+        <q-btn flat dense size="sm" icon="more_vert" v-if="canManage">
           <q-menu>
             <q-list dense style="min-width: 150px">
               <q-item clickable v-close-popup @click="$emit('edit', poll)">
                 <q-item-section>{{ t('common.update') }}</q-item-section>
               </q-item>
-              <q-item clickable v-close-popup @click="$emit('delete', poll)">
-                <q-item-section class="text-negative">{{ t('common.delete') }}</q-item-section>
+              <q-item clickable v-close-popup @click="$emit('delete', poll)" class="text-negative">
+                <q-item-section>{{ t('common.delete') }}</q-item-section>
               </q-item>
             </q-list>
           </q-menu>
         </q-btn>
       </div>
     </q-card-section>
+
     <q-separator />
+
     <q-card-section>
-      <div class="q-mb-sm">
-        <strong>{{ t('polls.options') }}:</strong>
-      </div>
-      <q-option-group
-        :model-value="selectedOption"
-        @update:model-value="$emit('update:selectedOption', $event)"
+      <PollResultsDisplay
+        v-if="showResults"
         :options="parsedOptions"
-        type="radio"
-        :disable="poll.status !== 2"
+        :results="pollResults"
+        :show-signature="poll.status >= 4"
+        :user-voted-option="userVotedOption"
       />
+      
+      <div v-else>
+        <div class="q-mb-sm"><strong>{{ t('polls.options') }}:</strong></div>
+        <q-option-group
+          :model-value="selectedOption"
+          @update:model-value="$emit('update:selectedOption', $event)"
+          :options="parsedOptions"
+          :type="poll.pollType === 2 ? 'checkbox' : 'radio'"
+          :disable="!canVote"
+        />
+      </div>
     </q-card-section>
+
     <q-separator />
+
     <q-card-actions>
-      <q-btn flat color="primary" :label="t('polls.vote')" @click="$emit('vote', poll)" :disable="poll.status !== 2 || hasVoted" />
-      <q-btn flat :label="t('polls.results')" @click="$emit('view-results', poll)" />
+      <q-btn
+        v-if="canVote && !hasVoted"
+        flat
+        color="primary"
+        :label="t('polls.vote')"
+        @click="$emit('vote', poll)"
+        :disable="selectedOption === undefined"
+      />
+      <q-btn
+        flat
+        :label="showResults ? t('polls.backToVoting') : t('polls.results')"
+        @click="toggleView"
+      />
       <q-space />
-      <div class="text-caption text-grey">
-        {{ formatDate(poll.startsAt) }} - {{ formatDate(poll.endsAt) }}
+      <div class="text-caption text-grey" v-if="hasVoted">
+        <q-icon name="check_circle" color="positive" class="q-mr-xs" />
+        {{ t('polls.youVoted') }}
       </div>
     </q-card-actions>
   </q-card>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { usePollStore } from '../stores/poll'
+import { computed, ref } from 'vue'
 import { useI18n } from '../composables/useI18n'
 import { formatDate } from '../utils/format'
 import { PollStatusLabel, PollStatusColor } from '../utils/appEnums'
+import PollResultsDisplay from './PollResultsDisplay.vue'
 
 interface Poll {
   id: string
@@ -63,24 +92,32 @@ interface Poll {
   status: number
   startsAt: string
   endsAt: string
+  pollType: number
+}
+
+interface PollResults {
+  results: number[]
+  votersCount: number
 }
 
 const props = defineProps<{
   poll: Poll
-  selectedOption?: number
+  selectedOption?: number | number[]
   hasVoted: boolean
-  showAdminControls: boolean
+  canManage: boolean
+  pollResults?: PollResults | null
 }>()
 
 const emit = defineEmits<{
-  (e: 'update:selectedOption', value: number): void
+  (e: 'update:selectedOption', value: number | number[]): void
   (e: 'vote', poll: Poll): void
-  (e: 'view-results', poll: Poll): void
   (e: 'edit', poll: Poll): void
   (e: 'delete', poll: Poll): void
 }>()
 
 const { t } = useI18n()
+
+const showResultsMode = ref(false)
 
 const parsedOptions = computed(() => {
   try {
@@ -90,6 +127,28 @@ const parsedOptions = computed(() => {
     return []
   }
 })
+
+const canVote = computed(() => {
+  return props.poll.status === 3
+})
+
+const canManage = computed(() => {
+  return props.canManage && (props.poll.status === 1 || props.poll.status === 2)
+})
+
+const showResults = computed(() => {
+  return showResultsMode.value || props.hasVoted || props.poll.status >= 4
+})
+
+const userVotedOption = computed(() => {
+  if (!props.hasVoted) return undefined
+  if (typeof props.selectedOption === 'number') return props.selectedOption
+  return props.selectedOption?.[0]
+})
+
+function toggleView() {
+  showResultsMode.value = !showResultsMode.value
+}
 
 function getStatusLabel(status: number): string {
   return PollStatusLabel(status)

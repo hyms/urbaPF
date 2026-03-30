@@ -2,6 +2,7 @@ using UrbaPF.Infrastructure.Data;
 using UrbaPF.Infrastructure.Interfaces;
 using UrbaPF.Infrastructure.Repositories;
 using UrbaPF.Infrastructure.Services;
+using UrbaPF.Domain.Services;
 using UrbaPF.Api.DTOs;
 using UrbaPF.Api.Routes;
 using System.Security.Claims;
@@ -31,6 +32,14 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPollService, PollService>();
 builder.Services.AddScoped<IFileStorageService, FileStorageService>();
+builder.Services.AddScoped<IIncidentRepository, IncidentRepository>();
+builder.Services.AddScoped<IIncidentService, IncidentService>();
+builder.Services.AddScoped<IncidentDomainService>();
+builder.Services.AddScoped<IAlertRepository, AlertRepository>();
+builder.Services.AddScoped<IAlertService, AlertService>();
+builder.Services.AddScoped<AlertDomainService>();
+builder.Services.AddHttpClient<IPushNotificationService, PushNotificationService>();
+builder.Services.AddScoped<IPushNotificationService, PushNotificationService>();
 
 // Build connection string from environment variables
 var host = builder.Configuration["DB_HOST"] ?? "localhost";
@@ -114,5 +123,7 @@ app.MapUserRoutes();
 app.MapCondominiumRoutes();
 app.MapPostRoutes();
 app.MapPollRoutes();
+app.MapIncidentRoutes();
+app.MapAlertRoutes();
 
 app.Run();

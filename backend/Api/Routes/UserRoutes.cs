@@ -95,5 +95,24 @@ public static class UserRoutes
             }
             return Results.Ok(new { Message = "Photo uploaded successfully.", UserId = userId });
         }).DisableAntiforgery().RequireAuthorization();
+
+        app.MapPut("/api/users/{id:guid}/fcm-token", async (Guid id, UpdateFcmTokenRequest request, IUserRepository repo, ClaimsPrincipal user) =>
+        {
+            var currentUserId = GetUserId(user);
+            if (currentUserId != id)
+            {
+                return Results.Forbid();
+            }
+            await repo.UpdateFcmTokenAsync(id, request.FcmToken);
+            return Results.Ok(new { message = "Token actualizado" });
+        }).RequireAuthorization();
     }
+
+    private static Guid GetUserId(ClaimsPrincipal user)
+    {
+        var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        return userIdClaim != null ? Guid.Parse(userIdClaim) : Guid.Empty;
+    }
+
+    public record UpdateFcmTokenRequest(string? FcmToken);
 }

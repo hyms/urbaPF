@@ -63,6 +63,19 @@ export const useIncidentStore = defineStore('incident', {
       }
     },
 
+    async update(id, data) {
+      this.loading = true
+      try {
+        await api.put(`/incidents/${id}`, data)
+        return true
+      } catch (error) {
+        this.error = error.message
+        return false
+      } finally {
+        this.loading = false
+      }
+    },
+
     async remove(id) {
       try {
         await api.delete(`/incidents/${id}`)

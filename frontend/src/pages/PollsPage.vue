@@ -3,70 +3,156 @@
     <div class="row items-center q-mb-md">
       <div class="text-h4">{{ t('polls.title') }}</div>
       <q-space />
-      <q-btn color="primary" icon="add" :label="t('polls.newPoll')" @click="showCreateDialog = true" v-if="authStore.isManager" />
+      <q-btn
+        v-if="authStore.isManager"
+        color="primary"
+        icon="add"
+        :label="t('polls.newPoll')"
+        @click="openCreateDialog"
+      />
     </div>
 
-    <div class="row q-col-gutter-md">
-      <div class="col-12 col-md-6" v-for="poll in polls" :key="poll.id">
-        <PollItem
-          :poll="poll"
-          :selected-option="selectedOptions[poll.id]"
-          :has-voted="hasVoted(poll.id)"
-          :show-admin-controls="authStore.isManager"
-          @update:selected-option="val => selectedOptions[poll.id] = val"
-          @vote="vote"
-          @view-results="viewResults"
-          @edit="editPoll"
-          @delete="deletePoll"
-        />
-      </div>
-    </div>
+    <q-tabs v-model="activeTab" class="q-mb-md" align="left" dense>
+      <q-tab name="active" :label="t('polls.active')" />
+      <q-tab name="finished" :label="t('polls.finished')" />
+      <q-tab name="mine" :label="t('polls.myProposals')" />
+    </q-tabs>
 
-    <div v-if="polls.length === 0" class="text-center text-grey q-pa-xl">
-      {{ t('polls.noPolls') }}
-    </div>
-
-    <q-dialog v-model="showCreateDialog" persistent>
-      <q-card style="min-width: 500px">
-        <q-card-section>
-          <div class="text-h6">{{ editingPoll ? t('polls.editPoll') : t('polls.newPoll') }}</div>
-        </q-card-section>
-
-        <q-card-section>
-          <q-form class="q-gutter-md">
-            <q-input v-model="newPoll.title" :label="t('common.required')" outlined :rules="[v => !!v || t('common.required')]" />
-            <q-input v-model="newPoll.description" :label="t('incidents.description')" type="textarea" outlined />
-            <q-input v-model="newPoll.optionsText" :label="t('polls.options')" type="textarea" outlined rows="3" :rules="[v => !!v || t('common.required')]" />
-            <q-select v-model="newPoll.pollType" :options="pollTypeOptions" :label="t('polls.type')" outlined emit-value map-options />
-            <div class="row q-col-gutter-md">
-              <div class="col-6">
-                <q-input v-model="newPoll.startsAt" :label="t('polls.startsAt')" type="datetime-local" outlined />
-              </div>
-              <div class="col-6">
-                <q-input v-model="newPoll.endsAt" :label="t('polls.endsAt')" type="datetime-local" outlined />
-              </div>
+    <q-tab-panels v-model="activeTab" animated>
+      <q-tab-panel name="active" class="q-pa-none">
+        <div class="row q-col-gutter-md">
+          <template v-if="loading">
+            <div class="col-12 col-md-6" v-for="n in 4" :key="n">
+              <q-card>
+                <q-card-section>
+                  <q-skeleton type="text" class="q-mb-sm" style="width: 60%" />
+                  <q-skeleton type="text" class="q-mb-sm" style="width: 40%" />
+                  <q-skeleton type="text" style="width: 80%" />
+                </q-card-section>
+                <q-separator />
+                <q-card-section>
+                  <q-skeleton type="rect" height="60px" />
+                </q-card-section>
+              </q-card>
             </div>
-            <q-toggle v-model="newPoll.requiresJustification" :label="t('polls.requiresJustification')" />
-          </q-form>
-        </q-card-section>
+          </template>
+          <template v-else>
+            <div
+              v-for="poll in filteredPolls.active"
+              :key="poll.id"
+              class="col-12 col-md-6"
+            >
+              <PollItem
+                :poll="poll"
+                :selected-option="selectedOptions[poll.id]"
+                :has-voted="hasVoted(poll.id)"
+                :can-manage="authStore.isManager"
+                :poll-results="pollResults[poll.id]"
+                @update:selected-option="val => selectedOptions[poll.id] = val"
+                @vote="vote"
+                @edit="editPoll"
+                @delete="deletePoll"
+              />
+            </div>
+            <div v-if="filteredPolls.active.length === 0" class="col-12 text-center text-grey q-pa-xl">
+              {{ t('polls.noPolls') }}
+            </div>
+          </template>
+        </div>
+      </q-tab-panel>
 
-        <q-card-actions align="right">
-          <q-btn flat :label="t('common.cancel')" v-close-popup />
-          <q-btn color="primary" :label="t('common.save')" @click="savePoll" :loading="loading" />
-        </q-card-actions>
-      </q-card>
+      <q-tab-panel name="finished" class="q-pa-none">
+        <div class="row q-col-gutter-md">
+          <template v-if="loading">
+            <div class="col-12 col-md-6" v-for="n in 4" :key="n">
+              <q-card>
+                <q-card-section>
+                  <q-skeleton type="text" class="q-mb-sm" style="width: 60%" />
+                  <q-skeleton type="text" class="q-mb-sm" style="width: 40%" />
+                </q-card-section>
+                <q-separator />
+                <q-card-section>
+                  <q-skeleton type="rect" height="80px" />
+                </q-card-section>
+              </q-card>
+            </div>
+          </template>
+          <template v-else>
+            <div
+              v-for="poll in filteredPolls.finished"
+              :key="poll.id"
+              class="col-12 col-md-6"
+            >
+              <PollItem
+                :poll="poll"
+                :has-voted="hasVoted(poll.id)"
+                :can-manage="authStore.isManager"
+                :poll-results="pollResults[poll.id]"
+                @edit="editPoll"
+                @delete="deletePoll"
+              />
+            </div>
+            <div v-if="filteredPolls.finished.length === 0" class="col-12 text-center text-grey q-pa-xl">
+              {{ t('polls.noPolls') }}
+            </div>
+          </template>
+        </div>
+      </q-tab-panel>
+
+      <q-tab-panel name="mine" class="q-pa-none">
+        <div class="row q-col-gutter-md">
+          <template v-if="loading">
+            <div class="col-12 col-md-6" v-for="n in 2" :key="n">
+              <q-card>
+                <q-card-section>
+                  <q-skeleton type="text" class="q-mb-sm" style="width: 60%" />
+                </q-card-section>
+              </q-card>
+            </div>
+          </template>
+          <template v-else>
+            <div
+              v-for="poll in filteredPolls.mine"
+              :key="poll.id"
+              class="col-12 col-md-6"
+            >
+              <PollItem
+                :poll="poll"
+                :has-voted="hasVoted(poll.id)"
+                :can-manage="authStore.isManager"
+                :poll-results="pollResults[poll.id]"
+                @edit="editPoll"
+                @delete="deletePoll"
+              />
+            </div>
+            <div v-if="filteredPolls.mine.length === 0" class="col-12 text-center text-grey q-pa-xl">
+              {{ t('polls.noPolls') }}
+            </div>
+          </template>
+        </div>
+      </q-tab-panel>
+    </q-tab-panels>
+
+    <q-dialog v-model="showDialog" persistent>
+      <PollForm
+        :poll="editingPoll"
+        :loading="saving"
+        @submit="savePoll"
+        @cancel="closeDialog"
+      />
     </q-dialog>
   </q-page>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { usePollStore } from '../stores/poll'
 import { useCondominiumStore } from '../stores/condominium'
 import { useAuthStore } from '../stores/auth'
 import { useI18n } from '../composables/useI18n'
 import PollItem from '../components/PollItem.vue'
+import PollForm from '../components/PollForm.vue'
 
 const $q = useQuasar()
 const pollStore = usePollStore()
@@ -74,79 +160,107 @@ const condoStore = useCondominiumStore()
 const authStore = useAuthStore()
 const { t } = useI18n()
 
+const activeTab = ref('active')
+const loading = ref(true)
+const saving = ref(false)
 const polls = ref([])
-const showCreateDialog = ref(false)
-const loading = ref(false)
+const showDialog = ref(false)
+const editingPoll = ref(null)
 const selectedOptions = ref({})
 const votedPolls = ref([])
-const editingPoll = ref(null)
+const pollResults = ref({})
 
-const newPoll = ref({
-  title: '',
-  description: '',
-  optionsText: '',
-  pollType: 1,
-  startsAt: new Date().toISOString().slice(0, 16),
-  endsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
-  requiresJustification: false,
-  minRoleToVote: 2
+const filteredPolls = computed(() => {
+  const now = new Date()
+  const active = []
+  const finished = []
+  const mine = []
+
+  for (const poll of polls.value) {
+    const endsAt = new Date(poll.endsAt)
+    const isActive = poll.status === 3 || (poll.status === 2 && endsAt > now)
+    const isMine = poll.createdBy === authStore.user?.id
+
+    if (isActive) {
+      active.push(poll)
+    } else {
+      finished.push(poll)
+    }
+
+    if (isMine) {
+      mine.push(poll)
+    }
+  }
+
+  return { active, finished, mine }
 })
-
-const pollTypeOptions = [
-  { label: 'Opción única', value: 1 },
-  { label: 'Multiple', value: 2 }
-]
 
 onMounted(async () => {
-  const condos = await condoStore.fetchAll()
-  if (condos.length > 0) {
-    polls.value = await pollStore.fetchByCondominium(condos[0].id)
-  }
+  await fetchPolls()
 })
 
-function editPoll(poll) {
-  editingPoll.value = poll
-  newPoll.value = {
-    title: poll.title,
-    description: poll.description,
-    optionsText: JSON.parse(poll.options).join('\n'),
-    pollType: poll.pollType,
-    startsAt: poll.startsAt.slice(0, 16),
-    endsAt: poll.endsAt.slice(0, 16),
-    requiresJustification: poll.requiresJustification,
-    minRoleToVote: poll.minRoleToVote
-  }
-  showCreateDialog.value = true
-}
-
-async function savePoll() {
+async function fetchPolls() {
   loading.value = true
   try {
     const condos = await condoStore.fetchAll()
     if (condos.length > 0) {
-      const data = {
-        ...newPoll.value,
-        options: JSON.stringify(newPoll.value.optionsText.split('\n').filter(o => o.trim())),
-        startsAt: new Date(newPoll.value.startsAt).toISOString(),
-        endsAt: new Date(newPoll.value.endsAt).toISOString()
-      }
-
-      if (editingPoll.value) {
-        await pollStore.update(editingPoll.value.id, data)
-        $q.notify({ type: 'positive', message: t('common.success') })
-      } else {
-        await pollStore.create(condos[0].id, data)
-        $q.notify({ type: 'positive', message: t('common.success') })
-      }
-      
-      showCreateDialog.value = false
       polls.value = await pollStore.fetchByCondominium(condos[0].id)
+      for (const poll of polls.value) {
+        if (poll.status >= 4) {
+          pollResults.value[poll.id] = await pollStore.getResults(poll.id)
+        }
+      }
     }
   } catch (e) {
     $q.notify({ type: 'negative', message: t('common.error') })
   } finally {
     loading.value = false
-    editingPoll.value = null
+  }
+}
+
+function openCreateDialog() {
+  editingPoll.value = null
+  showDialog.value = true
+}
+
+function closeDialog() {
+  showDialog.value = false
+  editingPoll.value = null
+}
+
+function editPoll(poll) {
+  editingPoll.value = {
+    ...poll,
+    options: JSON.parse(poll.options)
+  }
+  showDialog.value = true
+}
+
+async function savePoll(data) {
+  saving.value = true
+  try {
+    const condos = await condoStore.fetchAll()
+    if (condos.length > 0) {
+      const payload = {
+        ...data,
+        options: JSON.stringify(data.options)
+      }
+
+      if (editingPoll.value) {
+        await pollStore.update(editingPoll.value.id, payload)
+        $q.notify({ type: 'positive', message: t('common.success') })
+      } else {
+        await pollStore.create(condos[0].id, payload)
+        $q.notify({ type: 'positive', message: t('common.success') })
+      }
+
+      closeDialog()
+      await fetchPolls()
+    }
+  } catch (e) {
+    $q.notify({ type: 'negative', message: t('common.error') })
+  } finally {
+    saving.value = false
   }
 }
 
@@ -156,12 +270,13 @@ async function deletePoll(poll) {
     message: t('common.deleteMessage').replace('{item}', poll.title),
     cancel: true
   }).onOk(async () => {
-    await pollStore.remove(poll.id)
-    const condos = await condoStore.fetchAll()
-    if (condos.length > 0) {
-      polls.value = await pollStore.fetchByCondominium(condos[0].id)
+    try {
+      await pollStore.remove(poll.id)
+      await fetchPolls()
+      $q.notify({ type: 'positive', message: t('common.success') })
+    } catch (e) {
+      $q.notify({ type: 'negative', message: t('common.error') })
     }
-    $q.notify({ type: 'positive', message: t('common.success') })
   })
 }
 
@@ -171,30 +286,14 @@ async function vote(poll) {
     $q.notify({ type: 'warning', message: t('polls.selectOption') })
     return
   }
-  
+
   const result = await pollStore.vote(poll.id, optionIndex)
   if (result) {
     $q.notify({ type: 'positive', message: t('polls.voteSuccess') })
     votedPolls.value.push(poll.id)
+    pollResults.value[poll.id] = await pollStore.getResults(poll.id)
   } else {
     $q.notify({ type: 'negative', message: t('polls.voteError') })
-  }
-}
-
-async function viewResults(poll) {
-  const results = await pollStore.getResults(poll.id)
-  if (results) {
-    const options = JSON.parse(poll.options)
-    let message = ''
-    options.forEach((opt, idx) => {
-      const count = results.results[idx] || 0
-      message += `${opt}: ${count} votos\n`
-    })
-    $q.dialog({
-      title: `Resultados: ${poll.title}`,
-      message,
-      ok: 'Cerrar'
-    })
   }
 }
 

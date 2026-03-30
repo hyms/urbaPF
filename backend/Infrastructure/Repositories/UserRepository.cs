@@ -170,6 +170,23 @@ public class UserRepository : BaseRepository, IUserRepository
         await ExecuteAsync(sql, new { PhotoUrl = photoUrl, Id = userId });
     }
 
-
+    public async Task<IEnumerable<UserDto>> GetByCondominiumAsync(Guid condominiumId)
+    {
+        var sql = @"
+            SELECT id, email, full_name as FullName, phone, role, credibility_level as CredibilityLevel,
+                   status, condominium_id as CondominiumId, lot_number as LotNumber,
+                   street_address as StreetAddress, photo_url as PhotoUrl, created_at as CreatedAt, last_login_at as LastLoginAt,
+                   is_validated as IsValidated, manager_votes as ManagerVotes, fcm_token as FcmToken
+            FROM users 
+            WHERE condominium_id = @CondominiumId AND deleted_at IS NULL
+            ORDER BY created_at DESC";
+        return await QueryAsync<UserDto>(sql, new { CondominiumId = condominiumId });
     }
+
+    public async Task UpdateFcmTokenAsync(Guid userId, string? fcmToken)
+    {
+        var sql = "UPDATE users SET fcm_token = @FcmToken, updated_at = CURRENT_TIMESTAMP WHERE id = @Id AND deleted_at IS NULL";
+        await ExecuteAsync(sql, new { Id = userId, FcmToken = fcmToken });
+    }
+}
 
