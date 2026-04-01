@@ -30,10 +30,10 @@ public class BaseRepository
         return await connection.ExecuteAsync(sql, param);
     }
 
-    protected async Task<T> ExecuteScalarAsync<T>(string sql, object? param = null)
+    protected async Task<T?> ExecuteScalarAsync<T>(string sql, object? param = null)
     {
         using var connection = _connectionFactory.CreateConnection();
-        return await connection.ExecuteScalarAsync<T>(sql, param);
+        return await connection.ExecuteScalarAsync<T?>(sql, param);
     }
 
     protected async Task<(IEnumerable<T1>, IEnumerable<T2>)> QueryMultipleAsync<T1, T2>(string sql, object? param = null)

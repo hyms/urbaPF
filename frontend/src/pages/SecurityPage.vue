@@ -176,16 +176,12 @@ import { useIncidentStore } from '../stores/incident'
 import { useAlertStore } from '../stores/alert'
 import { useCondominiumStore } from '../stores/condominium'
 import SecurityMap from '../components/SecurityMap.vue'
+import { MapItem } from '../types/map'
 import {
   IncidentTypeIcon,
   IncidentPriorityLabel,
   IncidentPriorityColor
 } from '../utils/appEnums'
-
-const $q = useQuasar()
-const incidentStore = useIncidentStore()
-const alertStore = useAlertStore()
-const condoStore = useCondominiumStore()
 
 const loading = ref(false)
 const activeTab = ref('alerts')
@@ -194,19 +190,6 @@ const alerts = ref<any[]>([])
 const selectedItem = ref<any>(null)
 const showDetailDialog = ref(false)
 const mapRef = ref<any>(null)
-
-interface MapItem {
-  id: string
-  type: 'incident' | 'alert'
-  title: string
-  description?: string
-  lat: number
-  lng: number
-  status: number
-  priority: number
-  created_at: string
-  address_reference?: string
-}
 
 const mapIncidents = computed<MapItem[]>(() => {
   return incidents.value
@@ -222,8 +205,26 @@ const mapIncidents = computed<MapItem[]>(() => {
         lng: parseFloat(lng),
         status: i.status,
         priority: i.priority,
-        created_at: i.created_at,
-        address_reference: i.address_reference
+        created_at: i.createdAt
+      }
+    })
+})
+
+const mapAlerts = computed<MapItem[]>(() => {
+  return alerts.value
+    .filter(a => a.location)
+    .map(a => {
+      const [lat, lng] = a.location.split(' ')
+      return {
+        id: a.id,
+        type: 'alert' as const,
+        title: a.title,
+        description: a.description,
+        lat: parseFloat(lat),
+        lng: parseFloat(lng),
+        status: a.status,
+        priority: 4,
+        created_at: a.createdAt
       }
     })
 })

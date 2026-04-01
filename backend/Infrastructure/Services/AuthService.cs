@@ -107,7 +107,7 @@ public class AuthService : BaseRepository, IAuthService
             return (false, "Usuario no encontrado.");
 
         var userWithHash = await _userRepository.GetByEmailWithPasswordAsync(user.Email);
-        if (userWithHash == null || !VerifyPassword(oldPassword, userWithHash.PasswordHash))
+        if (userWithHash == null || userWithHash.PasswordHash == null || !VerifyPassword(oldPassword, userWithHash.PasswordHash))
             return (false, "Contraseña antigua incorrecta.");
 
         var newPasswordHash = HashPassword(newPassword);

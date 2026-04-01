@@ -66,6 +66,14 @@
           </q-td>
         </template>
 
+        <template v-slot:body-cell-credibilityLevel="props">
+          <q-td v-if="authStore.isManager" :props="props">
+            <q-badge :color="getCredibilityColor(props.row.credibilityLevel)">
+              {{ props.row.credibilityLevel }}/5
+            </q-badge>
+          </q-td>
+        </template>
+
         <template v-slot:body-cell-status="props">
           <q-td :props="props">
             <q-chip 
@@ -374,8 +382,9 @@ const columns = computed(() => [
   { name: 'email', label: t('auth.email'), field: 'email', sortable: true, align: 'left' as const },
   { name: 'phone', label: t('auth.phone'), field: 'phone', align: 'left' as const },
   { name: 'role', label: t('users.role'), field: 'role', sortable: true, align: 'center' as const },
+  { name: 'credibilityLevel', label: 'Credibilidad', field: 'credibilityLevel', sortable: true, align: 'center' as const },
   { name: 'status', label: t('users.status'), field: 'status', sortable: true, align: 'center' as const },
-  { name: 'actions', label: t('users.actions'), align: 'center' as const }
+  { name: 'actions', label: t('users.actions'), field: 'id', align: 'center' as const }
 ])
 
 function getInitials(name: string): string {
@@ -385,6 +394,12 @@ function getInitials(name: string): string {
     .join('')
     .toUpperCase()
     .slice(0, 2)
+}
+
+function getCredibilityColor(level: number): string {
+  if (level >= 4) return 'positive'
+  if (level >= 2) return 'warning'
+  return 'negative'
 }
 
 function canEdit(user: typeof userStore.users[0]): boolean {

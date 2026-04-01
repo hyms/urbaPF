@@ -4,18 +4,18 @@ import { PostCategoryLabel, PostStatusLabel } from '../utils/appEnums'
 
 export interface Post {
   id: string
-  condominiumId: string
+  condominiumId?: string
   authorId: string
   authorName?: string
   title: string
   content: string
-  category: number
-  isPinned: boolean
-  isAnnouncement: boolean
+  category?: number
+  isPinned?: boolean
+  isAnnouncement?: boolean
   status: number
   createdAt: string
   updatedAt?: string
-  viewCount: number
+  viewCount?: number
 }
 
 export interface CreatePostRequest {

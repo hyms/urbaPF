@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { api } from '../boot/api'
+import { AlertStatusLabel, AlertTypeLabel } from '../utils/appEnums'
 
 export const useAlertStore = defineStore('alert', {
   state: () => ({
@@ -110,25 +111,11 @@ export const useAlertStore = defineStore('alert', {
     },
 
     getStatusLabel(status) {
-      const labels = {
-        1: 'Pendiente',
-        2: 'En Camino',
-        3: 'Llegó',
-        4: 'Completada',
-        5: 'Cancelada'
-      }
-      return labels[status] || 'Desconocido'
+      return AlertStatusLabel(status)
     },
 
     getTypeLabel(type) {
-      const labels = {
-        1: 'Emergencia',
-        2: 'Robo',
-        3: 'Incendio',
-        4: 'Médica',
-        5: 'Otro'
-      }
-      return labels[type] || 'Desconocido'
+      return AlertTypeLabel(type)
     }
   }
 })

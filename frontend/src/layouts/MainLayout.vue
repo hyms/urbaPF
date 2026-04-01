@@ -69,6 +69,10 @@
           </q-item-section>
           <q-item-section>
             <q-item-label>{{ t('common.dashboard') }}</q-item-label>
+            <q-item-label caption v-if="authStore.isManager">{{ t('dashboard.myActivity') }} / {{ t('dashboard.pendingApprovals') }}</q-item-label>
+          </q-item-section>
+          <q-item-section side v-if="authStore.isManager">
+            <q-badge color="red" floating>{{ pendingCount }}</q-badge>
           </q-item-section>
         </q-item>
 
@@ -183,14 +187,43 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useAuthStore } from '../stores/auth'
+import { useCondominiumStore } from '../stores/condominium'
+import { usePostStore } from '../stores/post'
+import { usePollStore } from '../stores/poll'
+import { useIncidentStore } from '../stores/incident'
+import { useAlertStore } from '../stores/alert'
 import { useI18n } from '../composables/useI18n'
 
 const router = useRouter()
 const $q = useQuasar()
 const authStore = useAuthStore()
+const condoStore = useCondominiumStore()
+const postStore = usePostStore()
+const pollStore = usePollStore()
+const incidentStore = useIncidentStore()
+const alertStore = useAlertStore()
 const { t } = useI18n()
 
 const leftDrawerOpen = ref(false)
+
+const pendingCount = computed(() => {
+  if (!authStore.isManager) return 0
+  
+  let count = 0
+  if (postStore.posts) {
+    count += postStore.posts.filter((p) => p.status === 1).length
+  }
+  if (pollStore.polls) {
+    count += pollStore.polls.filter((p) => p.status === 1).length
+  }
+  if (incidentStore.incidents) {
+    count += incidentStore.incidents.filter((i) => i.status === 1).length
+  }
+  if (alertStore.alerts) {
+    count += alertStore.alerts.filter((a) => a.status === 1).length
+  }
+  return count
+})
 
 const userInitials = computed(() => {
   const name = authStore.currentUser?.fullName || 'Usuario'

@@ -288,61 +288,6 @@ const postForm = ref({
   isPinned: false,
   isAnnouncement: false
 })
-
-const categoryOptions = [
-  { label: 'General', value: 1 },
-  { label: 'Anuncio', value: 2 },
-  { label: 'Mantenimiento', value: 3 },
-  { label: 'Seguridad', value: 4 },
-  { label: 'Social', value: 5 },
-  { label: 'Queja', value: 6 },
-  { label: 'Sugerencia', value: 7 },
-  { label: 'Objetos Perdidos', value: 8 },
-  { label: 'En Venta', value: 9 },
-  { label: 'Eventos', value: 10 }
-]
-
-const statusOptions = [
-  { label: 'Pendiente', value: 0 },
-  { label: 'Aprobado', value: 1 },
-  { label: 'Rechazado', value: 2 }
-]
-
-const t = (key: string) => {
-  const translations: Record<string, string> = {
-    'posts.title': 'Publicaciones',
-    'posts.newPost': 'Nueva Publicación',
-    'posts.editPost': 'Editar Publicación',
-    'posts.content': 'Contenido',
-    'posts.category': 'Categoría',
-    'posts.status': 'Estado',
-    'posts.pinned': 'Fijado',
-    'posts.announcement': 'Anuncio',
-    'posts.pending': 'Pendiente',
-    'posts.rejected': 'Rechazado',
-    'posts.approve': 'Aprobar',
-    'posts.reject': 'Rechazar',
-    'posts.noPosts': 'No hay publicaciones',
-    'posts.createFirst': 'Crear primera publicación',
-    'posts.by': 'Por',
-    'posts.views': 'vistas',
-    'posts.createSuccess': 'Publicación creada exitosamente',
-    'posts.updateSuccess': 'Publicación actualizada',
-    'posts.approveSuccess': 'Publicación aprobada',
-    'posts.rejectSuccess': 'Publicación rechazada',
-    'posts.validationRequired': 'Debe ser vecino validado para publicar',
-    'common.search': 'Buscar',
-    'common.create': 'Crear',
-    'common.save': 'Guardar',
-    'common.cancel': 'Cancelar',
-    'common.close': 'Cerrar',
-    'common.required': 'Campo requerido',
-    'common.error': 'Ha ocurrido un error',
-    'common.success': 'Operación exitosa',
-    'common.confirmDelete': 'Confirmar Eliminación',
-    'common.deleteMessage': '¿Está seguro de eliminar "{item}"?',
-    'common.clearFilters': 'Limpiar filtros'
-  }
   return translations[key] || key
 }
 

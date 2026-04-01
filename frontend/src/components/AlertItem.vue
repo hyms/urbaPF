@@ -4,14 +4,14 @@
       <q-icon :name="getIcon()" :color="getColor()" />
     </q-item-section>
     <q-item-section>
-      <q-item-label>{{ incident.title || 'Incidente' }}</q-item-label>
+      <q-item-label>{{ alert.title || 'Alerta' }}</q-item-label>
       <q-item-label caption>
-        {{ formatDate(incident.createdAt) }}
+        {{ formatDate(alert.createdAt) }}
       </q-item-label>
     </q-item-section>
     <q-item-section side>
-      <q-badge :color="getStatusColor(incident.status)">
-        {{ getStatusLabel(incident.status) }}
+      <q-badge :color="getStatusColor(alert.status)">
+        {{ getStatusLabel(alert.status) }}
       </q-badge>
     </q-item-section>
   </q-item>
@@ -19,9 +19,9 @@
 
 <script setup lang="ts">
 import { useI18n } from '../composables/useI18n'
-import { IncidentStatusLabel, IncidentStatusColor, IncidentTypeIcon } from '../utils/appEnums'
+import { AlertStatusLabel, AlertStatusColor, AlertTypeIcon } from '../utils/appEnums'
 
-interface Incident {
+interface Alert {
   id: string
   title: string
   status: number
@@ -30,26 +30,26 @@ interface Incident {
 }
 
 const props = defineProps<{
-  incident: Incident
+  alert: Alert
 }>()
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const { t } = useI18n()
 
 function getIcon() {
-  return IncidentTypeIcon(props.incident.type)
+  return AlertTypeIcon(props.alert.type)
 }
 
 function getColor() {
-  return IncidentStatusColor(props.incident.status)
+  return AlertStatusColor(props.alert.status)
 }
 
 function getStatusLabel(status: number) {
-  return IncidentStatusLabel(status)
+  return AlertStatusLabel(status)
 }
 
 function getStatusColor(status: number) {
-  return IncidentStatusColor(status)
+  return AlertStatusColor(status)
 }
 
 function formatDate(dateStr: string) {

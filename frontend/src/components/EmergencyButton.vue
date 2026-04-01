@@ -85,16 +85,13 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useAlertStore } from '../stores/alert'
 import { useCondominiumStore } from '../stores/condominium'
-import { useI18n } from '../composables/useI18n'
 
 const $q = useQuasar()
 const alertStore = useAlertStore()
 const condoStore = useCondominiumStore()
-const { t } = useI18n()
 
 const loading = ref(false)
 const isPressed = ref(false)
-const pressTimer = ref<ReturnType<typeof setTimeout> | null>(null)
 const showConfirmDialog = ref(false)
 const lastAlert = ref<any>(null)
 

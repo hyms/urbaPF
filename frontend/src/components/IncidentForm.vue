@@ -131,8 +131,10 @@ import { ref, computed, watch } from 'vue'
 import { useI18n } from '../composables/useI18n'
 
 interface MediaFile {
-  file: File
-  preview: string
+  file?: File
+  preview?: string
+  type?: string
+  path?: string
 }
 
 interface IncidentFormData {
@@ -143,6 +145,7 @@ interface IncidentFormData {
   longitude?: number
   addressReference: string
   media: MediaFile[]
+  location?: string
 }
 
 const props = defineProps<{
@@ -250,7 +253,7 @@ function submit() {
     location,
     media: form.value.media.map(m => ({
       type: 'image',
-      path: m.file.name
+      path: m.file?.name || ''
     }))
   })
 }

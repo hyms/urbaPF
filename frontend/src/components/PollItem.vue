@@ -90,9 +90,9 @@ interface Poll {
   description?: string
   options: string
   status: number
-  startsAt: string
-  endsAt: string
-  pollType: number
+  startsAt?: string
+  endsAt?: string
+  pollType?: number
 }
 
 interface PollResults {

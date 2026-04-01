@@ -24,3 +24,46 @@ declare module '../utils/format' {
 declare module '../composables/useI18n' {
   export function useI18n(): any
 }
+
+declare module '../stores/alert' {
+  export const useAlertStore: any
+}
+
+declare module '../stores/incident' {
+  export const useIncidentStore: any
+}
+
+declare module '../stores/condominium' {
+  export const useCondominiumStore: any
+}
+
+declare module '../stores/post' {
+  export const usePostStore: any
+  export type Post = any
+  export type CreatePostRequest = any
+  export type UpdatePostRequest = any
+}
+
+declare module '../stores/poll' {
+  export const usePollStore: any
+  export type Poll = any
+  export type CreatePollRequest = any
+  export type UpdatePollRequest = any
+}
+
+declare module '../composables/useI18n' {
+  export function useI18n(): any
+}
+
+declare module '../utils/format' {
+  export function formatRelativeTime(dateString: string): string
+  export function formatDate(dateString: string): string
+}
+
+declare module '../stores/incident' {
+  export const useIncidentStore: any
+}
+
+declare module '../stores/condominium' {
+  export const useCondominiumStore: any
+}

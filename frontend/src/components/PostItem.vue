@@ -141,9 +141,9 @@ interface Post {
   id: string
   title: string
   content: string
-  category: number
-  isPinned: boolean
-  isAnnouncement: boolean
+  category?: number
+  isPinned?: boolean
+  isAnnouncement?: boolean
   status: number
   authorId: string
   authorName?: string
@@ -194,16 +194,16 @@ const canDelete = computed(() => {
   return true
 })
 
-function getCategoryLabel(category: number): string {
-  return PostCategoryLabel(category)
+function getCategoryLabel(category: number | undefined): string {
+  return PostCategoryLabel(category ?? 1)
 }
 
-function getCategoryColor(category: number): string {
-  return PostCategoryColor(category)
+function getCategoryColor(category: number | undefined): string {
+  return PostCategoryColor(category ?? 1)
 }
 
-function getCategoryIcon(category: number): string {
-  return PostCategoryIcon(category)
+function getCategoryIcon(category: number | undefined): string {
+  return PostCategoryIcon(category ?? 1)
 }
 
 function formatRelativeTime(dateString: string): string {

@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { api } from '../boot/api'
+import { IncidentStatusLabel, IncidentPriorityLabel } from '../utils/appEnums'
 
 export const useIncidentStore = defineStore('incident', {
   state: () => ({
@@ -86,25 +87,11 @@ export const useIncidentStore = defineStore('incident', {
     },
 
     getStatusLabel(status) {
-      const labels = {
-        1: 'Reportado',
-        2: 'En proceso',
-        3: 'Pendiente',
-        4: 'Resuelto',
-        5: 'Cerrado',
-        6: 'Cancelado'
-      }
-      return labels[status] || 'Desconocido'
+      return IncidentStatusLabel(status)
     },
 
     getPriorityLabel(priority) {
-      const labels = {
-        1: 'Baja',
-        2: 'Media',
-        3: 'Alta',
-        4: 'Urgente'
-      }
-      return labels[priority] || 'Desconocido'
+      return IncidentPriorityLabel(priority)
     }
   }
 })

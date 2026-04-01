@@ -163,3 +163,47 @@ export const IncidentStatusColor = (status: number): string => {
   }
   return colors[status] || 'grey'
 }
+
+export const AlertStatusLabel = (status: number): string => {
+  const labels: Record<number, string> = {
+    1: 'Pendiente',
+    2: 'En Camino',
+    3: 'Llegó',
+    4: 'Completada',
+    5: 'Cancelada'
+  }
+  return labels[status] || 'Desconocido'
+}
+
+export const AlertStatusColor = (status: number): string => {
+  const colors: Record<number, string> = {
+    1: 'red',
+    2: 'blue',
+    3: 'orange',
+    4: 'green',
+    5: 'grey'
+  }
+  return colors[status] || 'grey'
+}
+
+export const AlertTypeLabel = (type: number): string => {
+  const labels: Record<number, string> = {
+    1: 'Emergencia',
+    2: 'Robo',
+    3: 'Incendio',
+    4: 'Médica',
+    5: 'Otro'
+  }
+  return labels[type] || 'Desconocido'
+}
+
+export const AlertTypeIcon = (type: number): string => {
+  const icons: Record<number, string> = {
+    1: 'emergency',
+    2: 'warning',
+    3: 'local_fire_department',
+    4: 'medical_services',
+    5: 'more_horiz'
+  }
+  return icons[type] || 'notification_important'
+}
