@@ -38,21 +38,20 @@
   </q-card>
 </template>
 
-<script setup>
-import { useI18n } from '../composables/useI18n'
+<script setup lang="ts">
+import { useI18n } from '@/composables/useI18n'
+import { Condominium } from '@/types/models'
 
-const props = defineProps({
-  condo: {
-    type: Object,
-    required: true
-  },
-  showAdminControls: {
-    type: Boolean,
-    default: false
-  }
-})
+defineProps<{
+  condo: Condominium
+  showAdminControls?: boolean
+}>()
 
-defineEmits(['click', 'edit', 'delete'])
+defineEmits<{
+  (e: 'click', condo: Condominium): void
+  (e: 'edit', condo: Condominium): void
+  (e: 'delete', condo: Condominium): void
+}>()
 
 const { t } = useI18n()
 </script>

@@ -18,16 +18,9 @@
 </template>
 
 <script setup lang="ts">
-import { useI18n } from '../composables/useI18n'
-import { IncidentStatusLabel, IncidentStatusColor, IncidentTypeIcon } from '../utils/appEnums'
-
-interface Incident {
-  id: string
-  title: string
-  status: number
-  type: number
-  createdAt: string
-}
+import { useI18n } from '@/composables/useI18n'
+import { Incident } from '@/types/models'
+import { IncidentStatusLabel, IncidentStatusColor, IncidentTypeIcon } from '@/utils/appEnums'
 
 const props = defineProps<{
   incident: Incident
@@ -36,23 +29,23 @@ const props = defineProps<{
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const { t } = useI18n()
 
-function getIcon() {
+function getIcon(): string {
   return IncidentTypeIcon(props.incident.type)
 }
 
-function getColor() {
+function getColor(): string {
   return IncidentStatusColor(props.incident.status)
 }
 
-function getStatusLabel(status: number) {
+function getStatusLabel(status: number): string {
   return IncidentStatusLabel(status)
 }
 
-function getStatusColor(status: number) {
+function getStatusColor(status: number): string {
   return IncidentStatusColor(status)
 }
 
-function formatDate(dateStr: string) {
+function formatDate(dateStr: string): string {
   if (!dateStr) return ''
   return new Date(dateStr).toLocaleDateString('es-BO')
 }

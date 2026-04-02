@@ -30,15 +30,18 @@ public class AlertService : IAlertService
     private readonly IAlertRepository _alertRepository;
     private readonly IUserRepository _userRepository;
     private readonly AlertDomainService _domainService;
+    private readonly IAuditService _auditService;
 
     public AlertService(
         IAlertRepository alertRepository,
         IUserRepository userRepository,
-        AlertDomainService domainService)
+        AlertDomainService domainService,
+        IAuditService auditService)
     {
         _alertRepository = alertRepository;
         _userRepository = userRepository;
         _domainService = domainService;
+        _auditService = auditService;
     }
 
     public async Task<IEnumerable<Alert>> GetByCondominiumAsync(Guid condominiumId, int? status = null)
@@ -68,7 +71,9 @@ public class AlertService : IAlertService
             NeedsApproval = needsApproval
         };
 
-        return await _alertRepository.CreateAsync(alert);
+        var alertId = await _alertRepository.CreateAsync(alert);
+        await _auditService.LogEventAsync(creatorId, condominiumId, "ALERT_CREATED", alertId, request);
+        return alertId;
     }
 
     public async Task<bool> ApproveAsync(Guid alertId, Guid approverId)
@@ -83,6 +88,7 @@ public class AlertService : IAlertService
         if (success)
         {
             await _alertRepository.MarkNotifiedAsync(alertId);
+            await _auditService.LogEventAsync(approverId, alert.CondominiumId, "ALERT_APPROVED", alertId, new { approverId });
         }
 
         return success;

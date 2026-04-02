@@ -1,65 +1,21 @@
 import { defineStore } from 'pinia'
-import { api } from '../boot/api.ts'
+import { api } from '@/boot/api'
+import { Poll, CreatePollRequest, UpdatePollRequest, VoteResult } from '@/types/models'
 import { PollStatusLabel, PollTypeLabel } from '../utils/appEnums'
 
-export interface Poll {
-  id: string
-  condominiumId: string
-  title: string
-  description?: string
-  options: string
-  pollType: number
-  startsAt: string
-  endsAt: string
-  requiresJustification: boolean
-  minRoleToVote: number
-  status: number
-  createdAt: string
-  createdById: string
-  createdByName?: string
-}
-
-export interface CreatePollRequest {
-  title: string
-  description?: string
-  options: string
-  pollType: number
-  startsAt: string
-  endsAt: string
-  requiresJustification: boolean
-  minRoleToVote: number
-}
-
-export interface UpdatePollRequest {
-  title?: string
-  description?: string
-  options?: string
-  startsAt?: string
-  endsAt?: string
-  status?: number
-}
-
-export interface VoteResult {
-  votes: PollVote[]
-  results: Record<number, number>
-}
-
-export interface PollVote {
-  id: string
-  pollId: string
-  userId: string
-  userName?: string
-  optionIndex: number
-  digitalSignature: string
-  votedAt: string
+interface PollState {
+  polls: Poll[]
+  currentPoll: Poll | null
+  loading: boolean
+  error: string | null
 }
 
 export const usePollStore = defineStore('poll', {
-  state: () => ({
-    polls: [] as Poll[],
-    currentPoll: null as Poll | null,
+  state: (): PollState => ({
+    polls: [],
+    currentPoll: null,
     loading: false,
-    error: null as string | null
+    error: null
   }),
 
   actions: {

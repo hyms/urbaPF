@@ -9,6 +9,7 @@ public class PollService : IPollService
 {
     private readonly IPollRepository _pollRepository;
     private readonly IVoteRepository _voteRepository;
+    private readonly IAuditService _auditService;
 
     private const int RoleAdministrator = 4;
     private const int RoleManager = 3;
@@ -20,10 +21,11 @@ public class PollService : IPollService
     private const int PollStatusClosed = 4;
     private const int PollStatusCancelled = 5;
 
-    public PollService(IPollRepository pollRepository, IVoteRepository voteRepository)
+    public PollService(IPollRepository pollRepository, IVoteRepository voteRepository, IAuditService auditService)
     {
         _pollRepository = pollRepository;
         _voteRepository = voteRepository;
+        _auditService = auditService;
     }
 
     public async Task<PollDto?> GetByIdAsync(Guid id)
@@ -43,6 +45,7 @@ public class PollService : IPollService
             : PollStatusDraft;
 
         var pollId = await _pollRepository.CreateAsync(dto, userId, condominiumId, initialStatus);
+        await _auditService.LogEventAsync(userId, condominiumId, "POLL_CREATED", pollId, dto);
         return (pollId, initialStatus);
     }
 
@@ -56,6 +59,7 @@ public class PollService : IPollService
             return (false, "No se puede editar una votación activa o cerrada");
 
         await _pollRepository.UpdateAsync(id, dto);
+        await _auditService.LogEventAsync(Guid.Empty, poll.CondominiumId, "POLL_UPDATED", id, dto);
         return (true, null);
     }
 

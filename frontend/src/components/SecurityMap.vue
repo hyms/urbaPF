@@ -8,7 +8,7 @@
 import { ref, onMounted, watch } from 'vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { MapItem } from '../types/map'
+import { MapItem } from '@/types/map'
 
 const props = defineProps<{
   incidents: MapItem[]

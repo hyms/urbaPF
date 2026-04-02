@@ -10,6 +10,7 @@ public class PollServiceTests
 {
     private readonly Mock<IPollRepository> _pollRepositoryMock;
     private readonly Mock<IVoteRepository> _voteRepositoryMock;
+    private readonly Mock<IAuditService> _auditServiceMock;
     private readonly PollService _pollService;
 
     private static readonly Guid CondominiumId = Guid.NewGuid();
@@ -24,13 +25,19 @@ public class PollServiceTests
     private const int PollStatusScheduled = 2;
     private const int PollStatusActive = 3;
     private const int PollStatusClosed = 4;
+    private const int PollStatusCancelled = 5;
 
     public PollServiceTests()
     {
         _pollRepositoryMock = new Mock<IPollRepository>();
         _voteRepositoryMock = new Mock<IVoteRepository>();
-        _pollService = new PollService(_pollRepositoryMock.Object, _voteRepositoryMock.Object);
+        _auditServiceMock = new Mock<IAuditService>();
+        _pollService = new PollService(
+            _pollRepositoryMock.Object, 
+            _voteRepositoryMock.Object,
+            _auditServiceMock.Object);
     }
+
 
     [Test]
     public async Task CreateAsync_ManagerRole_ShouldSetScheduledStatus()
@@ -56,6 +63,7 @@ public class PollServiceTests
         result.Should().NotBeNull();
         result!.Value.pollId.Should().Be(PollId);
         result.Value.status.Should().Be(PollStatusScheduled);
+        _auditServiceMock.Verify(a => a.LogEventAsync(UserId, CondominiumId, "POLL_CREATED", PollId, dto), Times.Once);
     }
 
     [Test]
@@ -81,6 +89,7 @@ public class PollServiceTests
 
         result.Should().NotBeNull();
         result!.Value.status.Should().Be(PollStatusDraft);
+        _auditServiceMock.Verify(a => a.LogEventAsync(UserId, CondominiumId, "POLL_CREATED", PollId, dto), Times.Once);
     }
 
     [Test]

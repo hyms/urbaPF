@@ -258,16 +258,18 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
-import { usePostStore, Post, CreatePostRequest, UpdatePostRequest } from '../stores/post'
-import { useCondominiumStore } from '../stores/condominium'
-import { useAuthStore } from '../stores/auth'
-import { PostCategoryLabel, PostCategoryColor, PostCategoryIcon, PostStatusLabel, PostStatusColor } from '../utils/appEnums'
-import PostItem from '../components/PostItem.vue'
+import { useI18n } from 'vue-i18n'
+import { usePostStore } from '@/stores/post'
+import { useCondoStore } from '@/stores/condominium'
+import { useAuthStore } from '@/stores/auth'
+import { Post, CreatePostRequest, UpdatePostRequest } from '@/types/models'
 
 const $q = useQuasar()
+const { t } = useI18n()
 const postStore = usePostStore()
-const condoStore = useCondominiumStore()
+const condoStore = useCondoStore()
 const authStore = useAuthStore()
+
 
 const loading = computed(() => postStore.loading)
 const posts = computed(() => postStore.posts)
@@ -288,8 +290,6 @@ const postForm = ref({
   isPinned: false,
   isAnnouncement: false
 })
-  return translations[key] || key
-}
 
 const canCreatePost = computed(() => {
   return authStore.isAdmin || authStore.isManager || (authStore.isNeighbor && authStore.isValidated)

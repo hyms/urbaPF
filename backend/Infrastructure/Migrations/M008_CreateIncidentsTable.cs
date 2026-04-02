@@ -2,8 +2,8 @@ using FluentMigrator;
 
 namespace UrbaPF.Infrastructure.Migrations;
 
-[Migration(20260329001)]
-public class M005_CreateIncidentsTable : Migration
+[Migration(20260402008)]
+public class M008_CreateIncidentsTable : Migration
 {
     public override void Up()
     {

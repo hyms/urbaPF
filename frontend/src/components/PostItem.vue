@@ -134,22 +134,9 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useAuthStore } from '../stores/auth'
-import { PostCategoryLabel, PostCategoryColor, PostCategoryIcon } from '../utils/appEnums'
-
-interface Post {
-  id: string
-  title: string
-  content: string
-  category?: number
-  isPinned?: boolean
-  isAnnouncement?: boolean
-  status: number
-  authorId: string
-  authorName?: string
-  createdAt: string
-  viewCount?: number
-}
+import { useAuthStore } from '@/stores/auth'
+import { Post } from '@/types/models'
+import { PostCategoryLabel, PostCategoryColor, PostCategoryIcon } from '@/utils/appEnums'
 
 const props = defineProps<{
   post: Post
@@ -190,8 +177,7 @@ const canEdit = computed(() => {
 })
 
 const canDelete = computed(() => {
-  if (!authStore.isAdmin) return false
-  return true
+  return authStore.isAdmin
 })
 
 function getCategoryLabel(category: number | undefined): string {

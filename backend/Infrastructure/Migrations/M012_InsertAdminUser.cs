@@ -3,8 +3,8 @@ using UrbaPF.Infrastructure.Services;
 
 namespace UrbaPF.Infrastructure.Migrations;
 
-[Migration(20260227003)]
-public class M003_InsertAdminUser : Migration
+[Migration(20260402012)]
+public class M012_InsertAdminUser : Migration
 {
     public override void Up()
     {

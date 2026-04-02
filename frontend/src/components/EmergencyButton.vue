@@ -83,8 +83,9 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useQuasar } from 'quasar'
-import { useAlertStore } from '../stores/alert'
-import { useCondominiumStore } from '../stores/condominium'
+import { useAlertStore } from '@/stores/alert'
+import { useCondominiumStore } from '@/stores/condominium'
+import { Alert, CreateAlertRequest } from '@/types/models'
 
 const $q = useQuasar()
 const alertStore = useAlertStore()
@@ -93,9 +94,9 @@ const condoStore = useCondominiumStore()
 const loading = ref(false)
 const isPressed = ref(false)
 const showConfirmDialog = ref(false)
-const lastAlert = ref<any>(null)
+const lastAlert = ref<Alert | null>(null)
 
-const alertForm = ref({
+const alertForm = ref<CreateAlertRequest>({
   type: 1,
   title: '',
   description: ''
@@ -126,7 +127,7 @@ function startPress() {
     if (countdown > 0) {
       buttonLabel.value = `MANTENER ${countdown}s`
     } else {
-      clearInterval(countdownInterval!)
+      if (countdownInterval) clearInterval(countdownInterval)
       countdownInterval = null
       triggerAlert()
     }
@@ -157,8 +158,7 @@ async function confirmAlert() {
       const alertId = await alertStore.panicButton(condos[0].id, {
         type: alertForm.value.type,
         title: alertForm.value.title,
-        description: alertForm.value.description,
-        location: null
+        description: alertForm.value.description
       })
 
       if (alertId) {
@@ -169,7 +169,7 @@ async function confirmAlert() {
         })
         
         const alerts = await alertStore.fetchByCondominium(condos[0].id)
-        lastAlert.value = alerts[0]
+        lastAlert.value = alerts[0] || null
       } else {
         $q.notify({
           type: 'negative',
@@ -189,7 +189,7 @@ async function confirmAlert() {
   }
 }
 
-function getStatusLabel(status: number) {
+function getStatusLabel(status: number): string {
   const labels: Record<number, string> = {
     1: 'Pendiente',
     2: 'Aprobada',

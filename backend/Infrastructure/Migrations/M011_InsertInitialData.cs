@@ -2,8 +2,8 @@ using FluentMigrator;
 
 namespace UrbaPF.Infrastructure.Migrations;
 
-[Migration(20260227002)]
-public class M002_InsertDefaultCondominium : Migration
+[Migration(20260402011)]
+public class M011_InsertInitialData : Migration
 {
     public override void Up()
     {

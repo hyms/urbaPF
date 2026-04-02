@@ -11,7 +11,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "vue-tsc --noEmit",
-    "lint": "eslint --ext .js,.ts,.vue src --ignore-pattern 'src/env.d.ts'",
+    "lint": "eslint --ext .ts,.vue src --ignore-pattern 'src/env.d.ts'",
     "format": "prettier --write \"src/**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
     "test": "vitest run",
     "test:watch": "vitest"
@@ -24,6 +24,7 @@
     "pinia": "^3.0.4",
     "quasar": "^2.19.2",
     "vue": "^3.5.31",
+    "vue-i18n": "^9.14.5",
     "vue-router": "^5.0.4"
   },
   "devDependencies": {

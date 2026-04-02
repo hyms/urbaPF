@@ -6,15 +6,14 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using UrbaPF.Infrastructure.DTOs;
-using UrbaPF.Infrastructure.Data;
 using UrbaPF.Infrastructure.Interfaces;
-using UrbaPF.Infrastructure.Repositories;
 
 namespace UrbaPF.Infrastructure.Services;
 
-public class AuthService : BaseRepository, IAuthService
+public class AuthService : IAuthService
 {
     private readonly IUserRepository _userRepository;
+    private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IConfiguration _configuration;
     private readonly IPasswordHasher _passwordHasher;
     private readonly string _jwtSecret;
@@ -22,15 +21,15 @@ public class AuthService : BaseRepository, IAuthService
     private readonly int _refreshTokenExpiryDays;
     private readonly Func<DateTime> _utcNow;
 
-    public AuthService(IUserRepository userRepository, IConfiguration configuration, IDbConnectionFactory connectionFactory)
-        : this(userRepository, configuration, connectionFactory, new PasswordHasher(), () => DateTime.UtcNow)
+    public AuthService(IUserRepository userRepository, IRefreshTokenRepository refreshTokenRepository, IConfiguration configuration)
+        : this(userRepository, refreshTokenRepository, configuration, new PasswordHasher(), () => DateTime.UtcNow)
     {
     }
 
-    public AuthService(IUserRepository userRepository, IConfiguration configuration, IDbConnectionFactory connectionFactory, IPasswordHasher passwordHasher, Func<DateTime> utcNow)
-        : base(connectionFactory)
+    public AuthService(IUserRepository userRepository, IRefreshTokenRepository refreshTokenRepository, IConfiguration configuration, IPasswordHasher passwordHasher, Func<DateTime> utcNow)
     {
         _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+        _refreshTokenRepository = refreshTokenRepository ?? throw new ArgumentNullException(nameof(refreshTokenRepository));
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         _passwordHasher = passwordHasher ?? throw new ArgumentNullException(nameof(passwordHasher));
         _jwtSecret = _configuration["JWT_SECRET"] ?? "UrbaPFSuperSecretKey2026!ThisMustBeLongEnough";
@@ -67,7 +66,7 @@ public class AuthService : BaseRepository, IAuthService
         var refreshToken = GenerateRefreshToken();
         var expiresAt = _utcNow().AddMinutes(_jwtExpiryMinutes);
 
-        await SaveRefreshTokenAsync(user.Id, refreshToken, expiresAt);
+        await _refreshTokenRepository.SaveAsync(user.Id, refreshToken, expiresAt);
 
         var userDto = await _userRepository.GetByIdAsync(user.Id);
         if (userDto == null)
@@ -117,7 +116,7 @@ public class AuthService : BaseRepository, IAuthService
 
     public async Task<(AuthResponseDto? Response, string? Error)> RefreshTokenAsync(string refreshToken)
     {
-        var storedToken = await GetRefreshTokenAsync(refreshToken);
+        var storedToken = await _refreshTokenRepository.GetByTokenAsync(refreshToken);
         if (storedToken == null)
             return (null, "Refresh token inválido");
 
@@ -140,7 +139,7 @@ public class AuthService : BaseRepository, IAuthService
         var newRefreshToken = GenerateRefreshToken();
         var expiresAt = _utcNow().AddMinutes(_jwtExpiryMinutes);
 
-        await SaveRefreshTokenAsync(user.Id, newRefreshToken, expiresAt);
+        await _refreshTokenRepository.SaveAsync(user.Id, newRefreshToken, expiresAt);
 
         return (new AuthResponseDto
         {
@@ -153,9 +152,8 @@ public class AuthService : BaseRepository, IAuthService
 
     public async Task<(bool Success, string? Error)> RevokeRefreshTokenAsync(string refreshToken)
     {
-        var sql = "UPDATE refresh_tokens SET revoked_at = @RevokedAt WHERE token = @Token AND revoked_at IS NULL";
-        var rows = await ExecuteAsync(sql, new { Token = refreshToken, RevokedAt = _utcNow() });
-        return (rows > 0, null);
+        await _refreshTokenRepository.RevokeAsync(refreshToken, _utcNow());
+        return (true, null);
     }
 
     private string GenerateJwtToken(Guid userId, string email, int role, string fullName)
@@ -188,22 +186,5 @@ public class AuthService : BaseRepository, IAuthService
         using var rng = RandomNumberGenerator.Create();
         rng.GetBytes(randomBytes);
         return Convert.ToBase64String(randomBytes);
-    }
-
-    private async Task SaveRefreshTokenAsync(Guid userId, string token, DateTime expiresAt)
-    {
-        var sql = @"
-            INSERT INTO refresh_tokens (id, user_id, token, expires_at)
-            VALUES (gen_random_uuid(), @UserId, @Token, @ExpiresAt)";
-        await ExecuteAsync(sql, new { UserId = userId, Token = token, ExpiresAt = expiresAt });
-    }
-
-    private async Task<RefreshTokenDto?> GetRefreshTokenAsync(string token)
-    {
-        var sql = @"
-            SELECT id, user_id as UserId, token, expires_at as ExpiresAt, created_at as CreatedAt, revoked_at as RevokedAt
-            FROM refresh_tokens 
-            WHERE token = @Token";
-        return await QueryFirstOrDefaultAsync<RefreshTokenDto>(sql, new { Token = token });
     }
 }

@@ -36,13 +36,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useI18n } from '../composables/useI18n'
-
-interface PollResults {
-  results: number[]
-  votersCount: number
-  signature?: string
-}
+import { useI18n } from '@/composables/useI18n'
+import { PollResults } from '@/types/models'
 
 const props = defineProps<{
   options: string[]
@@ -55,7 +50,7 @@ const { t } = useI18n()
 
 const totalVotes = computed(() => {
   if (!props.results?.results) return 0
-  return props.results.results.reduce((sum, count) => sum + count, 0)
+  return props.results.results.reduce((sum: number, count: number) => sum + count, 0)
 })
 
 function getCount(index: number): number {

@@ -9,8 +9,8 @@ import 'quasar/src/css/index.sass'
 
 import App from './App.vue'
 import router from './router'
-import { api } from './boot/api.ts'
-import auth from './boot/auth.js'
+import { api } from './boot/api'
+import auth from './boot/auth'
 
 const app = createApp(App)
 

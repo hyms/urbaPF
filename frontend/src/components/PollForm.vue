@@ -110,7 +110,7 @@
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
-import { useI18n } from '../composables/useI18n'
+import { useI18n } from '@/composables/useI18n'
 
 interface PollFormData {
   title: string

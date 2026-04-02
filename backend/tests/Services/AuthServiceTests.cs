@@ -13,7 +13,7 @@ namespace UrbaPF.Tests.Services;
 public class AuthServiceTests
 {
     private readonly Mock<IUserRepository> _userRepositoryMock;
-    private readonly Mock<IDbConnectionFactory> _connectionFactoryMock;
+    private readonly Mock<IRefreshTokenRepository> _refreshTokenRepositoryMock;
     private readonly IConfiguration _configuration;
     private readonly IPasswordHasher _passwordHasher;
     private readonly Func<DateTime> _utcNow;
@@ -30,7 +30,7 @@ public class AuthServiceTests
     public AuthServiceTests()
     {
         _userRepositoryMock = new Mock<IUserRepository>();
-        _connectionFactoryMock = new Mock<IDbConnectionFactory>(MockBehavior.Strict);
+        _refreshTokenRepositoryMock = new Mock<IRefreshTokenRepository>();
         _passwordHasher = new PasswordHasher();
         _fixedDateTime = new DateTime(2026, 1, 1, 12, 0, 0, DateTimeKind.Utc);
         _utcNow = () => _fixedDateTime;
@@ -47,7 +47,7 @@ public class AuthServiceTests
 
     private AuthService CreateAuthService()
     {
-        return new AuthService(_userRepositoryMock.Object, _configuration, _connectionFactoryMock.Object, _passwordHasher, _utcNow);
+        return new AuthService(_userRepositoryMock.Object, _refreshTokenRepositoryMock.Object, _configuration, _passwordHasher, _utcNow);
     }
 
     private UserDto CreateTestUser(string email = "test@test.com", string password = "password123", int status = 1)
@@ -67,7 +67,7 @@ public class AuthServiceTests
         };
     }
 
-    [Test, Ignore("Requires mock of DbConnection for full unit testing")]
+    [Test]
     public async Task Login_WithValidCredentials_ReturnsTokenWithRefreshToken()
     {
         var email = "test@test.com";
@@ -77,7 +77,7 @@ public class AuthServiceTests
         _userRepositoryMock.Setup(x => x.GetByEmailWithPasswordAsync(email)).ReturnsAsync(user);
         _userRepositoryMock.Setup(x => x.GetByIdAsync(user.Id)).ReturnsAsync(user);
         _userRepositoryMock.Setup(x => x.UpdateLastLoginAsync(user.Id)).Returns(Task.CompletedTask);
-        _connectionFactoryMock.Setup(x => x.CreateConnection()).Returns(new Npgsql.NpgsqlConnection("Host=localhost;Database=test"));
+        _refreshTokenRepositoryMock.Setup(x => x.SaveAsync(user.Id, It.IsAny<string>(), It.IsAny<DateTime>())).Returns(Task.CompletedTask);
 
         var authService = CreateAuthService();
         var result = await authService.LoginAsync(email, password);
@@ -94,9 +94,7 @@ public class AuthServiceTests
     {
         var email = "test@test.com";
         var user = CreateTestUser(email, "correctpassword");
-        var dbConnection = new Mock<System.Data.IDbConnection>();
         
-        _connectionFactoryMock.Setup(x => x.CreateConnection()).Returns(dbConnection.Object);
         _userRepositoryMock.Setup(x => x.GetByEmailWithPasswordAsync(email)).ReturnsAsync(user);
 
         var authService = CreateAuthService();
@@ -109,8 +107,6 @@ public class AuthServiceTests
     [Test]
     public async Task Login_WithNonExistentUser_ReturnsError()
     {
-        var dbConnection = new Mock<System.Data.IDbConnection>();
-        _connectionFactoryMock.Setup(x => x.CreateConnection()).Returns(dbConnection.Object);
         _userRepositoryMock.Setup(x => x.GetByEmailWithPasswordAsync("notfound@test.com")).ReturnsAsync((UserDto?)null);
 
         var authService = CreateAuthService();
@@ -125,9 +121,7 @@ public class AuthServiceTests
     {
         var email = "inactive@test.com";
         var user = CreateTestUser(email, "password", status: 0);
-        var dbConnection = new Mock<System.Data.IDbConnection>();
         
-        _connectionFactoryMock.Setup(x => x.CreateConnection()).Returns(dbConnection.Object);
         _userRepositoryMock.Setup(x => x.GetByEmailWithPasswordAsync(email)).ReturnsAsync(user);
 
         var authService = CreateAuthService();
@@ -141,9 +135,7 @@ public class AuthServiceTests
     public async Task Register_WithNewEmail_ReturnsUserId()
     {
         var request = new { Email = "new@test.com", Password = "password123", FullName = "New User" };
-        var dbConnection = new Mock<System.Data.IDbConnection>();
         
-        _connectionFactoryMock.Setup(x => x.CreateConnection()).Returns(dbConnection.Object);
         _userRepositoryMock.Setup(x => x.GetByEmailAsync(request.Email)).ReturnsAsync((UserDto?)null);
         _userRepositoryMock.Setup(x => x.CreateAsync(It.IsAny<CreateUserDto>(), It.IsAny<string>())).ReturnsAsync(Guid.NewGuid());
 
@@ -158,9 +150,7 @@ public class AuthServiceTests
     public async Task Register_WithExistingEmail_ReturnsError()
     {
         var existingUser = new UserDto { Email = "existing@test.com" };
-        var dbConnection = new Mock<System.Data.IDbConnection>();
         
-        _connectionFactoryMock.Setup(x => x.CreateConnection()).Returns(dbConnection.Object);
         _userRepositoryMock.Setup(x => x.GetByEmailAsync(existingUser.Email)).ReturnsAsync(existingUser);
 
         var authService = CreateAuthService();
@@ -176,9 +166,7 @@ public class AuthServiceTests
         var password = "password123";
         var user = CreateTestUser("test@test.com", password);
         var newPassword = "newpassword";
-        var dbConnection = new Mock<System.Data.IDbConnection>();
         
-        _connectionFactoryMock.Setup(x => x.CreateConnection()).Returns(dbConnection.Object);
         _userRepositoryMock.Setup(x => x.GetByIdAsync(user.Id)).ReturnsAsync(user);
         _userRepositoryMock.Setup(x => x.GetByEmailWithPasswordAsync(user.Email)).ReturnsAsync(user);
         _userRepositoryMock.Setup(x => x.UpdatePasswordHashAsync(user.Id, It.IsAny<string>())).Returns(Task.CompletedTask);
@@ -194,9 +182,7 @@ public class AuthServiceTests
     public async Task ChangePassword_WithIncorrectOldPassword_ReturnsError()
     {
         var user = CreateTestUser();
-        var dbConnection = new Mock<System.Data.IDbConnection>();
         
-        _connectionFactoryMock.Setup(x => x.CreateConnection()).Returns(dbConnection.Object);
         _userRepositoryMock.Setup(x => x.GetByIdAsync(user.Id)).ReturnsAsync(user);
         _userRepositoryMock.Setup(x => x.GetByEmailWithPasswordAsync(user.Email)).ReturnsAsync(user);
 
@@ -210,9 +196,6 @@ public class AuthServiceTests
     [Test]
     public async Task ChangePassword_WithNonExistentUser_ReturnsError()
     {
-        var dbConnection = new Mock<System.Data.IDbConnection>();
-        
-        _connectionFactoryMock.Setup(x => x.CreateConnection()).Returns(dbConnection.Object);
         _userRepositoryMock.Setup(x => x.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync((UserDto?)null);
 
         var authService = CreateAuthService();

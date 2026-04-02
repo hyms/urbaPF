@@ -1,6 +1,7 @@
 using UrbaPF.Domain.Entities;
 using UrbaPF.Domain.Services;
 using UrbaPF.Infrastructure.Repositories;
+using UrbaPF.Infrastructure.Interfaces;
 
 namespace UrbaPF.Infrastructure.Services;
 
@@ -36,11 +37,16 @@ public class IncidentService : IIncidentService
 {
     private readonly IIncidentRepository _incidentRepository;
     private readonly IncidentDomainService _domainService;
+    private readonly IAuditService _auditService;
 
-    public IncidentService(IIncidentRepository incidentRepository, IncidentDomainService domainService)
+    public IncidentService(
+        IIncidentRepository incidentRepository, 
+        IncidentDomainService domainService,
+        IAuditService auditService)
     {
         _incidentRepository = incidentRepository;
         _domainService = domainService;
+        _auditService = auditService;
     }
 
     public async Task<IEnumerable<Incident>> GetByCondominiumAsync(Guid condominiumId, int? status = null)
@@ -71,7 +77,9 @@ public class IncidentService : IIncidentService
             Media = request.Media != null ? _domainService.SerializeMedia(request.Media) : null
         };
 
-        return await _incidentRepository.CreateAsync(incident);
+        var incidentId = await _incidentRepository.CreateAsync(incident);
+        await _auditService.LogEventAsync(reporterId, condominiumId, "INCIDENT_CREATED", incidentId, request);
+        return incidentId;
     }
 
     public async Task<bool> UpdateAsync(Guid id, Guid userId, int userRole, UpdateIncidentRequest request)
@@ -90,7 +98,12 @@ public class IncidentService : IIncidentService
         incident.AddressReference = request.AddressReference;
         incident.Media = request.Media != null ? _domainService.SerializeMedia(request.Media) : null;
 
-        return await _incidentRepository.UpdateAsync(incident);
+        var success = await _incidentRepository.UpdateAsync(incident);
+        if (success)
+        {
+            await _auditService.LogEventAsync(userId, incident.CondominiumId, "INCIDENT_UPDATED", id, request);
+        }
+        return success;
     }
 
     public async Task<bool> UpdateStatusAsync(Guid id, int userRole, bool isReporter, int newStatus, string? resolutionNotes = null)
@@ -105,7 +118,12 @@ public class IncidentService : IIncidentService
         if (newStatus == 5 && !_domainService.CanClose(incident.Status, userRole, isReporter))
             return false;
 
-        return await _incidentRepository.UpdateStatusAsync(id, newStatus, resolutionNotes);
+        var success = await _incidentRepository.UpdateStatusAsync(id, newStatus, resolutionNotes);
+        if (success)
+        {
+            await _auditService.LogEventAsync(Guid.Empty, incident.CondominiumId, "INCIDENT_STATUS_UPDATED", id, new { newStatus, resolutionNotes });
+        }
+        return success;
     }
 
     public async Task<bool> DeleteAsync(Guid id, Guid userId, int userRole)
@@ -120,6 +138,11 @@ public class IncidentService : IIncidentService
         if (incident.Status >= 4)
             return false;
 
-        return await _incidentRepository.DeleteAsync(id);
+        var success = await _incidentRepository.DeleteAsync(id);
+        if (success)
+        {
+            await _auditService.LogEventAsync(userId, incident.CondominiumId, "INCIDENT_DELETED", id, new { });
+        }
+        return success;
     }
 }

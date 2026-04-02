@@ -1,11 +1,11 @@
 import { ref } from 'vue'
-import es from '../i18n/es'
+import es from '@/i18n/es'
 
 const currentLocale = ref('es')
-const messages = { es }
+const messages: Record<string, any> = { es }
 
 export function useI18n() {
-  const t = (key) => {
+  const t = (key: string): string => {
     const keys = key.split('.')
     let value = messages[currentLocale.value]
     for (const k of keys) {
@@ -15,7 +15,7 @@ export function useI18n() {
         return key
       }
     }
-    return value
+    return typeof value === 'string' ? value : key
   }
 
   return { t, locale: currentLocale }

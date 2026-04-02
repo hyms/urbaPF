@@ -330,14 +330,14 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
-import { useCondominiumStore } from '../stores/condominium'
-import { usePostStore } from '../stores/post'
-import { useIncidentStore } from '../stores/incident'
-import { usePollStore } from '../stores/poll'
-import { useAlertStore } from '../stores/alert'
-import { Post, Incident, Alert, Poll } from '../types/models'
-import { useAuthStore } from '../stores/auth'
-import { useI18n } from '../composables/useI18n'
+import { useCondominiumStore } from '@/stores/condominium'
+import { usePostStore } from '@/stores/post'
+import { useIncidentStore } from '@/stores/incident'
+import { usePollStore } from '@/stores/poll'
+import { useAlertStore } from '@/stores/alert'
+import { Post, Incident, Alert, Poll } from '@/types/models'
+import { useAuthStore } from '@/stores/auth'
+import { useI18n } from '@/composables/useI18n'
 import PostItem from '../components/PostItem.vue'
 import IncidentItem from '../components/IncidentItem.vue'
 import AlertItem from '../components/AlertItem.vue'
@@ -367,57 +367,7 @@ const stats = ref({
   alerts: 0
 })
 
-interface Post {
-  id: string
-  title: string
-  content: string
-  authorId: string
-  authorName?: string
-  status: number
-  createdAt: string
-  category: number
-  isPinned: boolean
-  isAnnouncement: boolean
-}
-
-interface Incident {
-  id: string
-  title: string
-  description?: string
-  status: number
-  priority: number
-  lat?: number
-  lng?: number
-  createdById: string
-  createdAt: string
-  type: number
-}
-
-interface Alert {
-  id: string
-  title: string
-  description?: string
-  status: number
-  lat?: number
-  lng?: number
-  createdById: string
-  createdAt: string
-  type: number
-}
-
-interface Poll {
-  id: string
-  title: string
-  description?: string
-  status: number
-  createdById: string
-  createdByName?: string
-  createdAt: string
-  options: string
-  startsAt: string
-  endsAt: string
-  pollType: number
-}
+// Removed local interfaces
 
 const recentPosts = ref<Post[]>([])
 const recentIncidents = ref<Incident[]>([])

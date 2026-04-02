@@ -3,8 +3,8 @@ using UrbaPF.Infrastructure.Services;
 
 namespace UrbaPF.Infrastructure.Migrations;
 
-[Migration(20260331001)]
-public class M007_InsertTestUsers : Migration
+[Migration(20260402013)]
+public class M013_InsertTestUsers : Migration
 {
     public override void Up()
     {
@@ -24,7 +24,7 @@ public class M007_InsertTestUsers : Migration
             status = 1,
             is_validated = true,
             manager_votes = 2,
-            condominium_id = "c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"
+            condominium_id = "467b6f3c-502a-43f1-b94a-8d1e3a6c2c9d"
         });
 
         // Neighbor with high reputation - for testing normal flows
@@ -41,7 +41,7 @@ public class M007_InsertTestUsers : Migration
             status = 1,
             is_validated = true,
             manager_votes = 3,
-            condominium_id = "c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+            condominium_id = "467b6f3c-502a-43f1-b94a-8d1e3a6c2c9d",
             lot_number = "A-101"
         });
 
@@ -59,7 +59,7 @@ public class M007_InsertTestUsers : Migration
             status = 1,
             is_validated = true,
             manager_votes = 0,
-            condominium_id = "c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+            condominium_id = "467b6f3c-502a-43f1-b94a-8d1e3a6c2c9d",
             lot_number = "B-205"
         });
     }

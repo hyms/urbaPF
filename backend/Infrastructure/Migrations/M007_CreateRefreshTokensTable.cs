@@ -2,8 +2,8 @@ using FluentMigrator;
 
 namespace UrbaPF.Infrastructure.Migrations;
 
-[Migration(20260227004)]
-public class M004_AddRefreshTokens : Migration
+[Migration(20260402007)]
+public class M007_CreateRefreshTokensTable : Migration
 {
     public override void Up()
     {

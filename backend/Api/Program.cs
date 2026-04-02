@@ -38,6 +38,8 @@ builder.Services.AddScoped<IncidentDomainService>();
 builder.Services.AddScoped<IAlertRepository, AlertRepository>();
 builder.Services.AddScoped<IAlertService, AlertService>();
 builder.Services.AddScoped<AlertDomainService>();
+builder.Services.AddScoped<IAuditRepository, AuditRepository>();
+builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.AddHttpClient<IPushNotificationService, PushNotificationService>();
 builder.Services.AddScoped<IPushNotificationService, PushNotificationService>();
 
@@ -54,7 +56,7 @@ builder.Services.AddFluentMigratorCore()
     .ConfigureRunner(rb => rb
         .AddPostgres()
         .WithGlobalConnectionString(connectionString)
-        .ScanIn(typeof(M001_CreateAllTables).Assembly).For.Migrations())
+        .ScanIn(typeof(M001_CreateCondominiumsTable).Assembly).For.Migrations())
     .AddLogging(lb => lb.AddFluentMigratorConsole());
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

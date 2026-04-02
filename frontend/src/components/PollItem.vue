@@ -79,21 +79,11 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { useI18n } from '../composables/useI18n'
-import { formatDate } from '../utils/format'
-import { PollStatusLabel, PollStatusColor } from '../utils/appEnums'
+import { useI18n } from '@/composables/useI18n'
+import { formatDate } from '@/utils/format'
+import { PollStatusLabel, PollStatusColor } from '@/utils/appEnums'
+import { Poll } from '@/types/models'
 import PollResultsDisplay from './PollResultsDisplay.vue'
-
-interface Poll {
-  id: string
-  title: string
-  description?: string
-  options: string
-  status: number
-  startsAt?: string
-  endsAt?: string
-  pollType?: number
-}
 
 interface PollResults {
   results: number[]
@@ -143,7 +133,7 @@ const showResults = computed(() => {
 const userVotedOption = computed(() => {
   if (!props.hasVoted) return undefined
   if (typeof props.selectedOption === 'number') return props.selectedOption
-  return props.selectedOption?.[0]
+  return (props.selectedOption as number[])?.[0]
 })
 
 function toggleView() {
@@ -158,3 +148,4 @@ function getStatusColor(status: number): string {
   return PollStatusColor(status)
 }
 </script>
+

@@ -1,57 +1,21 @@
 import { defineStore } from 'pinia'
-import { api } from '../boot/api'
+import { api } from '@/boot/api'
+import { Post, CreatePostRequest, UpdatePostRequest, Comment } from '@/types/models'
 import { PostCategoryLabel, PostStatusLabel } from '../utils/appEnums'
 
-export interface Post {
-  id: string
-  condominiumId?: string
-  authorId: string
-  authorName?: string
-  title: string
-  content: string
-  category?: number
-  isPinned?: boolean
-  isAnnouncement?: boolean
-  status: number
-  createdAt: string
-  updatedAt?: string
-  viewCount?: number
-}
-
-export interface CreatePostRequest {
-  title: string
-  content: string
-  category: number
-  isPinned: boolean
-  isAnnouncement: boolean
-}
-
-export interface UpdatePostRequest {
-  title?: string
-  content?: string
-  category?: number
-  isPinned?: boolean
-  isAnnouncement?: boolean
-  status?: number
-}
-
-export interface Comment {
-  id: string
-  postId: string
-  authorId: string
-  authorName?: string
-  content: string
-  parentCommentId?: string
-  createdAt: string
-  credibilityLevel?: number
+interface PostState {
+  posts: Post[]
+  currentPost: Post | null
+  loading: boolean
+  error: string | null
 }
 
 export const usePostStore = defineStore('post', {
-  state: () => ({
-    posts: [] as Post[],
-    currentPost: null as Post | null,
+  state: (): PostState => ({
+    posts: [],
+    currentPost: null,
     loading: false,
-    error: null as string | null
+    error: null
   }),
 
   actions: {
