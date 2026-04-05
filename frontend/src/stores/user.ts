@@ -136,6 +136,17 @@ export const useUserStore = defineStore('user', {
         4: 'Administrator'
       };
       return labels[role] || 'Desconocido';
+    },
+
+    getRoleColor(role: number): string {
+      const colors: Record<number, string> = {
+        0: 'grey', // Restricted
+        1: 'blue-grey', // Guard
+        2: 'primary', // Neighbor
+        3: 'teal', // Manager
+        4: 'purple' // Administrator
+      };
+      return colors[role] || 'grey';
     }
   }
 })

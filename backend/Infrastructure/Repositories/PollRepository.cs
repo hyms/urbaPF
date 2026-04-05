@@ -7,7 +7,7 @@ namespace UrbaPF.Infrastructure.Repositories;
 
 public class PollRepository : BaseRepository, IPollRepository
 {
-    public PollRepository(DbConnectionFactory connectionFactory) : base(connectionFactory)
+    public PollRepository(IDbConnectionFactory connectionFactory) : base(connectionFactory)
     {
     }
 
@@ -15,7 +15,7 @@ public class PollRepository : BaseRepository, IPollRepository
     {
         var sql = @"
             SELECT p.id, p.condominium_id as CondominiumId, p.created_by_id as CreatedById, p.title, 
-                   p.description, p.options, p.poll_type as PollType, p.starts_at as StartsAt, 
+                   p.description, p.options::text as Options, p.poll_type as PollType, p.starts_at as StartsAt, 
                    p.ends_at as EndsAt, p.requires_justification as RequiresJustification, 
                    p.min_role_to_vote as MinRoleToVote, p.server_secret as ServerSecret, p.status, 
                    p.created_at as CreatedAt, p.updated_at as UpdatedAt,
@@ -31,14 +31,14 @@ public class PollRepository : BaseRepository, IPollRepository
     {
         var sql = @"
             SELECT p.id, p.condominium_id as CondominiumId, p.created_by_id as CreatedById, p.title, 
-                   p.description, p.options, p.poll_type as PollType, p.starts_at as StartsAt, 
+                   p.description, p.options::text as Options, p.poll_type as PollType, p.starts_at as StartsAt, 
                    p.ends_at as EndsAt, p.requires_justification as RequiresJustification, 
                    p.min_role_to_vote as MinRoleToVote, p.server_secret as ServerSecret, p.status, 
                    p.created_at as CreatedAt, p.updated_at as UpdatedAt,
                    u.full_name as CreatedByName
             FROM polls p
             JOIN users u ON p.created_by_id = u.id
-            WHERE p.condominium_id = @CondominiumId AND deleted_at IS NULL
+            WHERE p.condominium_id = @CondominiumId AND p.deleted_at IS NULL
             ORDER BY p.created_at DESC";
         return await QueryAsync<PollDto>(sql, new { CondominiumId = condominiumId });
     }
@@ -47,7 +47,7 @@ public class PollRepository : BaseRepository, IPollRepository
     {
         var sql = @"
             SELECT p.id, p.condominium_id as CondominiumId, p.created_by_id as CreatedById, p.title, 
-                   p.description, p.options, p.poll_type as PollType, p.starts_at as StartsAt, 
+                   p.description, p.options::text as Options, p.poll_type as PollType, p.starts_at as StartsAt, 
                    p.ends_at as EndsAt, p.requires_justification as RequiresJustification, 
                    p.min_role_to_vote as MinRoleToVote, p.server_secret as ServerSecret, p.status, 
                    p.created_at as CreatedAt, p.updated_at as UpdatedAt,

@@ -11,7 +11,10 @@ public class IncidentRepository : BaseRepository, IIncidentRepository
 
     public async Task<IEnumerable<Incident>> GetByCondominiumAsync(Guid condominiumId, int? status = null)
     {
-        var sql = @"SELECT * FROM incidents 
+        var sql = @"SELECT id, condominium_id, reporter_id, title, description, type, priority, status, 
+                           ST_AsText(location) as location, address_reference, media::text as media, 
+                           resolution_notes, resolved_at, closed_at, created_at, updated_at, deleted_at
+                    FROM incidents 
                     WHERE condominium_id = @CondominiumId 
                     AND deleted_at IS NULL";
 

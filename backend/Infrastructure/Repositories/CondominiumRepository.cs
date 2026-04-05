@@ -7,7 +7,7 @@ namespace UrbaPF.Infrastructure.Repositories;
 
 public class CondominiumRepository : BaseRepository, ICondominiumRepository
 {
-    public CondominiumRepository(DbConnectionFactory connectionFactory) : base(connectionFactory)
+    public CondominiumRepository(IDbConnectionFactory connectionFactory) : base(connectionFactory)
     {
     }
 

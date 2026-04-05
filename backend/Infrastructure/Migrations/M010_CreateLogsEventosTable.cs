@@ -7,6 +7,8 @@ public class M010_CreateLogsEventosTable : Migration
 {
     public override void Up()
     {
+        Execute.Sql("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"");
+        
         Create.Table("logs_eventos")
             .WithColumn("id").AsInt64().NotNullable().PrimaryKey().Identity()
             .WithColumn("uuid").AsGuid().NotNullable().Unique().WithDefault(SystemMethods.NewGuid)

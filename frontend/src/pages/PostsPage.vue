@@ -19,7 +19,7 @@
     <q-card flat bordered class="q-mb-md">
       <q-card-section class="q-py-sm">
         <div class="row q-col-gutter-md items-center">
-          <div class="col-12 col-md-4">
+          <div class="col-12 col-md-6">
             <q-input
               v-model="search"
               dense
@@ -32,19 +32,7 @@
               </template>
             </q-input>
           </div>
-          <div class="col-6 col-md-3">
-            <q-select
-              v-model="filterCategory"
-              :options="categoryOptions"
-              dense
-              outlined
-              :label="t('posts.category')"
-              emit-value
-              map-options
-              clearable
-            />
-          </div>
-          <div class="col-6 col-md-3">
+          <div class="col-12 col-md-6">
             <q-select
               v-model="filterStatus"
               :options="statusOptions"
@@ -56,7 +44,7 @@
               clearable
             />
           </div>
-          <div class="col-12 col-md-2">
+          <div class="col-12">
             <q-btn
               flat
               color="primary"
@@ -144,17 +132,6 @@
               rows="4"
               :rules="[v => !!v || t('common.required')]"
             />
-
-            <q-select
-              v-model="postForm.category"
-              :options="categoryOptions"
-              :label="t('posts.category') + ' *'"
-              outlined
-              emit-value
-              map-options
-              :rules="[v => v !== null || t('common.required')]"
-            />
-
             <div class="row q-col-gutter-md">
               <div class="col-6">
                 <q-toggle
@@ -260,14 +237,15 @@ import { ref, computed, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { usePostStore } from '@/stores/post'
-import { useCondoStore } from '@/stores/condominium'
+import { useCondominiumStore } from '@/stores/condominium'
 import { useAuthStore } from '@/stores/auth'
 import { Post, CreatePostRequest, UpdatePostRequest } from '@/types/models'
+
 
 const $q = useQuasar()
 const { t } = useI18n()
 const postStore = usePostStore()
-const condoStore = useCondoStore()
+const condoStore = useCondominiumStore()
 const authStore = useAuthStore()
 
 
@@ -275,7 +253,7 @@ const loading = computed(() => postStore.loading)
 const posts = computed(() => postStore.posts)
 
 const search = ref('')
-const filterCategory = ref<number | null>(null)
+
 const filterStatus = ref<number | null>(null)
 
 const showDialog = ref(false)
@@ -286,7 +264,6 @@ const viewingPost = ref<Post | null>(null)
 const postForm = ref({
   title: '',
   content: '',
-  category: 1,
   isPinned: false,
   isAnnouncement: false
 })
@@ -307,10 +284,6 @@ const filteredPosts = computed(() => {
     )
   }
 
-  if (filterCategory.value !== null) {
-    result = result.filter(p => p.category === filterCategory.value)
-  }
-
   if (filterStatus.value !== null) {
     result = result.filter(p => p.status === filterStatus.value)
   }
@@ -320,7 +293,6 @@ const filteredPosts = computed(() => {
 
 function clearFilters() {
   search.value = ''
-  filterCategory.value = null
   filterStatus.value = null
 }
 
@@ -347,7 +319,6 @@ function openCreateDialog() {
   postForm.value = {
     title: '',
     content: '',
-    category: 1,
     isPinned: false,
     isAnnouncement: false
   }
@@ -359,7 +330,6 @@ function editPost(post: Post) {
   postForm.value = {
     title: post.title,
     content: post.content,
-    category: post.category,
     isPinned: post.isPinned,
     isAnnouncement: post.isAnnouncement
   }
@@ -384,7 +354,6 @@ async function savePost() {
     const data: UpdatePostRequest = {
       title: postForm.value.title,
       content: postForm.value.content,
-      category: postForm.value.category,
       isPinned: postForm.value.isPinned,
       isAnnouncement: postForm.value.isAnnouncement
     }
@@ -400,7 +369,6 @@ async function savePost() {
     const data: CreatePostRequest = {
       title: postForm.value.title,
       content: postForm.value.content,
-      category: postForm.value.category,
       isPinned: postForm.value.isPinned,
       isAnnouncement: postForm.value.isAnnouncement
     }

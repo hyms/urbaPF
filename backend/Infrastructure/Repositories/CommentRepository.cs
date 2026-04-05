@@ -7,7 +7,7 @@ namespace UrbaPF.Infrastructure.Repositories;
 
 public class CommentRepository : BaseRepository, ICommentRepository
 {
-    public CommentRepository(DbConnectionFactory connectionFactory) : base(connectionFactory)
+    public CommentRepository(IDbConnectionFactory connectionFactory) : base(connectionFactory)
     {
     }
 

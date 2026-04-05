@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { api } from '@/boot/api'
 import { Post, CreatePostRequest, UpdatePostRequest, Comment } from '@/types/models'
-import { PostCategoryLabel, PostStatusLabel } from '../utils/appEnums'
+
 
 interface PostState {
   posts: Post[]
@@ -103,9 +103,7 @@ export const usePostStore = defineStore('post', {
       }
     },
 
-    getCategoryLabel(category: number): string {
-      return PostCategoryLabel(category)
-    },
+
 
     getStatusLabel(status: number): string {
       return PostStatusLabel(status)

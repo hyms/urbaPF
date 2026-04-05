@@ -12,9 +12,9 @@ Digitalizar la convivencia vecinal reduciendo la fricción de los grupos de What
 
 -   **Visitante:** Modo lectura. Solo ve Publicaciones y Emergencias. No interactúa.
     
--   **Acceso Restringido:** Rol inicial tras registro. Sin interacción social.
+-   **Vecino (Validado):** Rol inicial tras registro. Puede publicar, votar y comentar.
     
--   **Vecino (Validado):** Requiere **2 Votos de Encargados**. Puede publicar, votar y comentar.
+
     
 -   **Guardia:** Rol operativo. Botón exclusivo "En Camino" para emergencias. No accede al Tablón Social privado.
     
@@ -57,6 +57,7 @@ Digitalizar la convivencia vecinal reduciendo la fricción de los grupos de What
 -   **✅ Completado:** Autenticación (Refresh Tokens), Gestión de Usuarios, Tablón Social, Motor de Votaciones, Gestión de Condominios.
     
 -   **⏳ En Desarrollo:** Módulo de Incidentes (Fase 5.2 - 5.4).
+-   **Notas:** La funcionalidad de 'categorías' en publicaciones ha sido temporalmente deshabilitada y se considera para el MVP2.
     
 
 

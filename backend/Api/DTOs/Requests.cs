@@ -8,8 +8,8 @@ public record UpdateUserRequest(string? FullName, string? Phone, string? FcmToke
 public record ChangePasswordRequest(string OldPassword, string NewPassword);
 public record CreateCondominiumRequest(string Name, string Address, string? Description, string? Rules, decimal MonthlyFee, string? Currency);
 public record UpdateCondominiumRequest(string? Name, string? Address, string? Description, string? Rules, decimal? MonthlyFee, bool? IsActive);
-public record CreatePostRequest(string Title, string Content, int Category, bool IsPinned, bool IsAnnouncement);
-public record UpdatePostRequest(string? Title, string? Content, int? Category, bool? IsPinned, bool? IsAnnouncement, int? Status);
+public record CreatePostRequest(string Title, string Content, bool IsPinned, bool IsAnnouncement);
+public record UpdatePostRequest(string? Title, string? Content, bool? IsPinned, bool? IsAnnouncement, int? Status);
 public record CreateCommentRequest(Guid? ParentCommentId, string Content);
 public record CreateIncidentRequest(string Title, string Description, int Type, int Priority, double? Latitude, double? Longitude, string? LocationDescription, DateTime OccurredAt);
 public record UpdateIncidentStatusRequest(int Status, string? ResolutionNotes);

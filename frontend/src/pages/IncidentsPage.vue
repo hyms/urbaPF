@@ -8,6 +8,7 @@
         icon="add"
         :label="t('incidents.report')"
         @click="openCreateDialog"
+        :disable="authStore.isRestricted"
       />
     </div>
 

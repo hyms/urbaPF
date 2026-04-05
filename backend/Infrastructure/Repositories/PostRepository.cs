@@ -7,7 +7,7 @@ namespace UrbaPF.Infrastructure.Repositories;
 
 public class PostRepository : BaseRepository, IPostRepository
 {
-    public PostRepository(DbConnectionFactory connectionFactory) : base(connectionFactory)
+    public PostRepository(IDbConnectionFactory connectionFactory) : base(connectionFactory)
     {
     }
 

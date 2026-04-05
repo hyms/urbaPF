@@ -47,7 +47,5 @@ public static class CondominiumRoutes
             await repo.SoftDeleteAsync(id);
             return Results.Ok(new { message = "Condominio eliminado" });
         });
-
-        app.MapGet("/api/condominiums/{id:guid}/posts", async (Guid id, IPostRepository repo) => Results.Ok(await repo.GetByCondominiumAsync(id)));
     }
 }

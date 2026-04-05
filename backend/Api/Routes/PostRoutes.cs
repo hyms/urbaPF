@@ -58,7 +58,6 @@ public static class PostRoutes
             {
                 Title = request.Title,
                 Content = request.Content,
-                Category = request.Category,
                 IsPinned = request.IsPinned,
                 IsAnnouncement = request.IsAnnouncement,
                 Status = status
@@ -87,7 +86,6 @@ public static class PostRoutes
             {
                 Title = request.Title,
                 Content = request.Content,
-                Category = request.Category,
                 IsPinned = request.IsPinned,
                 IsAnnouncement = request.IsAnnouncement
             };

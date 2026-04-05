@@ -67,8 +67,8 @@
         </template>
 
         <template v-slot:body-cell-credibilityLevel="props">
-          <q-td v-if="authStore.isManager" :props="props">
-            <q-badge :color="getCredibilityColor(props.row.credibilityLevel)">
+          <q-td :props="props">
+            <q-badge v-if="authStore.isManager" :color="getCredibilityColor(props.row.credibilityLevel)">
               {{ props.row.credibilityLevel }}/5
             </q-badge>
           </q-td>
@@ -379,7 +379,6 @@ const t = (key: string) => {
 const columns = computed(() => [
   { name: 'avatar', label: '', field: 'photoUrl', align: 'center' as const },
   { name: 'fullName', label: t('auth.fullName'), field: 'fullName', sortable: true, align: 'left' as const },
-  { name: 'email', label: t('auth.email'), field: 'email', sortable: true, align: 'left' as const },
   { name: 'phone', label: t('auth.phone'), field: 'phone', align: 'left' as const },
   { name: 'role', label: t('users.role'), field: 'role', sortable: true, align: 'center' as const },
   { name: 'credibilityLevel', label: 'Credibilidad', field: 'credibilityLevel', sortable: true, align: 'center' as const },

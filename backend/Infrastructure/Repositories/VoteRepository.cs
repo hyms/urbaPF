@@ -7,7 +7,7 @@ namespace UrbaPF.Infrastructure.Repositories;
 
 public class VoteRepository : BaseRepository, IVoteRepository
 {
-    public VoteRepository(DbConnectionFactory connectionFactory) : base(connectionFactory)
+    public VoteRepository(IDbConnectionFactory connectionFactory) : base(connectionFactory)
     {
     }
 

@@ -59,7 +59,7 @@
               <div class="col-6 col-sm-3">
                 <q-card class="bg-green text-white">
                   <q-card-section class="text-center">
-                    <div class="text-h4">{{ resolvedToday }}</div>
+                            <div class="text-h4">{{ resolvedToday }}</div>
                     <div class="text-caption">Resueltos Hoy</div>
                   </q-card-section>
                 </q-card>
@@ -229,24 +229,7 @@ const mapAlerts = computed<MapItem[]>(() => {
     })
 })
 
-const mapAlerts = computed<MapItem[]>(() => {
-  return alerts.value
-    .filter(a => a.location)
-    .map(a => {
-      const [lat, lng] = a.location.split(' ')
-      return {
-        id: a.id,
-        type: 'alert' as const,
-        title: a.title,
-        description: a.description,
-        lat: parseFloat(lat),
-        lng: parseFloat(lng),
-        status: a.status,
-        priority: 4,
-        created_at: a.created_at
-      }
-    })
-})
+
 
 const urgentCount = computed(() => {
   const urgentIncidents = incidents.value.filter(i => i.priority === 4 && i.status < 4).length

@@ -69,12 +69,21 @@ public static class UserRoutes
 
         app.MapPut("/api/users/{id:guid}/password", async (Guid id, ChangePasswordRequest request, ClaimsPrincipal user, IAuthService authService) =>
         {
-            var currentUserId = Guid.Parse(user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? throw new UnauthorizedAccessException());
-            var currentUserRole = int.Parse(user.FindFirst(ClaimTypes.Role)?.Value ?? throw new UnauthorizedAccessException());
-
-            if (currentUserId != id && currentUserRole != 4) // Only owner or Admin can change password
+            var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!Guid.TryParse(userIdClaim, out var currentUserId))
             {
                 return Results.Forbid();
+            }
+
+            var userRoleClaim = user.FindFirst(ClaimTypes.Role)?.Value;
+            if (!int.TryParse(userRoleClaim, out var currentUserRole))
+            {
+                return Results.Forbid();
+            }
+
+            if (currentUserId != id && currentUserRole != RoleAdministrator) // Only owner or Admin can change password
+            {
+                return Results.Problem("No tiene permisos para cambiar esta contraseña.", statusCode: StatusCodes.Status403Forbidden);
             }
 
             var (success, error) = await authService.ChangePasswordAsync(id, request.OldPassword, request.NewPassword);

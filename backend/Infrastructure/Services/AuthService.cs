@@ -94,7 +94,7 @@ public class AuthService : IAuthService
             FullName = fullName, 
             Phone = phone 
         };
-        var userId = await _userRepository.CreateAsync(createDto, passwordHash);
+        var userId = await _userRepository.CreateAsync(createDto, passwordHash, 2); // Default to Neighbor role
 
         return (userId, null);
     }
@@ -163,9 +163,9 @@ public class AuthService : IAuthService
 
         var claims = new[]
         {
-            new Claim("id", userId.ToString()),
-            new Claim("email", email),
-            new Claim("role", role.ToString()),
+            new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+            new Claim(ClaimTypes.Email, email),
+            new Claim(ClaimTypes.Role, role.ToString()),
             new Claim("fullName", fullName)
         };
 

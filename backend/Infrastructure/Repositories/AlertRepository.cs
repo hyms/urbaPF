@@ -11,7 +11,11 @@ public class AlertRepository : BaseRepository, IAlertRepository
 
     public async Task<IEnumerable<Alert>> GetByCondominiumAsync(Guid condominiumId, int? status = null)
     {
-        var sql = @"SELECT * FROM alerts 
+        var sql = @"SELECT id, condominium_id, creator_id, type, title, description, 
+                           ST_AsText(location) as location, status, reputation_level, needs_approval, 
+                           approved_by_id, approved_at, notified_at, resolved_at, acknowledged_by_id, 
+                           acknowledged_at, created_at, updated_at, deleted_at
+                    FROM alerts 
                     WHERE condominium_id = @CondominiumId 
                     AND deleted_at IS NULL";
 

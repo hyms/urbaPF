@@ -1,11 +1,5 @@
 <template>
   <q-item clickable v-ripple @click="$emit('click', post)">
-    <q-item-section avatar>
-      <q-avatar :color="getCategoryColor(post.category)" text-color="white">
-        <q-icon :name="getCategoryIcon(post.category)" />
-      </q-avatar>
-    </q-item-section>
-
     <q-item-section>
       <q-item-label class="row items-center q-gutter-xs">
         <q-chip
@@ -63,13 +57,6 @@
 
     <q-item-section side>
       <div class="column items-end">
-        <q-chip
-          :color="getCategoryColor(post.category)"
-          text-color="white"
-          size="sm"
-        >
-          {{ getCategoryLabel(post.category) }}
-        </q-chip>
         <q-btn
           v-if="canModerate"
           flat
@@ -136,7 +123,7 @@
 import { computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { Post } from '@/types/models'
-import { PostCategoryLabel, PostCategoryColor, PostCategoryIcon } from '@/utils/appEnums'
+import { useI18n } from 'vue-i18n' 
 
 const props = defineProps<{
   post: Post
@@ -151,20 +138,8 @@ defineEmits<{
 }>()
 
 const authStore = useAuthStore()
+const { t } = useI18n() 
 
-const t = (key: string) => {
-  const translations: Record<string, string> = {
-    'posts.pinned': 'Fijado',
-    'posts.announcement': 'Anuncio',
-    'posts.pending': 'Pendiente',
-    'posts.rejected': 'Rechazado',
-    'posts.approve': 'Aprobar',
-    'posts.reject': 'Rechazar',
-    'common.edit': 'Editar',
-    'common.delete': 'Eliminar'
-  }
-  return translations[key] || key
-}
 
 const canModerate = computed(() => {
   return authStore.isAdmin || authStore.isManager
@@ -179,18 +154,6 @@ const canEdit = computed(() => {
 const canDelete = computed(() => {
   return authStore.isAdmin
 })
-
-function getCategoryLabel(category: number | undefined): string {
-  return PostCategoryLabel(category ?? 1)
-}
-
-function getCategoryColor(category: number | undefined): string {
-  return PostCategoryColor(category ?? 1)
-}
-
-function getCategoryIcon(category: number | undefined): string {
-  return PostCategoryIcon(category ?? 1)
-}
 
 function formatRelativeTime(dateString: string): string {
   const date = new Date(dateString)

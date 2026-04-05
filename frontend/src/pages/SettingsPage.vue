@@ -15,8 +15,9 @@
             <div class="text-h6 q-mb-md">{{ t('settings.profile') }}</div>
             <q-form class="q-gutter-md">
               <q-input v-model="profile.fullName" :label="t('settings.fullName')" outlined />
-              <q-input v-model="profile.email" :label="t('settings.email')" type="email" outlined />
+              <q-input v-model="profile.email" :label="t('settings.email')" type="email" outlined readonly />
               <q-input v-model="profile.phone" :label="t('settings.phone')" outlined />
+              <q-input v-model="profile.streetAddress" :label="t('settings.address')" outlined />
               <q-btn color="primary" :label="t('common.save')" @click="saveProfile" :loading="loading" />
             </q-form>
           </q-card-section>
@@ -114,7 +115,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useAuthStore } from '../stores/auth'
 import { useUserStore } from '../stores/user'
@@ -131,9 +132,10 @@ const tab = ref(t('settings.general'))
 const loading = ref(false)
 
 const profile = ref({
-  fullName: '',
-  email: '',
-  phone: ''
+  fullName: authStore.user?.fullName || '',
+  email: authStore.user?.email || '',
+  phone: authStore.user?.phone || '',
+  streetAddress: authStore.user?.streetAddress || ''
 })
 
 const password = ref({
@@ -160,13 +162,7 @@ const notifications = ref({
 
 const fcmToken = ref('')
 
-onMounted(() => {
-  if (authStore.currentUser) {
-    profile.value.fullName = authStore.currentUser.fullName || ''
-    profile.value.email = authStore.currentUser.email || ''
-  }
-  loadCondoSettings()
-})
+loadCondoSettings()
 
 async function loadCondoSettings() {
   const currentCondoId = localStorage.getItem('currentCondoId')

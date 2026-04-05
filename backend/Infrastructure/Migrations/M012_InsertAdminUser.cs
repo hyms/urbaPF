@@ -12,7 +12,7 @@ public class M012_InsertAdminUser : Migration
         string adminPasswordHash = hasher.Hash("123abc");
         Insert.IntoTable("users").Row(new
         {
-            id = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+            id = Guid.Parse("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"),
             email = "admin@urbapf.com",
             password_hash = adminPasswordHash,
             full_name = "Administrador Principal",

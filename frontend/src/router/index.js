@@ -1,4 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { Loading } from 'quasar'
+import { useAuthStore } from '../stores/auth'
 
 const routes = [
   {
@@ -78,20 +80,24 @@ const router = createRouter({
   routes
 })
 
-router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('token')
-  const isAuthenticated = !!token
+router.beforeEach(async (to, from) => {
+  const authStore = useAuthStore()
+  const isAuthenticated = await authStore.check()
   
   const publicPaths = ['/login', '/register']
   const isPublicPath = publicPaths.includes(to.path)
 
   if (!isAuthenticated && !isPublicPath) {
-    next('/login')
+    return '/login'
   } else if (isAuthenticated && isPublicPath) {
-    next('/')
+    return '/'
   } else {
-    next()
+    return true
   }
+})
+
+router.afterEach(() => {
+  // Loading.hide()
 })
 
 export default router

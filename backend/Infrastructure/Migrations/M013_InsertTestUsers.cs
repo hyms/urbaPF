@@ -14,7 +14,7 @@ public class M013_InsertTestUsers : Migration
         string managerPasswordHash = hasher.Hash("Admin123!");
         Insert.IntoTable("users").Row(new
         {
-            id = "b1fc99-9c0b-4ef8-bb6d-6bb9bd380a22",
+            id = Guid.Parse("00b1fc99-9c0b-4ef8-bb6d-6bb9bd380a22"),
             email = "encargado@urbapf.com",
             password_hash = managerPasswordHash,
             full_name = "Juan Pérez - Encargado",
@@ -24,14 +24,14 @@ public class M013_InsertTestUsers : Migration
             status = 1,
             is_validated = true,
             manager_votes = 2,
-            condominium_id = "467b6f3c-502a-43f1-b94a-8d1e3a6c2c9d"
+            condominium_id = Guid.Parse("467b6f3c-502a-43f1-b94a-8d1e3a6c2c9d")
         });
 
         // Neighbor with high reputation - for testing normal flows
         string neighborGoodHash = hasher.Hash("Vecino123!");
         Insert.IntoTable("users").Row(new
         {
-            id = "c2edd99-9c0b-4ef8-bb6d-6bb9bd380a33",
+            id = Guid.Parse("00c2edd9-9c0b-4ef8-bb6d-6bb9bd380a33"),
             email = "vecino@urbapf.com",
             password_hash = neighborGoodHash,
             full_name = "María García - Vecina",
@@ -41,7 +41,7 @@ public class M013_InsertTestUsers : Migration
             status = 1,
             is_validated = true,
             manager_votes = 3,
-            condominium_id = "467b6f3c-502a-43f1-b94a-8d1e3a6c2c9d",
+            condominium_id = Guid.Parse("467b6f3c-502a-43f1-b94a-8d1e3a6c2c9d"),
             lot_number = "A-101"
         });
 
@@ -49,7 +49,7 @@ public class M013_InsertTestUsers : Migration
         string neighborBadHash = hasher.Hash("Vecino123!");
         Insert.IntoTable("users").Row(new
         {
-            id = "d3fee99-9c0b-4ef8-bb6d-6bb9bd380a44",
+            id = Guid.Parse("00d3fee9-9c0b-4ef8-bb6d-6bb9bd380a44"),
             email = "nuevo@urbapf.com",
             password_hash = neighborBadHash,
             full_name = "Pedro Nuevo - Vecino",
@@ -59,7 +59,7 @@ public class M013_InsertTestUsers : Migration
             status = 1,
             is_validated = true,
             manager_votes = 0,
-            condominium_id = "467b6f3c-502a-43f1-b94a-8d1e3a6c2c9d",
+            condominium_id = Guid.Parse("467b6f3c-502a-43f1-b94a-8d1e3a6c2c9d"),
             lot_number = "B-205"
         });
     }
