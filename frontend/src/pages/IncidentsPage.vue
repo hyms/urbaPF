@@ -117,6 +117,7 @@ const showResolveDialog = ref(false)
 const editingIncident = ref(null)
 const statusFilter = ref(null)
 const currentIncidentId = ref<string | null>(null)
+const resolutionNotes = ref('')
 
 const statusOptions = computed(() => [
   { label: t('incidents.all'), value: null },

@@ -45,7 +45,7 @@
         <div class="row items-center q-gutter-x-sm">
           <span>{{ post.authorName }}</span>
           <span>•</span>
-          <span>{{ formatRelativeTime(post.createdAt) }}</span>
+          <span>{{ formatRelativeTime(post.created_at) }}</span>
           <span v-if="post.viewCount">•</span>
           <span v-if="post.viewCount">
             <q-icon name="visibility" size="14px" class="q-mr-xs" />

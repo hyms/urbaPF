@@ -166,7 +166,7 @@
             {{ viewingPost?.viewCount }} {{ t('posts.views') }}
             <span class="q-mx-sm">|</span>
             <q-icon name="schedule" class="q-mr-xs" />
-            {{ formatDateTime(viewingPost?.createdAt) }}
+            {{ formatDateTime(viewingPost?.created_at) }}
           </div>
         </q-card-section>
 

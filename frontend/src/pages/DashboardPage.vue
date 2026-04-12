@@ -233,7 +233,7 @@
                   <q-card-section>
                     <div class="text-subtitle1">{{ post.title }}</div>
                     <div class="text-caption">{{ post.content?.substring(0, 100) }}...</div>
-                    <div class="text-caption text-grey">{{ post.authorName }} - {{ post.createdAt }}</div>
+                     <div class="text-caption text-grey">{{ post.authorName }} - {{ post.created_at }}</div>
                   </q-card-section>
                   <q-card-actions align="right">
                     <q-btn flat color="negative" :label="t('common.reject')" @click="rejectPost(post.id)" />
@@ -254,7 +254,7 @@
                   <q-card-section>
                     <div class="text-subtitle1">{{ poll.title }}</div>
                     <div class="text-caption">{{ poll.description?.substring(0, 100) }}...</div>
-                    <div class="text-caption text-grey">{{ poll.createdByName }} - {{ poll.createdAt }}</div>
+                    <div class="text-caption text-grey">{{ poll.createdByName }} - {{ poll.created_at }}</div>
                   </q-card-section>
                   <q-card-actions align="right">
                     <q-btn flat color="negative" :label="t('common.reject')" @click="rejectPoll(poll.id)" />
@@ -312,7 +312,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useI18n } from '@/composables/useI18n'
 import PostItem from '../components/PostItem.vue'
 import IncidentItem from '../components/IncidentItem.vue'
-import AlertItem from '../components/AlertItem.vue'
+import AlertItem from '../components/alert/AlertItem.vue'
 import PollItem from '../components/PollItem.vue'
 import SecurityMap from '../components/SecurityMap.vue'
 import StatsCard from '../components/dashboard/StatsCard.vue'
@@ -358,8 +358,8 @@ const allAlerts = ref<Alert[]>([])
 const allPolls = ref<Poll[]>([])
 
 const myPosts = computed(() => allPosts.value.filter(p => p.authorId === authStore.user?.id))
-const myIncidents = computed(() => allIncidents.value.filter(i => i.createdById === authStore.user?.id))
-const myAlerts = computed(() => allAlerts.value.filter(a => a.createdById === authStore.user?.id))
+const myIncidents = computed(() => allIncidents.value.filter(i => i.reporterId === authStore.user?.id))
+const myAlerts = computed(() => allAlerts.value.filter(a => a.creatorId === authStore.user?.id))
 const myPolls = computed(() => allPolls.value.filter(p => p.createdById === authStore.user?.id))
 
 const pendingPosts = computed(() => allPosts.value.filter(p => p.status === 1))
@@ -372,17 +372,17 @@ const pendingCount = computed(() => pendingPosts.value.length + pendingPolls.val
 const activeAlerts = computed(() => allAlerts.value.filter(a => a.status === 1 || a.status === 2))
 
 const mapIncidents = computed(() => recentIncidents.value
-  .filter(i => i.lat != null && i.lng != null && i.type != null)
+  .filter(i => i.location && i.type != null)
   .map(i => ({
     id: i.id,
     type: 'incident' as const,
     title: i.title,
     description: i.description,
-    lat: i.lat!,
-    lng: i.lng!,
+    lat: parseFloat(i.location!.split(' ')[0]),
+    lng: parseFloat(i.location!.split(' ')[1]),
     status: i.status,
     priority: i.priority,
-    created_at: i.createdAt
+    created_at: i.created_at
   })))
 
 const mapAlerts = computed(() => activeAlerts.value
@@ -396,7 +396,7 @@ const mapAlerts = computed(() => activeAlerts.value
     lng: a.lng!,
     status: a.status,
     priority: 4,
-    created_at: a.createdAt
+    created_at: a.created_at
   })))
 
 const statusOptions = [

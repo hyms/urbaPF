@@ -241,17 +241,16 @@ async function saveUser(formData: any) {
 }
 
 async function changePassword(formData: { oldPassword?: string; newPassword: string; confirmPassword: string }) {
-  const result = await userStore.changePassword(
+  const success = await userStore.changePassword(
     editingUser.value!.id,
-    formData.oldPassword || '',
-    formData.newPassword
+    { oldPassword: formData.oldPassword || '', newPassword: formData.newPassword }
   )
 
-  if (result.success) {
-    $q.notify({ type: 'positive', message: result.message })
+  if (success) {
+    $q.notify({ type: 'positive', message: t('settings.passwordChangeSuccess') })
     showPasswordDialog.value = false
   } else {
-    $q.notify({ type: 'negative', message: result.message })
+    $q.notify({ type: 'negative', message: userStore.error || t('settings.passwordChangeError') })
   }
 }
 

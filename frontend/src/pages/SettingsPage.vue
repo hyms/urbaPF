@@ -136,11 +136,11 @@ async function changePassword(formData: { current: string; new: string; confirm:
       $q.notify({ type: 'negative', message: t('common.error') })
       return
     }
-    const result = await userStore.changePassword(userId, formData.current, formData.new)
-    if (result.success) {
-      $q.notify({ type: 'positive', message: result.message })
+    const success = await userStore.changePassword(userId, { oldPassword: formData.current, newPassword: formData.new })
+    if (success) {
+      $q.notify({ type: 'positive', message: t('settings.passwordChangeSuccess') })
     } else {
-      $q.notify({ type: 'negative', message: result.message })
+      $q.notify({ type: 'negative', message: userStore.error || t('settings.passwordChangeError') })
     }
   } catch (e) {
     $q.notify({ type: 'negative', message: t('common.error') })

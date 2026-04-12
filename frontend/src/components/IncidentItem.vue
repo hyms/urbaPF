@@ -6,7 +6,7 @@
     <q-item-section>
       <q-item-label>{{ incident.title || 'Incidente' }}</q-item-label>
       <q-item-label caption>
-        {{ formatDate(incident.createdAt) }}
+        {{ formatDate(incident.created_at) }}
       </q-item-label>
     </q-item-section>
     <q-item-section side>

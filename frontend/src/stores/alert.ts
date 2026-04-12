@@ -1,11 +1,7 @@
 import { defineStore } from 'pinia'
 import { api } from '@/boot/api'
 import { Alert, CreateAlertRequest } from '@/types/models'
-// Need to handle AlertStatusLabel and AlertTypeLabel imports
-// They seem to be in utils/appEnums.js. I should convert them or import them.
-// Let's assume they are imported.
-// import { AlertStatusLabel, AlertTypeLabel } from '@/utils/appEnums'
-// I'll define them temporarily to avoid breaking imports for now.
+import { AlertStatusLabel } from '@/utils/appEnums'
 
 interface AlertState {
   alerts: Alert[]
@@ -120,6 +116,10 @@ export const useAlertStore = defineStore('alert', {
       } catch (error: any) {
         return false
       }
+    },
+
+    getStatusLabel(status: number): string {
+      return AlertStatusLabel(status)
     }
   }
 })

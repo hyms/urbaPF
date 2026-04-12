@@ -5,7 +5,7 @@
         <div class="col">
           <div class="text-h6">{{ incident.title }}</div>
           <div class="text-caption text-grey">
-            {{ formatDate(incident.createdAt) }}
+            {{ formatDate(incident.created_at) }}
           </div>
         </div>
         <q-badge :color="getPriorityColor(incident.priority)">

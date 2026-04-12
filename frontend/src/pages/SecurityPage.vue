@@ -191,6 +191,11 @@ const selectedItem = ref<any>(null)
 const showDetailDialog = ref(false)
 const mapRef = ref<any>(null)
 
+const $q = useQuasar()
+const condoStore = useCondominiumStore()
+const incidentStore = useIncidentStore()
+const alertStore = useAlertStore()
+
 const mapIncidents = computed<MapItem[]>(() => {
   return incidents.value
     .filter(i => i.location)

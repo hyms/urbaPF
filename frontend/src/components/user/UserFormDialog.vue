@@ -119,11 +119,11 @@ const form = ref({
 })
 
 const roleOptions = computed(() => [
-  { label: UserRoleLabel(UserRole.Admin), value: UserRole.Admin },
+  { label: UserRoleLabel(UserRole.Administrator), value: UserRole.Administrator },
   { label: UserRoleLabel(UserRole.Manager), value: UserRole.Manager },
   { label: UserRoleLabel(UserRole.Guard), value: UserRole.Guard },
   { label: UserRoleLabel(UserRole.Neighbor), value: UserRole.Neighbor },
-  { label: UserRoleLabel(UserRole.RestrictedAccess), value: UserRole.RestrictedAccess }
+  { label: UserRoleLabel(UserRole.Restricted), value: UserRole.Restricted }
 ])
 
 watch(() => props.user, (newVal) => {
