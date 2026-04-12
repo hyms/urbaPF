@@ -83,7 +83,7 @@
                 :key="alert.id"
                 clickable
                 @click="selectAlert(alert)"
-                :class="selectedItem?.id === alert.id ? 'bg-blue-1' : ''"
+                :class="selectedItem?.id === alert.id ? 'bg-grey-3' : ''"
               >
                 <q-item-section avatar>
                   <q-icon name="warning" color="red" />
@@ -115,7 +115,7 @@
                 :key="incident.id"
                 clickable
                 @click="selectIncident(incident)"
-                :class="selectedItem?.id === incident.id ? 'bg-blue-1' : ''"
+                :class="selectedItem?.id === incident.id ? 'bg-grey-3' : ''"
               >
                 <q-item-section avatar>
                   <q-icon :name="getIncidentIcon(incident.type)" :color="getPriorityColor(incident.priority)" />

@@ -5,6 +5,7 @@ using UrbaPF.Domain.Services;
 using UrbaPF.Infrastructure.Interfaces;
 using UrbaPF.Infrastructure.Services;
 using UrbaPF.Infrastructure.Repositories;
+using UrbaPF.Domain.Enums;
 
 namespace UrbaPF.Tests.Services;
 
@@ -13,6 +14,7 @@ public class IncidentServiceTests
     private readonly Mock<IIncidentRepository> _incidentRepositoryMock;
     private readonly IncidentDomainService _domainService;
     private readonly Mock<IAuditService> _auditServiceMock;
+    private readonly Mock<IFileStorageService> _fileStorageServiceMock;
     private readonly IncidentService _incidentService;
 
     public IncidentServiceTests()
@@ -20,10 +22,12 @@ public class IncidentServiceTests
         _incidentRepositoryMock = new Mock<IIncidentRepository>();
         _domainService = new IncidentDomainService();
         _auditServiceMock = new Mock<IAuditService>();
+        _fileStorageServiceMock = new Mock<IFileStorageService>();
         _incidentService = new IncidentService(
             _incidentRepositoryMock.Object,
             _domainService,
-            _auditServiceMock.Object
+            _auditServiceMock.Object,
+            _fileStorageServiceMock.Object
         );
     }
 
@@ -40,7 +44,7 @@ public class IncidentServiceTests
         _incidentRepositoryMock.Setup(r => r.UpdateAsync(It.IsAny<Incident>())).ReturnsAsync(true);
 
         // Act
-        var result = await _incidentService.UpdateAsync(incidentId, userId, 2, request);
+        var result = await _incidentService.UpdateAsync(incidentId, userId, UserRole.Neighbor, request);
 
         // Assert
         result.Should().BeTrue();
@@ -60,7 +64,7 @@ public class IncidentServiceTests
         _incidentRepositoryMock.Setup(r => r.UpdateStatusAsync(incidentId, newStatus, null)).ReturnsAsync(true);
 
         // Act
-        var result = await _incidentService.UpdateStatusAsync(incidentId, 3, false, newStatus, null);
+        var result = await _incidentService.UpdateStatusAsync(incidentId, UserRole.Manager, false, newStatus, null);
 
         // Assert
         result.Should().BeTrue();
@@ -80,7 +84,7 @@ public class IncidentServiceTests
         _incidentRepositoryMock.Setup(r => r.DeleteAsync(incidentId)).ReturnsAsync(true);
 
         // Act
-        var result = await _incidentService.DeleteAsync(incidentId, userId, 2);
+        var result = await _incidentService.DeleteAsync(incidentId, userId, UserRole.Neighbor);
 
         // Assert
         result.Should().BeTrue();

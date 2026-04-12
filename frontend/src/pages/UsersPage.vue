@@ -58,10 +58,10 @@
         <template v-slot:body-cell-role="props">
           <q-td :props="props">
             <q-chip 
-              :color="userStore.getRoleColor(props.row.role)" 
+              :color="UserRoleColor(props.row.role)" 
               text-color="white" 
               size="sm"
-              :label="userStore.getRoleLabel(props.row.role)"
+              :label="UserRoleLabel(props.row.role)"
             />
           </q-td>
         </template>
@@ -123,174 +123,24 @@
 
     <!-- Create/Edit Dialog -->
     <q-dialog v-model="showDialog" persistent>
-      <q-card style="min-width: 450px; max-width: 90vw;">
-        <q-card-section class="row items-center q-pb-none">
-          <div class="text-h6">{{ editingUser ? t('users.editUser') : t('users.newUser') }}</div>
-          <q-space />
-          <q-btn icon="close" flat round dense v-close-popup />
-        </q-card-section>
-
-        <q-card-section>
-          <q-form @submit="saveUser" class="q-gutter-md">
-            <q-input
-              v-model="userForm.fullName"
-              :label="t('auth.fullName') + ' *'"
-              outlined
-              :rules="[v => !!v || t('common.required')]"
-            />
-
-            <q-input
-              v-model="userForm.email"
-              :label="t('auth.email') + ' *'"
-              type="email"
-              outlined
-              :rules="[v => !!v || t('common.required'), v => /.+@.+\..+/.test(v) || t('auth.invalidEmail')]"
-              :disable="!!editingUser"
-            />
-
-            <q-input
-              v-if="!editingUser"
-              v-model="userForm.password"
-              :label="t('auth.password') + ' *'"
-              :type="showPassword ? 'text' : 'password'"
-              outlined
-              :rules="[v => !!v || t('common.required'), v => v.length >= 6 || t('users.passwordMinLength')]"
-            >
-              <template v-slot:append>
-                <q-icon
-                  :name="showPassword ? 'visibility' : 'visibility_off'"
-                  class="cursor-pointer"
-                  @click="showPassword = !showPassword"
-                />
-              </template>
-            </q-input>
-
-            <q-input
-              v-model="userForm.phone"
-              :label="t('auth.phone')"
-              outlined
-            />
-
-            <q-input
-              v-model="userForm.streetAddress"
-              :label="t('users.address')"
-              outlined
-            />
-
-            <q-select
-              v-if="authStore.isAdmin"
-              v-model="userForm.role"
-              :options="roleOptions"
-              :label="t('users.role') + ' *'"
-              outlined
-              emit-value
-              map-options
-            />
-
-            <q-card v-if="editingUser" flat bordered class="q-mt-md">
-              <q-card-section>
-                <div class="text-subtitle2 q-mb-sm">{{ t('users.changePassword') }}</div>
-                <q-btn 
-                  outline 
-                  color="primary" 
-                  :label="t('users.changePassword')" 
-                  @click="openChangePasswordDialog"
-                  no-caps
-                />
-              </q-card-section>
-            </q-card>
-
-            <div class="row justify-end q-mt-md">
-              <q-btn 
-                flat 
-                :label="t('common.cancel')" 
-                v-close-popup 
-                class="q-mr-sm"
-              />
-              <q-btn 
-                color="primary" 
-                :label="t('common.save')" 
-                type="submit" 
-                :loading="userStore.loading"
-                no-caps
-              />
-            </div>
-          </q-form>
-        </q-card-section>
-      </q-card>
+      <UserFormDialog
+        :user="editingUser"
+        :loading="userStore.loading"
+        @submit="saveUser"
+        @cancel="showDialog = false"
+      />
     </q-dialog>
 
     <!-- Change Password Dialog -->
     <q-dialog v-model="showPasswordDialog" persistent>
-      <q-card style="min-width: 350px">
-        <q-card-section>
-          <div class="text-h6">{{ t('users.changePassword') }}</div>
-        </q-card-section>
-
-        <q-card-section>
-          <q-form @submit="changePassword" class="q-gutter-md">
-            <q-input
-              v-if="editingUser?.id === authStore.user?.id"
-              v-model="passwordForm.oldPassword"
-              :label="t('users.oldPassword') + ' *'"
-              :type="showOldPassword ? 'text' : 'password'"
-              outlined
-              :rules="[v => !!v || t('common.required')]"
-            >
-              <template v-slot:append>
-                <q-icon
-                  :name="showOldPassword ? 'visibility' : 'visibility_off'"
-                  class="cursor-pointer"
-                  @click="showOldPassword = !showOldPassword"
-                />
-              </template>
-            </q-input>
-
-            <q-input
-              v-model="passwordForm.newPassword"
-              :label="t('users.newPassword') + ' *'"
-              :type="showNewPassword ? 'text' : 'password'"
-              outlined
-              :rules="[
-                v => !!v || t('common.required'),
-                v => v.length >= 6 || t('users.passwordMinLength')
-              ]"
-            >
-              <template v-slot:append>
-                <q-icon
-                  :name="showNewPassword ? 'visibility' : 'visibility_off'"
-                  class="cursor-pointer"
-                  @click="showNewPassword = !showNewPassword"
-                />
-              </template>
-            </q-input>
-
-            <q-input
-              v-model="passwordForm.confirmPassword"
-              :label="t('users.confirmNewPassword') + ' *'"
-              :type="showConfirmPassword ? 'text' : 'password'"
-              outlined
-              :rules="[
-                v => !!v || t('common.required'),
-                v => v === passwordForm.newPassword || t('users.passwordsMatch')
-              ]"
-            >
-              <template v-slot:append>
-                <q-icon
-                  :name="showConfirmPassword ? 'visibility' : 'visibility_off'"
-                  class="cursor-pointer"
-                  @click="showConfirmPassword = !showConfirmPassword"
-                />
-              </template>
-            </q-input>
-
-            <q-card-actions align="right">
-              <q-btn flat :label="t('common.cancel')" @click="showPasswordDialog = false" />
-              <q-btn color="primary" :label="t('common.save')" type="submit" :loading="userStore.loading" no-caps />
-            </q-card-actions>
-          </q-form>
-        </q-card-section>
-      </q-card>
+      <ChangePasswordDialog
+        :userId="editingUser!.id"
+        :isAdmin="authStore.isAdmin"
+        :isCurrentUser="editingUser!.id === authStore.user?.id"
+        :loading="userStore.loading"
+        @submit="changePassword"
+        @cancel="showPasswordDialog = false"
+      />
     </q-dialog>
   </q-page>
 </template>
@@ -299,11 +149,17 @@
 import { ref, computed, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useUserStore } from '../stores/user'
-import { useAuthStore, UserRole } from '../stores/auth.ts'
+import { useAuthStore } from '../stores/auth'
+import { useI18n } from '../composables/useI18n'
+import { getInitials } from '@/utils/format'
+import { getCredibilityColor, UserRole, UserRoleLabel, UserRoleColor } from '@/utils/appEnums'
+import UserFormDialog from '../components/user/UserFormDialog.vue'
+import ChangePasswordDialog from '../components/user/ChangePasswordDialog.vue'
 
 const $q = useQuasar()
 const userStore = useUserStore()
 const authStore = useAuthStore()
+const { t } = useI18n()
 
 const users = computed(() => userStore.users)
 const filter = ref('')
@@ -311,95 +167,15 @@ const showDialog = ref(false)
 const showPasswordDialog = ref(false)
 const editingUser = ref<typeof userStore.users[0] | null>(null)
 
-const showPassword = ref(false)
-const showOldPassword = ref(false)
-const showNewPassword = ref(false)
-const showConfirmPassword = ref(false)
-
-const userForm = ref({
-  email: '',
-  fullName: '',
-  phone: '',
-  password: '',
-  role: UserRole.Neighbor,
-  streetAddress: ''
-})
-
-const passwordForm = ref({
-  oldPassword: '',
-  newPassword: '',
-  confirmPassword: ''
-})
-
-const roleOptions = [
-  { label: 'Administrador', value: UserRole.Admin },
-  { label: 'Encargado', value: UserRole.Manager },
-  { label: 'Guardia', value: UserRole.Guard },
-  { label: 'Vecino', value: UserRole.Neighbor },
-  { label: 'Acceso Restringido', value: UserRole.RestrictedAccess }
-]
-
-const t = (key: string) => {
-  const translations: Record<string, string> = {
-    'users.title': 'Gestión de Usuarios',
-    'users.newUser': 'Nuevo Usuario',
-    'users.editUser': 'Editar Usuario',
-    'users.address': 'Dirección',
-    'users.role': 'Rol',
-    'users.status': 'Estado',
-    'users.actions': 'Acciones',
-    'users.active': 'Activo',
-    'users.inactive': 'Inactivo',
-    'users.noUsers': 'No hay usuarios registrados',
-    'users.changePassword': 'Cambiar Contraseña',
-    'users.oldPassword': 'Contraseña Anterior',
-    'users.newPassword': 'Nueva Contraseña',
-    'users.confirmNewPassword': 'Confirmar Contraseña',
-    'users.passwordMinLength': 'Mínimo 6 caracteres',
-    'users.passwordsMatch': 'Las contraseñas no coinciden',
-    'auth.email': 'Correo Electrónico',
-    'auth.fullName': 'Nombre Completo',
-    'auth.phone': 'Teléfono',
-    'auth.password': 'Contraseña',
-    'auth.invalidEmail': 'Correo inválido',
-    'common.search': 'Buscar',
-    'common.edit': 'Editar',
-    'common.delete': 'Eliminar',
-    'common.save': 'Guardar',
-    'common.cancel': 'Cancelar',
-    'common.required': 'Campo requerido',
-    'common.error': 'Ha ocurrido un error',
-    'common.success': 'Operación exitosa',
-    'common.confirmDelete': 'Confirmar Eliminación',
-    'common.deleteMessage': '¿Está seguro de eliminar a {item}?'
-  }
-  return translations[key] || key
-}
-
 const columns = computed(() => [
   { name: 'avatar', label: '', field: 'photoUrl', align: 'center' as const },
   { name: 'fullName', label: t('auth.fullName'), field: 'fullName', sortable: true, align: 'left' as const },
   { name: 'phone', label: t('auth.phone'), field: 'phone', align: 'left' as const },
   { name: 'role', label: t('users.role'), field: 'role', sortable: true, align: 'center' as const },
-  { name: 'credibilityLevel', label: 'Credibilidad', field: 'credibilityLevel', sortable: true, align: 'center' as const },
+  { name: 'credibilityLevel', label: t('users.credibilityLevel'), field: 'credibilityLevel', sortable: true, align: 'center' as const },
   { name: 'status', label: t('users.status'), field: 'status', sortable: true, align: 'center' as const },
   { name: 'actions', label: t('users.actions'), field: 'id', align: 'center' as const }
 ])
-
-function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .map(n => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
-}
-
-function getCredibilityColor(level: number): string {
-  if (level >= 4) return 'positive'
-  if (level >= 2) return 'warning'
-  return 'negative'
-}
 
 function canEdit(user: typeof userStore.users[0]): boolean {
   if (authStore.isAdmin) return true
@@ -416,48 +192,27 @@ function canDelete(user: typeof userStore.users[0]): boolean {
 
 function openCreateDialog() {
   editingUser.value = null
-  userForm.value = {
-    email: '',
-    fullName: '',
-    phone: '',
-    password: '',
-    role: UserRole.Neighbor,
-    streetAddress: ''
-  }
   showDialog.value = true
 }
 
 function editUser(user: typeof userStore.users[0]) {
   editingUser.value = user
-  userForm.value = {
-    email: user.email,
-    fullName: user.fullName,
-    phone: user.phone || '',
-    password: '',
-    role: user.role,
-    streetAddress: user.streetAddress || ''
-  }
   showDialog.value = true
 }
 
 function openChangePasswordDialog() {
-  passwordForm.value = {
-    oldPassword: '',
-    newPassword: '',
-    confirmPassword: ''
-  }
   showPasswordDialog.value = true
 }
 
-async function saveUser() {
+async function saveUser(formData: any) {
   if (!editingUser.value) {
     const result = await userStore.create({
-      email: userForm.value.email,
-      password: userForm.value.password,
-      fullName: userForm.value.fullName,
-      phone: userForm.value.phone || undefined,
-      role: userForm.value.role,
-      streetAddress: userForm.value.streetAddress || undefined
+      email: formData.email,
+      password: formData.password,
+      fullName: formData.fullName,
+      phone: formData.phone || undefined,
+      role: formData.role,
+      streetAddress: formData.streetAddress || undefined
     })
 
     if (result) {
@@ -469,10 +224,10 @@ async function saveUser() {
     }
   } else {
     const result = await userStore.update(editingUser.value.id, {
-      fullName: userForm.value.fullName,
-      phone: userForm.value.phone || undefined,
-      streetAddress: userForm.value.streetAddress || undefined,
-      role: authStore.isAdmin ? userForm.value.role : undefined
+      fullName: formData.fullName,
+      phone: formData.phone || undefined,
+      streetAddress: formData.streetAddress || undefined,
+      role: authStore.isAdmin ? formData.role : undefined
     })
 
     if (result) {
@@ -485,11 +240,11 @@ async function saveUser() {
   }
 }
 
-async function changePassword() {
+async function changePassword(formData: { oldPassword?: string; newPassword: string; confirmPassword: string }) {
   const result = await userStore.changePassword(
     editingUser.value!.id,
-    passwordForm.value.oldPassword,
-    passwordForm.value.newPassword
+    formData.oldPassword || '',
+    formData.newPassword
   )
 
   if (result.success) {

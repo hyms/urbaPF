@@ -14,89 +14,61 @@
     <q-tab-panels v-model="activeTab" animated>
       <!-- Overview Tab -->
       <q-tab-panel name="overview" class="q-pa-none">
-        <div class="row q-col-gutter-md q-mb-md">
-          <div class="col-12 col-sm-6 col-md-3">
-            <q-card class="bg-primary text-white">
-              <q-card-section>
-                <div class="text-h6">
-                  <q-icon name="home_work" class="q-mr-sm" />
-                  {{ t('common.condominiums') }}
-                </div>
-                <div class="text-h3">{{ stats.condominiums }}</div>
-              </q-card-section>
-            </q-card>
+        <div class="row q-col-gutter-md q-mb-md" v-if="stats.condominiums > 0 || stats.incidents > 0 || stats.polls > 0 || stats.alerts > 0">
+          <div class="col-12 col-sm-6 col-lg-3">
+            <StatsCard :title="t('common.condominiums')" :value="stats.condominiums" icon="home_work" bgColor="bg-primary" />
           </div>
-
-          <div class="col-12 col-sm-6 col-md-3">
-            <q-card class="bg-orange text-white">
-              <q-card-section>
-                <div class="text-h6">
-                  <q-icon name="warning" class="q-mr-sm" />
-                  {{ t('common.incidents') }}
-                </div>
-                <div class="text-h3">{{ stats.incidents }}</div>
-              </q-card-section>
-            </q-card>
+          <div class="col-12 col-sm-6 col-lg-3">
+            <StatsCard :title="t('common.incidents')" :value="stats.incidents" icon="warning" bgColor="bg-orange" />
           </div>
-
-          <div class="col-12 col-sm-6 col-md-3">
-            <q-card class="bg-purple text-white">
-              <q-card-section>
-                <div class="text-h6">
-                  <q-icon name="poll" class="q-mr-sm" />
-                  {{ t('common.polls') }}
-                </div>
-                <div class="text-h3">{{ stats.polls }}</div>
-              </q-card-section>
-            </q-card>
+          <div class="col-12 col-sm-6 col-lg-3">
+            <StatsCard :title="t('common.polls')" :value="stats.polls" icon="poll" bgColor="bg-purple" />
           </div>
-
-          <div class="col-12 col-sm-6 col-md-3">
-            <q-card class="bg-red text-white">
-              <q-card-section>
-                <div class="text-h6">
-                  <q-icon name="notifications_active" class="q-mr-sm" />
-                  {{ t('common.alerts') }}
-                </div>
-                <div class="text-h3">{{ stats.alerts }}</div>
-              </q-card-section>
-            </q-card>
+          <div class="col-12 col-sm-6 col-lg-3">
+            <StatsCard :title="t('common.alerts')" :value="stats.alerts" icon="notifications_active" bgColor="bg-red" />
           </div>
         </div>
 
-        <div class="row q-col-gutter-md">
-          <div class="col-12 col-md-6">
+        <template v-for="condo in allCondos" :key="condo.id">
+          <div class="q-mb-md" v-if="condo.rules">
             <q-card>
               <q-card-section>
-                <div class="text-h6">{{ t('dashboard.recentPosts') }}</div>
+                <div class="text-h6">
+                  <q-icon name="gavel" class="q-mr-sm" />
+                  {{ t('settings.rules') }} - {{ condo.name }}
+                </div>
               </q-card-section>
               <q-separator />
-              <q-list separator>
-                <PostItem v-for="post in recentPosts" :key="post.id" :post="post" />
-                <q-item v-if="recentPosts.length === 0">
-                  <q-item-section class="text-grey">
-                    {{ t('dashboard.noPosts') }}
-                  </q-item-section>
-                </q-item>
-              </q-list>
+              <q-card-section>
+                <div class="text-body2" style="white-space: pre-line;">{{ condo.rules }}</div>
+              </q-card-section>
             </q-card>
+          </div>
+        </template>
+
+        <div class="row q-col-gutter-md">
+          <div class="col-12 col-md-6 q-mb-md q-mb-md-0">
+            <RecentList 
+              :title="t('dashboard.recentPosts')" 
+              :isEmpty="recentPosts.length === 0" 
+              :emptyMessage="t('dashboard.noPosts')"
+            >
+              <template #items>
+                <PostItem v-for="post in recentPosts" :key="post.id" :post="post" />
+              </template>
+            </RecentList>
           </div>
 
           <div class="col-12 col-md-6">
-            <q-card>
-              <q-card-section>
-                <div class="text-h6">{{ t('dashboard.recentIncidents') }}</div>
-              </q-card-section>
-              <q-separator />
-              <q-list separator>
+            <RecentList 
+              :title="t('dashboard.recentIncidents')" 
+              :isEmpty="recentIncidents.length === 0" 
+              :emptyMessage="t('dashboard.noIncidents')"
+            >
+              <template #items>
                 <IncidentItem v-for="incident in recentIncidents" :key="incident.id" :incident="incident" />
-                <q-item v-if="recentIncidents.length === 0">
-                  <q-item-section class="text-grey">
-                    {{ t('dashboard.noIncidents') }}
-                  </q-item-section>
-                </q-item>
-              </q-list>
-            </q-card>
+              </template>
+            </RecentList>
           </div>
         </div>
       </q-tab-panel>
@@ -112,46 +84,46 @@
 
         <q-tab-panels v-model="myActivityTab" animated>
           <q-tab-panel name="posts" class="q-pa-none">
-            <div class="row q-col-gutter-md">
-              <div v-for="post in myPosts" :key="post.id" class="col-12 col-md-6">
+            <div class="row q-col-gutter-md q-mb-md" v-if="myPosts.length > 0">
+              <div v-for="post in myPosts" :key="post.id" class="col-12 col-md-6 q-mb-md">
                 <PostItem :post="post" @click="() => {}" />
               </div>
-              <div v-if="myPosts.length === 0" class="col-12 text-center text-grey q-pa-xl">
-                {{ t('dashboard.noMyPosts') }}
-              </div>
+            </div>
+            <div v-else class="col-12 text-center text-grey q-pa-xl">
+              {{ t('dashboard.noMyPosts') }}
             </div>
           </q-tab-panel>
 
           <q-tab-panel name="incidents" class="q-pa-none">
-            <div class="row q-col-gutter-md">
-              <div v-for="incident in myIncidents" :key="incident.id" class="col-12 col-md-6">
+            <div class="row q-col-gutter-md q-mb-md" v-if="myIncidents.length > 0">
+              <div v-for="incident in myIncidents" :key="incident.id" class="col-12 col-md-6 q-mb-md">
                 <IncidentItem :incident="incident" />
               </div>
-              <div v-if="myIncidents.length === 0" class="col-12 text-center text-grey q-pa-xl">
-                {{ t('dashboard.noMyIncidents') }}
-              </div>
+            </div>
+            <div v-else class="col-12 text-center text-grey q-pa-xl">
+              {{ t('dashboard.noMyIncidents') }}
             </div>
           </q-tab-panel>
 
           <q-tab-panel name="alerts" class="q-pa-none">
-            <div class="row q-col-gutter-md">
-              <div v-for="alert in myAlerts" :key="alert.id" class="col-12 col-md-6">
+            <div class="row q-col-gutter-md q-mb-md" v-if="myAlerts.length > 0">
+              <div v-for="alert in myAlerts" :key="alert.id" class="col-12 col-md-6 q-mb-md">
                 <AlertItem :alert="alert" />
               </div>
-              <div v-if="myAlerts.length === 0" class="col-12 text-center text-grey q-pa-xl">
-                {{ t('dashboard.noMyAlerts') }}
-              </div>
+            </div>
+            <div v-else class="col-12 text-center text-grey q-pa-xl">
+              {{ t('dashboard.noMyAlerts') }}
             </div>
           </q-tab-panel>
 
           <q-tab-panel name="polls" class="q-pa-none">
-            <div class="row q-col-gutter-md">
-              <div v-for="poll in myPolls" :key="poll.id" class="col-12 col-md-6">
+            <div class="row q-col-gutter-md q-mb-md" v-if="myPolls.length > 0">
+              <div v-for="poll in myPolls" :key="poll.id" class="col-12 col-md-6 q-mb-md">
                 <PollItem :poll="poll" :can-manage="false" :has-voted="false" />
               </div>
-              <div v-if="myPolls.length === 0" class="col-12 text-center text-grey q-pa-xl">
-                {{ t('dashboard.noMyPolls') }}
-              </div>
+            </div>
+            <div v-else class="col-12 text-center text-grey q-pa-xl">
+              {{ t('dashboard.noMyPolls') }}
             </div>
           </q-tab-panel>
         </q-tab-panels>
@@ -343,6 +315,8 @@ import IncidentItem from '../components/IncidentItem.vue'
 import AlertItem from '../components/AlertItem.vue'
 import PollItem from '../components/PollItem.vue'
 import SecurityMap from '../components/SecurityMap.vue'
+import StatsCard from '../components/dashboard/StatsCard.vue'
+import RecentList from '../components/dashboard/RecentList.vue'
 
 // (I will rename the local interfaces or use the imported types directly)
 
@@ -359,6 +333,13 @@ const { t } = useI18n()
 const activeTab = ref('overview')
 const myActivityTab = ref('posts')
 const approvalTab = ref('posts')
+
+const currentCondo = computed(() => {
+  const condos = condoStore.condominiums
+  return condos && condos.length > 0 ? condos[0] : null
+})
+
+const allCondos = computed(() => condoStore.condominiums || [])
 
 const stats = ref({
   condominiums: 0,
@@ -450,7 +431,6 @@ onMounted(async () => {
 })
 
 function handleMarkerClick(item: any) {
-  console.log('Marker clicked:', item)
 }
 
 async function updateIncidentStatus(id: string, status: any) {

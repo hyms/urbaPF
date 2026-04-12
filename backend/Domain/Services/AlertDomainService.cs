@@ -1,4 +1,5 @@
 using UrbaPF.Domain.Entities;
+using UrbaPF.Domain.Enums;
 
 namespace UrbaPF.Domain.Services;
 
@@ -6,50 +7,50 @@ public class AlertDomainService
 {
     public bool ShouldRequireApproval(int creatorReputationLevel)
     {
-        return creatorReputationLevel < 4;
+        return creatorReputationLevel < (int)CredibilityLevel.Trusted;
     }
 
-    public bool CanApproveAlert(int userRole)
+    public bool CanApproveAlert(UserRole userRole)
     {
-        return userRole >= 3;
+        return userRole >= UserRole.Manager;
     }
 
-    public bool CanAcknowledge(int userRole)
+    public bool CanAcknowledge(UserRole userRole)
     {
-        return userRole >= 3;
+        return userRole >= UserRole.Manager;
     }
 
-    public bool CanResolve(int userRole, bool isCreator)
+    public bool CanResolve(UserRole userRole, bool isCreator)
     {
-        return userRole >= 3 || isCreator;
+        return userRole >= UserRole.Manager || isCreator;
     }
 
-    public bool CanDelete(int userRole, bool isCreator)
+    public bool CanDelete(UserRole userRole, bool isCreator)
     {
-        if (userRole >= 4) return true;
-        return isCreator && userRole >= 3;
+        if (userRole >= UserRole.Administrator) return true;
+        return isCreator && userRole >= UserRole.Manager;
     }
 
-    public bool CanResendNotification(int userRole, bool isCreator, int alertStatus)
+    public bool CanResendNotification(UserRole userRole, bool isCreator, int alertStatus)
     {
-        if (userRole >= 3) return true;
-        return isCreator && alertStatus >= 4;
+        if (userRole >= UserRole.Manager) return true;
+        return isCreator && alertStatus >= (int)AlertStatus.Resolved;
     }
 
     public bool IsAlertActive(int status)
     {
-        return status >= 1 && status <= 3;
+        return status >= (int)AlertStatus.Pending && status <= (int)AlertStatus.Notified;
     }
 
     public string GetAlertTypeName(int type)
     {
         return type switch
         {
-            1 => "Emergencia",
-            2 => "Robo",
-            3 => "Incendio",
-            4 => "Médica",
-            5 => "Otro",
+            (int)AlertType.Emergency => "Emergencia",
+            (int)AlertType.Robbery => "Robo",
+            (int)AlertType.Fire => "Incendio",
+            (int)AlertType.Medical => "Médica",
+            (int)AlertType.Other => "Otro",
             _ => "Desconocido"
         };
     }
@@ -58,12 +59,12 @@ public class AlertDomainService
     {
         return status switch
         {
-            1 => "Pendiente",
-            2 => "Aprobada",
-            3 => "Notificada",
-            4 => "En Proceso",
-            5 => "Resuelta",
-            6 => "Cancelada",
+            (int)AlertStatus.Pending => "Pendiente",
+            (int)AlertStatus.Approved => "Aprobada",
+            (int)AlertStatus.Notified => "Notificada",
+            (int)AlertStatus.InProgress => "En Proceso",
+            (int)AlertStatus.Resolved => "Resuelta",
+            (int)AlertStatus.Cancelled => "Cancelada",
             _ => "Desconocido"
         };
     }

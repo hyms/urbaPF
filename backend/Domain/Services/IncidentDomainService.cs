@@ -1,4 +1,5 @@
 using UrbaPF.Domain.Entities;
+using UrbaPF.Domain.Enums;
 
 namespace UrbaPF.Domain.Services;
 
@@ -7,74 +8,74 @@ public class IncidentDomainService
     public int CalculatePriority(int incidentType, string? description)
     {
         if (string.IsNullOrEmpty(description))
-            return 2;
+            return (int)IncidentPriority.Medium;
 
         var lowerDesc = description.ToLowerInvariant();
 
-        if (incidentType == 2)
+        if (incidentType == (int)IncidentType.Security)
         {
             if (lowerDesc.Contains("robo") || lowerDesc.Contains("asalto") || lowerDesc.Contains("emergencia"))
-                return 4;
+                return (int)IncidentPriority.Urgent;
             if (lowerDesc.Contains("sospechoso") || lowerDesc.Contains("intento"))
-                return 3;
+                return (int)IncidentPriority.High;
         }
 
-        if (incidentType == 1)
+        if (incidentType == (int)IncidentType.Maintenance)
         {
             if (lowerDesc.Contains("fuga") || lowerDesc.Contains("cortocircuito") || lowerDesc.Contains("gas"))
-                return 4;
+                return (int)IncidentPriority.Urgent;
             if (lowerDesc.Contains("agua") || lowerDesc.Contains("grieta"))
-                return 3;
+                return (int)IncidentPriority.High;
         }
 
         if (lowerDesc.Contains("urgente") || lowerDesc.Contains("inmediato"))
-            return 4;
+            return (int)IncidentPriority.Urgent;
         if (lowerDesc.Contains("importante") || lowerDesc.Contains("pronto"))
-            return 3;
+            return (int)IncidentPriority.High;
 
-        return 2;
+        return (int)IncidentPriority.Medium;
     }
 
-    public bool CanChangeStatus(int currentStatus, int newStatus, int userRole)
+    public bool CanChangeStatus(int currentStatus, int newStatus, UserRole userRole)
     {
-        if (userRole >= 4)
+        if (userRole >= UserRole.Administrator)
             return true;
 
-        if (newStatus == 1)
+        if (newStatus == (int)IncidentStatus.Reported)
             return false;
 
-        if (newStatus == 6)
-            return userRole >= 3;
+        if (newStatus == (int)IncidentStatus.Cancelled)
+            return userRole >= UserRole.Manager;
 
-        if (currentStatus == 4 && newStatus == 5)
+        if (currentStatus == (int)IncidentStatus.Resolved && newStatus == (int)IncidentStatus.Closed)
             return true;
 
-        if (newStatus == 2 || newStatus == 3)
-            return userRole >= 3;
+        if (newStatus == (int)IncidentStatus.InProgress || newStatus == (int)IncidentStatus.Pending)
+            return userRole >= UserRole.Manager;
 
         return false;
     }
 
-    public bool CanClose(int currentStatus, int userRole, bool isReporter)
+    public bool CanClose(int currentStatus, UserRole userRole, bool isReporter)
     {
-        if (userRole >= 4)
+        if (userRole >= UserRole.Administrator)
             return true;
 
-        if (currentStatus != 4)
+        if (currentStatus != (int)IncidentStatus.Resolved)
             return false;
 
-        return isReporter || userRole >= 3;
+        return isReporter || userRole >= UserRole.Manager;
     }
 
-    public bool CanEdit(Incident incident, int userRole, bool isReporter)
+    public bool CanEdit(Incident incident, UserRole userRole, bool isReporter)
     {
-        if (incident.Status >= 4)
+        if (incident.Status >= (int)IncidentStatus.Resolved)
             return false;
 
-        if (userRole >= 4)
+        if (userRole >= UserRole.Administrator)
             return true;
 
-        return isReporter && incident.Status == 1;
+        return isReporter && incident.Status == (int)IncidentStatus.Reported;
     }
 
     public List<IncidentMedia> ParseMedia(string? mediaJson)

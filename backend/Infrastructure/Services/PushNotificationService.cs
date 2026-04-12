@@ -3,6 +3,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using UrbaPF.Infrastructure.Repositories;
 using UrbaPF.Infrastructure.Interfaces;
+using UrbaPF.Domain.Enums;
 
 namespace UrbaPF.Infrastructure.Services;
 
@@ -158,7 +159,7 @@ public class PushNotificationService : IPushNotificationService
         var users = await _userRepository.GetByCondominiumAsync(condominiumId);
         
         var playerIds = users
-            .Where(u => !string.IsNullOrEmpty(u.FcmToken) && u.Role >= 3)
+            .Where(u => !string.IsNullOrEmpty(u.FcmToken) && u.Role >= UserRole.Manager)
             .Select(u => u.FcmToken!)
             .Distinct()
             .ToList();

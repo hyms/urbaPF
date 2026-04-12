@@ -2,6 +2,7 @@ using UrbaPF.Domain.Entities;
 using UrbaPF.Domain.Services;
 using UrbaPF.Infrastructure.Repositories;
 using UrbaPF.Infrastructure.Interfaces;
+using UrbaPF.Domain.Enums;
 
 namespace UrbaPF.Infrastructure.Services;
 
@@ -13,8 +14,8 @@ public interface IAlertService
     Task<bool> ApproveAsync(Guid alertId, Guid approverId);
     Task<bool> AcknowledgeAsync(Guid alertId, Guid userId);
     Task<bool> ResolveAsync(Guid alertId, Guid userId);
-    Task<bool> DeleteAsync(Guid alertId, Guid userId, int userRole);
-    Task<bool> ResendNotificationAsync(Guid alertId, Guid userId, int userRole);
+    Task<bool> DeleteAsync(Guid alertId, Guid userId, UserRole userRole);
+    Task<bool> ResendNotificationAsync(Guid alertId, Guid userId, UserRole userRole);
     Task<IEnumerable<Alert>> GetActiveAlertsAsync(Guid condominiumId);
 }
 
@@ -66,7 +67,7 @@ public class AlertService : IAlertService
             Title = request.Title,
             Description = request.Description,
             Location = request.Location,
-            Status = 1,
+            Status = (int)AlertStatus.Pending,
             ReputationLevel = creatorReputation,
             NeedsApproval = needsApproval
         };
@@ -81,7 +82,7 @@ public class AlertService : IAlertService
         var alert = await _alertRepository.GetByIdAsync(alertId);
         if (alert == null) return false;
 
-        if (alert.Status != 1)
+        if (alert.Status != (int)AlertStatus.Pending)
             return false;
 
         var success = await _alertRepository.ApproveAsync(alertId, approverId);
@@ -99,7 +100,7 @@ public class AlertService : IAlertService
         var alert = await _alertRepository.GetByIdAsync(alertId);
         if (alert == null) return false;
 
-        if (!_domainService.CanAcknowledge(3))
+        if (!_domainService.CanAcknowledge(UserRole.Manager))
             return false;
 
         return await _alertRepository.AcknowledgeAsync(alertId, userId);
@@ -110,13 +111,13 @@ public class AlertService : IAlertService
         var alert = await _alertRepository.GetByIdAsync(alertId);
         if (alert == null) return false;
 
-        if (!_domainService.CanResolve(3, alert.CreatorId == userId))
+        if (!_domainService.CanResolve(UserRole.Manager, alert.CreatorId == userId))
             return false;
 
-        return await _alertRepository.UpdateStatusAsync(alertId, 5);
+        return await _alertRepository.UpdateStatusAsync(alertId, (int)AlertStatus.Resolved);
     }
 
-    public async Task<bool> DeleteAsync(Guid alertId, Guid userId, int userRole)
+    public async Task<bool> DeleteAsync(Guid alertId, Guid userId, UserRole userRole)
     {
         var alert = await _alertRepository.GetByIdAsync(alertId);
         if (alert == null) return false;
@@ -127,7 +128,7 @@ public class AlertService : IAlertService
         return await _alertRepository.DeleteAsync(alertId);
     }
 
-    public async Task<bool> ResendNotificationAsync(Guid alertId, Guid userId, int userRole)
+    public async Task<bool> ResendNotificationAsync(Guid alertId, Guid userId, UserRole userRole)
     {
         var alert = await _alertRepository.GetByIdAsync(alertId);
         if (alert == null) return false;
@@ -135,7 +136,7 @@ public class AlertService : IAlertService
         if (!_domainService.CanResendNotification(userRole, alert.CreatorId == userId, alert.Status))
             return false;
 
-        if (alert.NeedsApproval && alert.Status < 2)
+        if (alert.NeedsApproval && alert.Status < (int)AlertStatus.Approved)
             return false;
 
         return await _alertRepository.ResendNotificationAsync(alertId);

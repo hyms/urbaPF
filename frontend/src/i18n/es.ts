@@ -25,28 +25,61 @@ export default {
     no: 'No',
     menu: 'Menú Principal',
     admin: 'Administración',
+    edit: 'Editar',
+    view: 'Ver',
     confirmDelete: 'Confirmar eliminación',
-    deleteMessage: '¿Eliminar {item}?'
+    deleteMessage: '¿Eliminar {item}?',
+    clearFilters: 'Limpiar filtros',
+    close: 'Cerrar'
   },
   dashboard: {
-    title: 'Dashboard',
+    title: 'Panel',
+    overview: 'Vista General',
+    myActivity: 'Mi Actividad',
     recentPosts: 'Últimas Publicaciones',
     recentIncidents: 'Incidentes Recientes',
     noPosts: 'No hay publicaciones recientes',
-    noIncidents: 'No hay incidentes recientes'
+    noIncidents: 'No hay incidentes recientes',
+    noMyPosts: 'No tienes publicaciones',
+    noMyIncidents: 'No tienes incidentes',
+    noMyAlerts: 'No tienes alertas',
+    noMyPolls: 'No tienes votaciones',
+    securityMap: 'Mapa de Seguridad',
+    incidentWorkflow: 'Flujo de Incidentes',
+    activeAlerts: 'Alertas Activas',
+    pendingApprovals: 'Aprobaciones Pendientes'
   },
   posts: {
     title: 'Publicaciones',
     newPost: 'Nueva Publicación',
-    createSuccess: 'Publicación creada',
-    createError: 'Error al crear',
+    validationRequired: 'Se requiere validación para crear publicaciones',
+    createSuccess: 'Publicación creada exitosamente',
+    createError: 'Error al crear la publicación',
     pinned: 'Fijado',
     announcement: 'Anuncio',
     views: 'vistas',
     by: 'Por',
     category: 'Categoría',
     content: 'Contenido',
-    noPosts: 'No hay publicaciones'
+    noPosts: 'No hay publicaciones aún',
+    createFirst: 'Crea la primera publicación',
+    editPost: 'Editar Publicación',
+    status: 'Estado',
+    updateSuccess: 'Publicación actualizada',
+    approveSuccess: 'Publicación aprobada',
+    rejectSuccess: 'Publicación rechazada',
+    pending: 'Pendiente',
+    rejected: 'Rechazado',
+    approve: 'Aprobar',
+    reject: 'Rechazar',
+    option: 'Opción',
+    votes: 'votos',
+    results: 'Resultados',
+    backToVoting: 'Volver a votar',
+    youVoted: 'Ya votaste',
+    totalVotes: 'Total de votos',
+    participants: 'Participantes',
+    signatureVerified: 'Firma digital verificada'
   },
   incidents: {
     title: 'Incidentes',
@@ -92,7 +125,9 @@ export default {
     noAccount: '¿No tienes cuenta?',
     hasAccount: '¿Ya tienes cuenta?',
     loginSuccess: 'Login exitoso',
-    registerSuccess: 'Registro exitoso'
+    registerSuccess: 'Registro exitoso',
+    showPassword: 'Mostrar contraseña',
+    hidePassword: 'Ocultar contraseña'
   },
   users: {
     title: 'Usuarios',
@@ -180,7 +215,16 @@ export default {
     status: 'Estado',
     active: 'Activo',
     inactive: 'Inactivo',
-    select: 'Seleccionado'
+    noUsers: 'No hay usuarios registrados',
+    noCondos: 'No hay condominios registrados aún',
+  },
+  roles: {
+    restrictedAccess: 'Acceso Restringido',
+    neighbor: 'Vecino',
+    guard: 'Guardia',
+    manager: 'Encargado',
+    admin: 'Administrador',
+    unknown: 'Desconocido'
   },
   settings: {
     title: 'Configuración',
@@ -199,6 +243,9 @@ export default {
     passwordsNotMatch: 'Las contraseñas no coinciden',
     condoSettings: 'Configuración del Condominio',
     condoName: 'Nombre del condominio',
+    address: 'Dirección',
+    monthlyFee: 'Cuota mensual',
+    currency: 'Moneda',
     rules: 'Reglas',
     active: 'Activo',
     notifPrefs: 'Preferencias de Notificaciones',
@@ -214,5 +261,10 @@ export default {
     updateToken: 'Actualizar token',
     tokenCopied: 'Token copiado',
     tokenUpdated: 'Token actualizado'
+  },
+  notifications: {
+    title: 'Notificaciones',
+    markAllRead: 'Marcar todo como leído',
+    noNotifications: 'No hay notificaciones'
   }
 }

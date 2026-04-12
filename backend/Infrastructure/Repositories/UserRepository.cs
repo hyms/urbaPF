@@ -2,6 +2,7 @@ using Dapper;
 using UrbaPF.Infrastructure.DTOs;
 using UrbaPF.Infrastructure.Data;
 using UrbaPF.Infrastructure.Interfaces;
+using UrbaPF.Domain.Enums;
 
 namespace UrbaPF.Infrastructure.Repositories;
 
@@ -15,9 +16,9 @@ public class UserRepository : BaseRepository, IUserRepository
     {
         var sql = @"
             SELECT id, email, full_name as FullName, phone, role, credibility_level as CredibilityLevel,
-                   status, condominium_id as CondominiumId, lot_number as LotNumber,
-                   street_address as StreetAddress, photo_url as PhotoUrl, created_at as CreatedAt, last_login_at as LastLoginAt,
-                   is_validated as IsValidated, manager_votes as ManagerVotes
+            status, condominium_id as CondominiumId, lot_number as LotNumber,
+            street_address as StreetAddress, photo_url as PhotoUrl, created_at as CreatedAt, last_login_at as LastLoginAt,
+            is_validated as IsValidated, manager_votes as ManagerVotes
             FROM users 
             WHERE deleted_at IS NULL
             ORDER BY created_at DESC";
@@ -28,9 +29,9 @@ public class UserRepository : BaseRepository, IUserRepository
     {
         var sql = @"
             SELECT id, email, full_name as FullName, phone, role, credibility_level as CredibilityLevel,
-                   status, condominium_id as CondominiumId, lot_number as LotNumber,
-                   street_address as StreetAddress, photo_url as PhotoUrl, created_at as CreatedAt, last_login_at as LastLoginAt,
-                   is_validated as IsValidated, manager_votes as ManagerVotes
+            status, condominium_id as CondominiumId, lot_number as LotNumber,
+            street_address as StreetAddress, photo_url as PhotoUrl, created_at as CreatedAt, last_login_at as LastLoginAt,
+            is_validated as IsValidated, manager_votes as ManagerVotes
             FROM users 
             WHERE id = @Id AND deleted_at IS NULL";
         return await QueryFirstOrDefaultAsync<UserDto>(sql, new { Id = id });
@@ -40,9 +41,9 @@ public class UserRepository : BaseRepository, IUserRepository
     {
         var sql = @"
             SELECT id, email, full_name as FullName, phone, role, credibility_level as CredibilityLevel,
-                   status, condominium_id as CondominiumId, lot_number as LotNumber,
-                   street_address as StreetAddress, photo_url as PhotoUrl, created_at as CreatedAt, last_login_at as LastLoginAt,
-                   is_validated as IsValidated, manager_votes as ManagerVotes
+            status, condominium_id as CondominiumId, lot_number as LotNumber,
+            street_address as StreetAddress, photo_url as PhotoUrl, created_at as CreatedAt, last_login_at as LastLoginAt,
+            is_validated as IsValidated, manager_votes as ManagerVotes
             FROM users 
             WHERE email = @Email AND deleted_at IS NULL";
         return await QueryFirstOrDefaultAsync<UserDto>(sql, new { Email = email });
@@ -52,21 +53,21 @@ public class UserRepository : BaseRepository, IUserRepository
     {
         var sql = @"
             SELECT id, email, password_hash as PasswordHash, full_name as FullName, phone, role, 
-                   credibility_level as CredibilityLevel, status, condominium_id as CondominiumId, 
-                   lot_number as LotNumber, street_address as StreetAddress, created_at as CreatedAt, 
-                   last_login_at as LastLoginAt, is_validated as IsValidated, manager_votes as ManagerVotes
+            credibility_level as CredibilityLevel, status, condominium_id as CondominiumId, 
+            lot_number as LotNumber, street_address as StreetAddress, created_at as CreatedAt, 
+            last_login_at as LastLoginAt, is_validated as IsValidated, manager_votes as ManagerVotes
             FROM users 
             WHERE email = @Email AND deleted_at IS NULL";
         return await QueryFirstOrDefaultAsync<UserDto>(sql, new { Email = email });
     }
 
-    public async Task<Guid> CreateAsync(CreateUserDto dto, string passwordHash, int role = 2)
+    public async Task<Guid> CreateAsync(CreateUserDto dto, string passwordHash, UserRole role = UserRole.Neighbor)
     {
         var sql = @"
             INSERT INTO users (id, email, password_hash, full_name, phone, role, credibility_level, status,
-                               condominium_id, lot_number, street_address, photo_url, is_validated, manager_votes)
+            condominium_id, lot_number, street_address, photo_url, is_validated, manager_votes)
             VALUES (gen_random_uuid(), @Email, @PasswordHash, @FullName, @Phone, @Role, 1, 1, @CondominiumId, @LotNumber, 
-                    @StreetAddress, @PhotoUrl, false, 0)
+            @StreetAddress, @PhotoUrl, false, 0)
             RETURNING id";
         
         return await ExecuteScalarAsync<Guid>(sql, new 
@@ -75,7 +76,7 @@ public class UserRepository : BaseRepository, IUserRepository
             PasswordHash = passwordHash, 
             dto.FullName, 
             dto.Phone, 
-            Role = role,
+            Role = (int)role,
             dto.CondominiumId, 
             dto.LotNumber, 
             dto.StreetAddress,
@@ -102,7 +103,7 @@ public class UserRepository : BaseRepository, IUserRepository
         if (dto.Role.HasValue)
         {
             sql.Add("role = @Role");
-            parameters.Add("Role", dto.Role);
+            parameters.Add("Role", (int)dto.Role);
         }
         if (dto.CredibilityLevel.HasValue)
         {
@@ -174,9 +175,9 @@ public class UserRepository : BaseRepository, IUserRepository
     {
         var sql = @"
             SELECT id, email, full_name as FullName, phone, role, credibility_level as CredibilityLevel,
-                   status, condominium_id as CondominiumId, lot_number as LotNumber,
-                   street_address as StreetAddress, photo_url as PhotoUrl, created_at as CreatedAt, last_login_at as LastLoginAt,
-                   is_validated as IsValidated, manager_votes as ManagerVotes, fcm_token as FcmToken
+            status, condominium_id as CondominiumId, lot_number as LotNumber,
+            street_address as StreetAddress, photo_url as PhotoUrl, created_at as CreatedAt, last_login_at as LastLoginAt,
+            is_validated as IsValidated, manager_votes as ManagerVotes, fcm_token as FcmToken
             FROM users 
             WHERE condominium_id = @CondominiumId AND deleted_at IS NULL
             ORDER BY created_at DESC";

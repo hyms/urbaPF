@@ -64,6 +64,8 @@
           round
           icon="more_vert"
           class="q-mt-xs"
+          aria-label="Más acciones de publicación"
+          @click.stop
         >
           <q-menu>
             <q-list style="min-width: 150px">
@@ -78,17 +80,17 @@
                 </q-item-section>
                 <q-item-section>{{ t('posts.approve') }}</q-item-section>
               </q-item>
-              <q-item
-                v-if="post.status === 0"
-                clickable
-                v-close-popup
-                @click.stop="$emit('reject', post)"
-              >
-                <q-item-section avatar>
-                  <q-icon name="cancel" color="negative" />
-                </q-item-section>
-                <q-item-section>{{ t('posts.reject') }}</q-item-section>
-              </q-item>
+                <q-item
+                  v-if="post.status === 0"
+                  clickable
+                  v-close-popup
+                  @click.stop="$emit('reject', post)"
+                >
+                  <q-item-section avatar>
+                    <q-icon name="cancel" color="negative" />
+                  </q-item-section>
+                  <q-item-section>{{ t('posts.reject') }}</q-item-section>
+                </q-item>
               <q-item
                 v-if="canEdit"
                 clickable

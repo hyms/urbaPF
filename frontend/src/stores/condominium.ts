@@ -83,6 +83,18 @@ export const useCondominiumStore = defineStore('condominium', {
       } finally {
         this.loading = false
       }
+    },
+
+    async setCurrentCondominium(id: string): Promise<void> {
+      localStorage.setItem('currentCondoId', id)
+      await this.fetchById(id)
+    },
+
+    loadCurrentCondominiumFromStorage(): void {
+      const id = localStorage.getItem('currentCondoId')
+      if (id && this.condominiums.length > 0) {
+        this.currentCondominium = this.condominiums.find(c => c.id === id) || null
+      }
     }
   }
 })

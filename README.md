@@ -58,6 +58,15 @@ Digitalizar la convivencia vecinal reduciendo la fricción de los grupos de What
     
 -   **⏳ En Desarrollo:** Módulo de Incidentes (Fase 5.2 - 5.4).
 -   **Notas:** La funcionalidad de 'categorías' en publicaciones ha sido temporalmente deshabilitada y se considera para el MVP2.
+
+## 💡 Ideas para MVP2
+
+-   **Módulo de Emergencia:** Refinar la funcionalidad del botón de emergencia, incluyendo notificaciones en tiempo real más robustas y un flujo de respuesta mejorado.
+-   **Sistema de Notificaciones:** Implementar notificaciones push con OneSignal y un centro de notificaciones en el frontend.
+    -   Migración de base de datos para tabla `notifications`.
+    -   Rutas API (`NotificationRoutes.cs`) y repositorio (`NotificationRepository.cs`).
+    -   Conectar store de notificaciones con el menú del header.
+-   **Refinamiento del Menú Inferior (Mobile):** Implementar navegación móvil completa.
     
 
 

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using UrbaPF.Infrastructure.DTOs;
 using UrbaPF.Infrastructure.Interfaces;
+using UrbaPF.Domain.Enums;
 
 namespace UrbaPF.Infrastructure.Services;
 
@@ -57,12 +58,12 @@ public class AuthService : IAuthService
         if (user.PasswordHash == null || !VerifyPassword(password, user.PasswordHash))
             return (null, "Contraseña incorrecta");
 
-        if (user.Status != 1)
+        if (user.Status != (int)UserStatus.Active)
             return (null, "Usuario inactivo");
 
         await _userRepository.UpdateLastLoginAsync(user.Id);
 
-        var token = GenerateJwtToken(user.Id, user.Email, user.Role, user.FullName);
+        var token = GenerateJwtToken(user.Id, user.Email, (int)user.Role, user.FullName);
         var refreshToken = GenerateRefreshToken();
         var expiresAt = _utcNow().AddMinutes(_jwtExpiryMinutes);
 
@@ -81,20 +82,14 @@ public class AuthService : IAuthService
         }, null);
     }
 
-    public async Task<(Guid? UserId, string? Error)> RegisterAsync(string email, string password, string fullName, string? phone)
+    public async Task<(Guid? UserId, string? Error)> RegisterUserAsync(CreateUserDto createUserDto, string password, UserRole role)
     {
-        var existingUser = await _userRepository.GetByEmailAsync(email);
+        var existingUser = await _userRepository.GetByEmailAsync(createUserDto.Email);
         if (existingUser != null)
             return (null, "El email ya está registrado");
 
         var passwordHash = HashPassword(password);
-        var createDto = new CreateUserDto 
-        { 
-            Email = email, 
-            FullName = fullName, 
-            Phone = phone 
-        };
-        var userId = await _userRepository.CreateAsync(createDto, passwordHash, 2); // Default to Neighbor role
+        var userId = await _userRepository.CreateAsync(createUserDto, passwordHash, role);
 
         return (userId, null);
     }
@@ -130,12 +125,12 @@ public class AuthService : IAuthService
         if (user == null)
             return (null, "Usuario no encontrado");
 
-        if (user.Status != 1)
+        if (user.Status != (int)UserStatus.Active)
             return (null, "Usuario inactivo");
 
         await RevokeRefreshTokenAsync(refreshToken);
 
-        var newToken = GenerateJwtToken(user.Id, user.Email, user.Role, user.FullName);
+        var newToken = GenerateJwtToken(user.Id, user.Email, (int)user.Role, user.FullName);
         var newRefreshToken = GenerateRefreshToken();
         var expiresAt = _utcNow().AddMinutes(_jwtExpiryMinutes);
 

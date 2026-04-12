@@ -1,8 +1,8 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory, Router, RouteRecordRaw, NavigationGuardNext } from 'vue-router'
 import { Loading } from 'quasar'
 import { useAuthStore } from '../stores/auth'
 
-const routes = [
+const routes: RouteRecordRaw[] = [
   {
     path: '/login',
     component: () => import('../pages/LoginPage.vue'),
@@ -44,11 +44,6 @@ const routes = [
         component: () => import('../pages/IncidentsPage.vue')
       },
       {
-        path: 'emergency',
-        name: 'emergency',
-        component: () => import('../pages/EmergencyPage.vue')
-      },
-      {
         path: 'security',
         name: 'security',
         component: () => import('../pages/SecurityPage.vue'),
@@ -75,7 +70,7 @@ const routes = [
   }
 ]
 
-const router = createRouter({
+const router: Router = createRouter({
   history: createWebHistory(),
   routes
 })

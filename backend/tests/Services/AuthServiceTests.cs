@@ -7,6 +7,7 @@ using UrbaPF.Infrastructure.Interfaces;
 using UrbaPF.Infrastructure.Services;
 using UrbaPF.Infrastructure.Data;
 using Npgsql;
+using UrbaPF.Domain.Enums;
 
 namespace UrbaPF.Tests.Services;
 
@@ -58,7 +59,7 @@ public class AuthServiceTests
             Email = email,
             PasswordHash = _passwordHasher.Hash(password),
             FullName = "Test User",
-            Role = 1,
+            Role = UserRole.Guard,
             CredibilityLevel = 3,
             Status = status,
             Phone = "12345678",
@@ -134,13 +135,13 @@ public class AuthServiceTests
     [Test]
     public async Task Register_WithNewEmail_ReturnsUserId()
     {
-        var request = new { Email = "new@test.com", Password = "password123", FullName = "New User" };
+        var createDto = new CreateUserDto { Email = "new@test.com", FullName = "New User", Phone = null };
         
-        _userRepositoryMock.Setup(x => x.GetByEmailAsync(request.Email)).ReturnsAsync((UserDto?)null);
-        _userRepositoryMock.Setup(x => x.CreateAsync(It.IsAny<CreateUserDto>(), It.IsAny<string>())).ReturnsAsync(Guid.NewGuid());
+        _userRepositoryMock.Setup(x => x.GetByEmailAsync(createDto.Email)).ReturnsAsync((UserDto?)null);
+        _userRepositoryMock.Setup(x => x.CreateAsync(It.IsAny<CreateUserDto>(), It.IsAny<string>(), It.IsAny<UserRole>())).ReturnsAsync(Guid.NewGuid());
 
         var authService = CreateAuthService();
-        var result = await authService.RegisterAsync(request.Email, request.Password, request.FullName, null);
+        var result = await authService.RegisterUserAsync(createDto, "password123", UserRole.Neighbor); // Default to Neighbor role
 
         result.UserId.Should().NotBeNull();
         result.Error.Should().BeNull();
@@ -150,11 +151,12 @@ public class AuthServiceTests
     public async Task Register_WithExistingEmail_ReturnsError()
     {
         var existingUser = new UserDto { Email = "existing@test.com" };
+        var createDto = new CreateUserDto { Email = "existing@test.com", FullName = "Existing User", Phone = null };
         
         _userRepositoryMock.Setup(x => x.GetByEmailAsync(existingUser.Email)).ReturnsAsync(existingUser);
 
         var authService = CreateAuthService();
-        var result = await authService.RegisterAsync("existing@test.com", "password", "User", null);
+        var result = await authService.RegisterUserAsync(createDto, "password", UserRole.Neighbor);
 
         result.UserId.Should().BeNull();
         result.Error.Should().Be("El email ya está registrado");

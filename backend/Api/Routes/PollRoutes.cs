@@ -2,6 +2,8 @@ using UrbaPF.Infrastructure.DTOs;
 using UrbaPF.Infrastructure.Interfaces;
 using UrbaPF.Api.DTOs;
 using System.Security.Claims;
+using UrbaPF.Api.Extensions;
+using UrbaPF.Domain.Enums;
 
 namespace UrbaPF.Api.Routes;
 
@@ -18,7 +20,7 @@ public static class PollRoutes
         app.MapPost("/api/condominiums/{id:guid}/polls", async (Guid id, IPollService pollService, CreatePollRequest request, HttpContext ctx) =>
         {
             var userId = ctx.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? Guid.Empty.ToString();
-            var userRole = GetUserRole(ctx.User);
+            var userRole = ctx.User.GetUserRole();
             
             var result = await pollService.CreateAsync(new CreatePollDto
             {
@@ -30,7 +32,7 @@ public static class PollRoutes
                 EndsAt = request.EndsAt,
                 RequiresJustification = request.RequiresJustification,
                 MinRoleToVote = request.MinRoleToVote,
-                Status = 0
+                Status = (int)PollStatus.Draft
             }, Guid.Parse(userId), id, userRole);
             
             if (result is { } pollResult)
@@ -43,7 +45,7 @@ public static class PollRoutes
 
         app.MapPut("/api/polls/{id:guid}", async (Guid id, IPollService pollService, UpdatePollRequest request, HttpContext ctx) =>
         {
-            var userRole = GetUserRole(ctx.User);
+            var userRole = ctx.User.GetUserRole();
             var result = await pollService.UpdateAsync(id, new UpdatePollDto
             {
                 Title = request.Title,
@@ -62,7 +64,7 @@ public static class PollRoutes
 
         app.MapDelete("/api/polls/{id:guid}", async (Guid id, IPollService pollService, HttpContext ctx) =>
         {
-            var userRole = GetUserRole(ctx.User);
+            var userRole = ctx.User.GetUserRole();
             var result = await pollService.DeleteAsync(id, userRole);
 
             if (!result.success)
@@ -74,7 +76,7 @@ public static class PollRoutes
         app.MapPost("/api/polls/{id:guid}/vote", async (Guid id, IPollService pollService, CreateVoteRequest request, HttpContext ctx) =>
         {
             var userId = ctx.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? Guid.Empty.ToString();
-            var userRole = GetUserRole(ctx.User);
+            var userRole = ctx.User.GetUserRole();
             var ipAddress = ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown";
             
             var result = await pollService.VoteAsync(id, Guid.Parse(userId), userRole, request.OptionIndex, ipAddress);
@@ -95,9 +97,4 @@ public static class PollRoutes
         });
     }
     
-    private static int GetUserRole(ClaimsPrincipal user)
-    {
-        var roleClaim = user.FindFirst(ClaimTypes.Role)?.Value;
-        return roleClaim != null ? int.Parse(roleClaim) : 0;
-    }
 }

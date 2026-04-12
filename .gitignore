@@ -61,6 +61,7 @@ packages/
 **/yarn-debug.log*
 **/yarn-error.log*
 **/pnpm-debug.log*
+**/.pnpm-store*
 
 # Quasar
 .quasar/
@@ -111,4 +112,4 @@ coverage/
 # Ignored by opencode agent
 .opencode/
 .agents/
-AGENTS.md
+#AGENTS.md

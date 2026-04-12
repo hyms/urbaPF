@@ -5,41 +5,44 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using UrbaPF.Infrastructure.Services;
+using UrbaPF.Api.Extensions;
+using UrbaPF.Domain.Enums;
 
 namespace UrbaPF.Api.Routes;
 
 public static class UserRoutes
 {
-    private const int RoleAdministrator = 4;
-    private const int RoleManager = 3;
-
     public static void MapUserRoutes(this WebApplication app)
     {
         app.MapGet("/api/users", async (IUserRepository repo) => Results.Ok(await repo.GetAllAsync()))
             .RequireAuthorization()
-            .WithMetadata(new Microsoft.AspNetCore.Authorization.AuthorizeAttribute { Roles = $"{RoleAdministrator},{RoleManager}" });
+            .WithMetadata(new Microsoft.AspNetCore.Authorization.AuthorizeAttribute { Roles = $"{(int)UserRole.Administrator},{(int)UserRole.Manager}" });
 
         app.MapGet("/api/users/{id:guid}", async (Guid id, IUserRepository repo) => 
             await repo.GetByIdAsync(id) is { } u ? Results.Ok(u) : Results.NotFound())
             .RequireAuthorization();
 
-        app.MapPost("/api/users", async (IUserRepository repo, CreateUserRequest request) =>
+        app.MapPost("/api/users", async (IAuthService authService, CreateUserRequest request) =>
         {
-            var userId = await repo.CreateAsync(new CreateUserDto
+            var createDto = new CreateUserDto
             {
                 Email = request.Email,
                 FullName = request.FullName,
                 Phone = request.Phone
-            }, request.Password, 2);
-            return Results.Created($"/api/users/{userId}", new { id = userId });
+            };
+            var (userId, error) = await authService.RegisterUserAsync(createDto, request.Password, UserRole.Neighbor); // Default to Neighbor role
+
+            return userId.HasValue
+                ? Results.Created($"/api/users/{userId}", new { id = userId })
+                : Results.BadRequest(new { error });
         })
             .RequireAuthorization()
-            .WithMetadata(new Microsoft.AspNetCore.Authorization.AuthorizeAttribute { Roles = RoleAdministrator.ToString() });
+            .WithMetadata(new Microsoft.AspNetCore.Authorization.AuthorizeAttribute { Roles = ((int)UserRole.Administrator).ToString() });
 
         app.MapPut("/api/users/{id:guid}", async (Guid id, IUserRepository repo, UpdateUserRequest request, ClaimsPrincipal user) =>
         {
-            var currentUserId = Guid.Parse(user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? throw new UnauthorizedAccessException());
-            var currentUserRole = int.Parse(user.FindFirst(ClaimTypes.Role)?.Value ?? throw new UnauthorizedAccessException());
+            var currentUserId = user.GetUserId();
+            var currentUserRole = user.GetUserRole();
 
             var updateDto = new UpdateUserDto
             {
@@ -50,7 +53,7 @@ public static class UserRoutes
                 PhotoUrl = request.PhotoUrl
             };
 
-            if (currentUserRole == RoleAdministrator)
+            if ((int)currentUserRole == (int)UserRole.Administrator)
             {
                 updateDto.Role = request.Role;
             }
@@ -65,23 +68,14 @@ public static class UserRoutes
             return Results.Ok(new { message = "Usuario eliminado" });
         })
             .RequireAuthorization()
-            .WithMetadata(new Microsoft.AspNetCore.Authorization.AuthorizeAttribute { Roles = RoleAdministrator.ToString() });
+            .WithMetadata(new Microsoft.AspNetCore.Authorization.AuthorizeAttribute { Roles = ((int)UserRole.Administrator).ToString() });
 
         app.MapPut("/api/users/{id:guid}/password", async (Guid id, ChangePasswordRequest request, ClaimsPrincipal user, IAuthService authService) =>
         {
-            var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!Guid.TryParse(userIdClaim, out var currentUserId))
-            {
-                return Results.Forbid();
-            }
+            var currentUserId = user.GetUserId();
+            var currentUserRole = user.GetUserRole();
 
-            var userRoleClaim = user.FindFirst(ClaimTypes.Role)?.Value;
-            if (!int.TryParse(userRoleClaim, out var currentUserRole))
-            {
-                return Results.Forbid();
-            }
-
-            if (currentUserId != id && currentUserRole != RoleAdministrator) // Only owner or Admin can change password
+            if (currentUserId != id && (int)currentUserRole != (int)UserRole.Administrator) // Only owner or Admin can change password
             {
                 return Results.Problem("No tiene permisos para cambiar esta contraseña.", statusCode: StatusCodes.Status403Forbidden);
             }
@@ -107,7 +101,7 @@ public static class UserRoutes
 
         app.MapPut("/api/users/{id:guid}/fcm-token", async (Guid id, UpdateFcmTokenRequest request, IUserRepository repo, ClaimsPrincipal user) =>
         {
-            var currentUserId = GetUserId(user);
+            var currentUserId = user.GetUserId();
             if (currentUserId != id)
             {
                 return Results.Forbid();
@@ -115,12 +109,6 @@ public static class UserRoutes
             await repo.UpdateFcmTokenAsync(id, request.FcmToken);
             return Results.Ok(new { message = "Token actualizado" });
         }).RequireAuthorization();
-    }
-
-    private static Guid GetUserId(ClaimsPrincipal user)
-    {
-        var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        return userIdClaim != null ? Guid.Parse(userIdClaim) : Guid.Empty;
     }
 
     public record UpdateFcmTokenRequest(string? FcmToken);

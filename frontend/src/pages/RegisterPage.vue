@@ -1,8 +1,8 @@
 <template>
   <q-layout view="lHh Lpr lFf">
     <q-page-container>
-      <q-page class="flex flex-center bg-grey-2">
-        <q-card class="q-pa-md shadow-2 my_card" bordered style="width: 450px; max-width: 90vw;">
+      <q-page class="flex flex-center bg-grey-2 q-pa-md">
+        <q-card class="q-pa-md shadow-2 my_card" bordered>
           <q-card-section class="text-center">
             <div class="text-h4 text-primary text-weight-bold q-mb-sm">Registrarse</div>
             <div class="text-subtitle1 text-grey-7">Crea tu cuenta en UrbaPF</div>
@@ -57,13 +57,14 @@
                 <template v-slot:prepend>
                   <q-icon name="lock" />
                 </template>
-                <template v-slot:append>
-                  <q-icon
-                    :name="showPassword ? 'visibility' : 'visibility_off'"
-                    class="cursor-pointer"
-                    @click="showPassword = !showPassword"
-                  />
-                </template>
+<template v-slot:append>
+                    <q-icon
+                      :name="showPassword ? 'visibility' : 'visibility_off'"
+                      class="cursor-pointer"
+                      :aria-label="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+                      @click="showPassword = !showPassword"
+                    />
+                  </template>
               </q-input>
 
               <q-input
@@ -86,8 +87,8 @@
               <q-btn
                 type="submit"
                 color="primary"
-                class="full-width q-mt-md"
-                size="lg"
+                class="q-mt-md"
+                style="min-width: 200px"
                 :loading="authStore.loading"
                 label="Registrarse"
               />
@@ -105,7 +106,7 @@
   </q-layout>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'

@@ -10,7 +10,7 @@ public class M011_InsertInitialData : Migration
         Insert.IntoTable("condominiums").Row(new
         {
             id = Guid.Parse("467b6f3c-502a-43f1-b94a-8d1e3a6c2c9d"),
-            name = "Condominium Central",
+            name = "Urbanizacion Papa Francisco",
             address = "Av. Principal #123, Santa Cruz, Bolivia",
             logo_url = "https://example.com/logo.png",
             description = "Condominio principal para pruebas y desarrollo",

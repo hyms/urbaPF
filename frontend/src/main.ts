@@ -1,21 +1,21 @@
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
-import { createI18n } from 'vue-i18n'
-import axios from 'axios'
+import { createApp, App as VueApp } from 'vue'
+import { createPinia, Pinia } from 'pinia'
+import { createI18n, I18n } from 'vue-i18n'
+import axios, { AxiosInstance } from 'axios'
 
 import '@quasar/extras/roboto-font/roboto-font.css'
 import '@quasar/extras/material-icons/material-icons.css'
 import 'quasar/src/css/index.sass'
 
-import messages from './locales/es'
+import messages from './i18n/es'
 
 import App from './App.vue'
 import router from './router'
 import { api } from './boot/api'
 import auth from './boot/auth'
-import { Quasar, Dialog, Notify } from 'quasar'
+import { Quasar, Dialog, Notify, QVueGlobals } from 'quasar'
 
-const i18n = createI18n({
+const i18n: I18n = createI18n({
   legacy: false,
   locale: 'es',
   fallbackLocale: 'es',
@@ -24,7 +24,7 @@ const i18n = createI18n({
   }
 })
 
-const app = createApp(App)
+const app: VueApp = createApp(App)
 
 app.config.globalProperties.$axios = axios
 app.config.globalProperties.$api = api

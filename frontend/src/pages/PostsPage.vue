@@ -51,7 +51,7 @@
               :label="t('common.clearFilters')"
               @click="clearFilters"
               no-caps
-              class="full-width"
+              class="q-mt-sm"
             />
           </div>
         </div>
@@ -108,66 +108,12 @@
 
     <!-- Create/Edit Dialog -->
     <q-dialog v-model="showDialog" persistent>
-      <q-card style="min-width: 500px; max-width: 90vw;">
-        <q-card-section class="row items-center q-pb-none">
-          <div class="text-h6">{{ editingPost ? t('posts.editPost') : t('posts.newPost') }}</div>
-          <q-space />
-          <q-btn icon="close" flat round dense v-close-popup />
-        </q-card-section>
-
-        <q-card-section>
-          <q-form @submit="savePost" class="q-gutter-md">
-            <q-input
-              v-model="postForm.title"
-              :label="t('posts.title') + ' *'"
-              outlined
-              :rules="[v => !!v || t('common.required')]"
-            />
-
-            <q-input
-              v-model="postForm.content"
-              :label="t('posts.content') + ' *'"
-              type="textarea"
-              outlined
-              rows="4"
-              :rules="[v => !!v || t('common.required')]"
-            />
-            <div class="row q-col-gutter-md">
-              <div class="col-6">
-                <q-toggle
-                  v-model="postForm.isPinned"
-                  :label="t('posts.pinned')"
-                  color="orange"
-                />
-              </div>
-              <div class="col-6">
-                <q-toggle
-                  v-model="postForm.isAnnouncement"
-                  :label="t('posts.announcement')"
-                  color="green"
-                />
-              </div>
-            </div>
-
-            <div class="row justify-end q-mt-md">
-              <q-btn
-                flat
-                :label="t('common.cancel')"
-                v-close-popup
-                @click="closeDialog"
-                class="q-mr-sm"
-              />
-              <q-btn
-                color="primary"
-                :label="editingPost ? t('common.save') : t('common.create')"
-                type="submit"
-                :loading="loading"
-                no-caps
-              />
-            </div>
-          </q-form>
-        </q-card-section>
-      </q-card>
+      <PostFormDialog
+        :post="editingPost"
+        :loading="loading"
+        @submit="savePost"
+        @cancel="closeDialog"
+      />
     </q-dialog>
 
     <!-- View Post Dialog -->
@@ -240,10 +186,20 @@ import { usePostStore } from '@/stores/post'
 import { useCondominiumStore } from '@/stores/condominium'
 import { useAuthStore } from '@/stores/auth'
 import { Post, CreatePostRequest, UpdatePostRequest } from '@/types/models'
+import { PostStatusLabel, PostStatusColor } from '@/utils/appEnums'
+import { formatDateTime } from '@/utils/format'
+import PostItem from '../components/PostItem.vue'
+import PostFormDialog from '../components/post/PostFormDialog.vue'
 
 
 const $q = useQuasar()
 const { t } = useI18n()
+
+const statusOptions = computed(() => [
+  { label: t('posts.pending'), value: 0 },
+  { label: t('posts.approve'), value: 1 },
+  { label: t('posts.rejected'), value: 2 }
+])
 const postStore = usePostStore()
 const condoStore = useCondominiumStore()
 const authStore = useAuthStore()
@@ -261,12 +217,7 @@ const showViewDialog = ref(false)
 const editingPost = ref<Post | null>(null)
 const viewingPost = ref<Post | null>(null)
 
-const postForm = ref({
-  title: '',
-  content: '',
-  isPinned: false,
-  isAnnouncement: false
-})
+
 
 const canCreatePost = computed(() => {
   return authStore.isAdmin || authStore.isManager || (authStore.isNeighbor && authStore.isValidated)
@@ -296,16 +247,7 @@ function clearFilters() {
   filterStatus.value = null
 }
 
-function formatDateTime(date: string | undefined): string {
-  if (!date) return ''
-  return new Date(date).toLocaleString('es-BO', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
+
 
 async function loadPosts() {
   const condos = await condoStore.fetchAll()
@@ -316,23 +258,11 @@ async function loadPosts() {
 
 function openCreateDialog() {
   editingPost.value = null
-  postForm.value = {
-    title: '',
-    content: '',
-    isPinned: false,
-    isAnnouncement: false
-  }
   showDialog.value = true
 }
 
 function editPost(post: Post) {
   editingPost.value = post
-  postForm.value = {
-    title: post.title,
-    content: post.content,
-    isPinned: post.isPinned,
-    isAnnouncement: post.isAnnouncement
-  }
   showDialog.value = true
 }
 
@@ -341,7 +271,7 @@ function closeDialog() {
   editingPost.value = null
 }
 
-async function savePost() {
+async function savePost(formData: { title: string; content: string; isPinned: boolean; isAnnouncement: boolean }) {
   const condos = await condoStore.fetchAll()
   if (condos.length === 0) {
     $q.notify({ type: 'negative', message: t('common.error') })
@@ -352,10 +282,10 @@ async function savePost() {
 
   if (editingPost.value) {
     const data: UpdatePostRequest = {
-      title: postForm.value.title,
-      content: postForm.value.content,
-      isPinned: postForm.value.isPinned,
-      isAnnouncement: postForm.value.isAnnouncement
+      title: formData.title,
+      content: formData.content,
+      isPinned: formData.isPinned,
+      isAnnouncement: formData.isAnnouncement
     }
     const success = await postStore.update(editingPost.value.id, data)
     if (success) {
@@ -367,10 +297,10 @@ async function savePost() {
     }
   } else {
     const data: CreatePostRequest = {
-      title: postForm.value.title,
-      content: postForm.value.content,
-      isPinned: postForm.value.isPinned,
-      isAnnouncement: postForm.value.isAnnouncement
+      title: formData.title,
+      content: formData.content,
+      isPinned: formData.isPinned,
+      isAnnouncement: formData.isAnnouncement
     }
     const id = await postStore.create(condominiumId, data)
     if (id) {

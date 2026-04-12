@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using UrbaPF.Infrastructure.DTOs;
 using UrbaPF.Infrastructure.Interfaces;
+using UrbaPF.Domain.Enums;
 
 namespace UrbaPF.Infrastructure.Services;
 
@@ -10,16 +11,6 @@ public class PollService : IPollService
     private readonly IPollRepository _pollRepository;
     private readonly IVoteRepository _voteRepository;
     private readonly IAuditService _auditService;
-
-    private const int RoleAdministrator = 4;
-    private const int RoleManager = 3;
-    private const int RoleNeighbor = 2;
-
-    private const int PollStatusDraft = 1;
-    private const int PollStatusScheduled = 2;
-    private const int PollStatusActive = 3;
-    private const int PollStatusClosed = 4;
-    private const int PollStatusCancelled = 5;
 
     public PollService(IPollRepository pollRepository, IVoteRepository voteRepository, IAuditService auditService)
     {
@@ -38,18 +29,18 @@ public class PollService : IPollService
         return await _pollRepository.GetByCondominiumAsync(condominiumId);
     }
 
-    public async Task<(Guid pollId, int status)?> CreateAsync(CreatePollDto dto, Guid userId, Guid condominiumId, int userRole)
+    public async Task<(Guid pollId, int status)?> CreateAsync(CreatePollDto dto, Guid userId, Guid condominiumId, UserRole userRole)
     {
-        var initialStatus = (userRole == RoleManager || userRole == RoleAdministrator)
-            ? PollStatusScheduled
-            : PollStatusDraft;
+        var initialStatus = (userRole == UserRole.Manager || userRole == UserRole.Administrator)
+            ? (int)PollStatus.Scheduled
+            : (int)PollStatus.Draft;
 
         var pollId = await _pollRepository.CreateAsync(dto, userId, condominiumId, initialStatus);
         await _auditService.LogEventAsync(userId, condominiumId, "POLL_CREATED", pollId, dto);
         return (pollId, initialStatus);
     }
 
-    public async Task<(bool success, string? error)> UpdateAsync(Guid id, UpdatePollDto dto, int userRole)
+    public async Task<(bool success, string? error)> UpdateAsync(Guid id, UpdatePollDto dto, UserRole userRole)
     {
         var poll = await _pollRepository.GetByIdAsync(id);
         if (poll is null)
@@ -63,9 +54,9 @@ public class PollService : IPollService
         return (true, null);
     }
 
-    public async Task<(bool success, string? error)> DeleteAsync(Guid id, int userRole)
+    public async Task<(bool success, string? error)> DeleteAsync(Guid id, UserRole userRole)
     {
-        if (userRole != RoleManager && userRole != RoleAdministrator)
+        if (userRole != UserRole.Manager && userRole != UserRole.Administrator)
             return (false, "No tienes permiso para eliminar votaciones");
 
         var poll = await _pollRepository.GetByIdAsync(id);
@@ -83,22 +74,22 @@ public class PollService : IPollService
         return (true, null);
     }
 
-    public async Task<(bool success, string? error)> VoteAsync(Guid pollId, Guid userId, int userRole, int optionIndex, string ipAddress)
+    public async Task<(bool success, string? error)> VoteAsync(Guid pollId, Guid userId, UserRole userRole, int optionIndex, string ipAddress)
     {
-        if (userRole != RoleNeighbor && userRole != RoleManager)
+        if (userRole != UserRole.Neighbor && userRole != UserRole.Manager)
             return (false, "Solo vecinos y encargados pueden votar");
 
         var poll = await _pollRepository.GetByIdAsync(pollId);
         if (poll is null)
             return (false, "Votación no encontrada");
 
-        if (poll.Status != PollStatusActive)
+        if (poll.Status != (int)PollStatus.Active)
             return (false, "La votación no está activa");
 
         if (DateTime.UtcNow < poll.StartsAt || DateTime.UtcNow > poll.EndsAt)
             return (false, "La votación no está dentro del período establecido");
 
-        if (userRole < poll.MinRoleToVote)
+        if ((int)userRole < poll.MinRoleToVote)
             return (false, "No tienes el rol mínimo requerido para votar en esta elección");
 
         var hasVoted = await _voteRepository.HasUserVotedAsync(pollId, userId);
@@ -144,11 +135,11 @@ public class PollService : IPollService
         return (false, "Firma inválida");
     }
 
-    private static bool CanEditPoll(int status, int userRole)
+    private static bool CanEditPoll(int status, UserRole userRole)
     {
-        if (status == PollStatusActive || status == PollStatusClosed)
+        if (status == (int)PollStatus.Active || status == (int)PollStatus.Closed)
             return false;
-        return userRole == RoleManager || userRole == RoleAdministrator;
+        return userRole == UserRole.Manager || userRole == UserRole.Administrator;
     }
 
     private static string GenerateSignature(Guid pollId, Guid userId, int optionIndex, DateTime timestamp)

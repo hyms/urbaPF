@@ -1,7 +1,7 @@
 <template>
   <q-layout view="lHh Lpr lFf">
     <q-page-container>
-      <q-page class="flex flex-center">
+      <q-page class="flex flex-center q-pa-md">
         <div class="login-container">
           <q-card class="login-card" bordered>
             <q-card-section class="login-header text-center q-pb-none">
@@ -9,7 +9,9 @@
                 <q-avatar size="80px" color="primary" text-color="white" icon="home_work" />
               </div>
               <div class="text-h4 text-primary text-weight-bold">UrbaPF</div>
-              <div class="text-subtitle1 text-grey-7 q-mt-sm">Plataforma de Coordinación Vecinal</div>
+              <div class="text-subtitle1 text-grey-7 q-mt-sm">
+                Plataforma de Coordinación Vecinal
+              </div>
             </q-card-section>
 
             <q-card-section class="q-pt-md">
@@ -20,7 +22,10 @@
                   label="Correo electrónico"
                   type="email"
                   lazy-rules
-                  :rules="[val => !!val || 'El correo es requerido', val => /.+@.+\..+/.test(val) || 'Ingrese un correo válido']"
+                  :rules="[
+                    val => !!val || 'El correo es requerido',
+                    val => /.+@.+\..+/.test(val) || 'Ingrese un correo válido'
+                  ]"
                   aria-label="Correo electrónico"
                 >
                   <template v-slot:prepend>
@@ -51,7 +56,13 @@
                 </q-input>
 
                 <div class="row items-center justify-end q-mt-xs">
-                  <q-btn flat no-caps color="primary" label="¿Olvidaste tu contraseña?" class="text-body2" />
+                  <q-btn
+                    flat
+                    no-caps
+                    color="primary"
+                    label="¿Olvidaste tu contraseña?"
+                    class="text-body2"
+                  />
                 </div>
 
                 <q-banner v-if="authStore.error" class="bg-red-1 text-negative q-mb-md" rounded>
@@ -61,28 +72,34 @@
                   {{ authStore.error }}
                 </q-banner>
 
-                <q-btn
+                <div class="row justify-center">
+                  <q-btn
                   type="submit"
                   color="primary"
-                  class="full-width q-mt-md"
-                  size="lg"
+                  class="q-mt-md"
+                  style="min-width: 200px"
                   :loading="authStore.loading"
                   label="Iniciar Sesión"
-                  no-caps
-                />
+                    no-caps
+                  />
+                </div>
               </q-form>
             </q-card-section>
 
             <q-card-section class="text-center q-pt-none">
               <div class="text-grey-7">
                 ¿No tienes cuenta?
-                <router-link to="/register" class="text-primary text-weight-medium text-decoration-none">
+                <router-link
+                  to="/register"
+                  class="text-primary text-weight-medium text-decoration-none"
+                  aria-label="Registrarse"
+                >
                   Regístrate
                 </router-link>
               </div>
             </q-card-section>
           </q-card>
-          
+
           <div class="text-center q-mt-lg text-grey-6 text-caption">
             © 2026 UrbaPF. Todos los derechos reservados.
           </div>
@@ -92,7 +109,7 @@
   </q-layout>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
@@ -113,9 +130,7 @@ async function onSubmit() {
       type: 'positive',
       message: 'Bienvenido a UrbaPF',
       position: 'top',
-      actions: [
-        { icon: 'close', color: 'white', round: true, dense: true }
-      ]
+      actions: [{ icon: 'close', color: 'white', round: true, dense: true }]
     })
     router.push('/')
   }
@@ -144,7 +159,8 @@ async function onSubmit() {
 }
 
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -164,7 +180,7 @@ async function onSubmit() {
   .login-container {
     padding: 16px;
   }
-  
+
   .login-card {
     border-radius: 12px;
   }

@@ -241,16 +241,11 @@ async function savePoll(data) {
   try {
     const condos = await condoStore.fetchAll()
     if (condos.length > 0) {
-      const payload = {
-        ...data,
-        options: JSON.stringify(data.options)
-      }
-
       if (editingPoll.value) {
-        await pollStore.update(editingPoll.value.id, payload)
+        await pollStore.update(editingPoll.value.id, data)
         $q.notify({ type: 'positive', message: t('common.success') })
       } else {
-        await pollStore.create(condos[0].id, payload)
+        await pollStore.create(condos[0].id, data)
         $q.notify({ type: 'positive', message: t('common.success') })
       }
 

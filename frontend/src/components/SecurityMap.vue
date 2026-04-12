@@ -1,5 +1,5 @@
 <template>
-  <div class="security-map" style="height: 400px; width: 100%">
+  <div class="security-map" style="height: 500px; width: 100%">
     <div ref="mapContainer" style="height: 100%; width: 100%"></div>
   </div>
 </template>

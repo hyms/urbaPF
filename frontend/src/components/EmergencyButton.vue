@@ -14,11 +14,15 @@
         :loading="loading"
         :disable="loading"
         class="emergency-btn"
+        aria-label="Botón de emergencia. Mantén presionado por 3 segundos para enviar una alerta"
         @mousedown="startPress"
         @mouseup="cancelPress"
         @mouseleave="cancelPress"
         @touchstart.prevent="startPress"
         @touchend.prevent="cancelPress"
+        @keydown.space.prevent="startPress"
+        @keyup.space.prevent="cancelPress"
+        @keyup.enter.prevent="triggerAlert"
       >
         <q-icon name="emergency" size="48px" class="q-mr-sm" />
       </q-btn>

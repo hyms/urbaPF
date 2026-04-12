@@ -1,49 +1,56 @@
 <template>
-  <q-page class="q-pa-md">
-    <div class="row items-center q-mb-md">
-      <div class="text-h4">{{ t('condominiums.title') }}</div>
-      <q-space />
-      <q-btn color="primary" icon="add" :label="t('condominiums.newCondo')" @click="showCreateDialog = true" v-if="authStore.isAdmin" />
-    </div>
+  <q-layout view="lHh Lpr lFf">
+    <q-page-container>
+      <q-page class="q-pa-md">
+        <div class="row items-center q-mb-md">
+          <div class="text-h4">{{ t('condominiums.title') }}</div>
+          <q-space />
+          <q-btn color="primary" icon="add" :label="t('condominiums.newCondo')" @click="openCreateDialog" v-if="authStore.isAdmin" aria-label="Crear nuevo condominio"></q-btn>
+        </div>
 
-    <div class="row q-col-gutter-md">
-      <div class="col-12 col-sm-6 col-md-4" v-for="condo in condominiums" :key="condo.id">
-        <CondoItem
-          :condo="condo"
-          :show-admin-controls="authStore.isAdmin"
-          @click="selectCondo"
-          @edit="editCondo"
-          @delete="deleteCondo"
-        />
-      </div>
-    </div>
+        <div class="row q-col-gutter-md" v-if="condominiums.length > 0">
+          <div class="col-12 col-sm-6 col-md-4" v-for="condo in condominiums" :key="condo.id">
+            <CondoItem
+              :condo="condo"
+              :show-admin-controls="authStore.isAdmin"
+              @click="selectCondo"
+              @edit="editCondo"
+              @delete="deleteCondo"
+            />
+          </div>
+        </div>
+        <div v-else class="col-12 text-center text-grey q-pa-xl">
+          {{ t('condominiums.noCondos') }}
+        </div>
+      </q-page>
+    </q-page-container>
+  </q-layout>
 
-    <q-dialog v-model="showCreateDialog" persistent>
-      <q-card style="min-width: 400px">
-        <q-card-section>
-          <div class="text-h6">{{ editingCondo ? t('condominiums.editCondo') : t('condominiums.newCondo') }}</div>
-        </q-card-section>
+  <q-dialog v-model="showCreateDialog" persistent>
+    <q-card style="min-width: 400px">
+      <q-card-section>
+        <div class="text-h6">{{ editingCondo ? t('condominiums.editCondo') : t('condominiums.newCondo') }}</div>
+      </q-card-section>
 
-        <q-card-section>
-          <q-form class="q-gutter-md">
-            <q-input v-model="newCondo.name" :label="t('condominiums.name')" outlined :rules="[v => !!v || t('common.required')]" />
-            <q-input v-model="newCondo.address" :label="t('condominiums.address')" outlined :rules="[v => !!v || t('common.required')]" />
-            <q-input v-model="newCondo.description" :label="t('condominiums.description')" type="textarea" outlined />
-            <q-input v-model="newCondo.monthlyFee" :label="t('condominiums.monthlyFee')" type="number" outlined />
-            <q-input v-model="newCondo.currency" :label="t('condominiums.currency')" outlined />
-          </q-form>
-        </q-card-section>
+      <q-card-section>
+        <q-form class="q-gutter-md">
+          <q-input v-model="newCondo.name" :label="t('condominiums.name')" filled :rules="[v => !!v || t('common.required')]"></q-input>
+          <q-input v-model="newCondo.address" :label="t('condominiums.address')" filled :rules="[v => !!v || t('common.required')]"></q-input>
+          <q-input v-model="newCondo.description" :label="t('condominiums.description')" type="textarea" filled></q-input>
+          <q-input v-model="newCondo.monthlyFee" :label="t('condominiums.monthlyFee')" type="number" filled></q-input>
+          <q-input v-model="newCondo.currency" :label="t('condominiums.currency')" filled></q-input>
+        </q-form>
+      </q-card-section>
 
-        <q-card-actions align="right">
-          <q-btn flat :label="t('common.cancel')" v-close-popup />
-          <q-btn color="primary" :label="t('common.save')" @click="saveCondo" :loading="loading" />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
-  </q-page>
+      <q-card-actions align="right">
+        <q-btn flat :label="t('common.cancel')" v-close-popup aria-label="Cancelar"></q-btn>
+        <q-btn color="primary" :label="t('common.save')" @click="saveCondo" :loading="loading" aria-label="Guardar condominio"></q-btn>
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useCondominiumStore } from '../stores/condominium'
@@ -73,12 +80,24 @@ onMounted(async () => {
   condominiums.value = await condoStore.fetchAll()
 })
 
-function selectCondo(condo) {
+function openCreateDialog() {
+  editingCondo.value = null
+  newCondo.value = {
+    name: '',
+    address: '',
+    description: '',
+    monthlyFee: 0,
+    currency: 'BOB'
+  }
+  showCreateDialog.value = true
+}
+
+function selectCondo(condo: any) {
   localStorage.setItem('currentCondoId', condo.id)
   $q.notify({ type: 'positive', message: `${t('condominiums.select')}: ${condo.name}` })
 }
 
-function editCondo(condo) {
+function editCondo(condo: any) {
   editingCondo.value = condo
   newCondo.value = {
     name: condo.name,
@@ -110,7 +129,7 @@ async function saveCondo() {
   }
 }
 
-async function deleteCondo(condo) {
+async function deleteCondo(condo: any) {
   $q.dialog({
     title: t('common.confirmDelete'),
     message: t('common.deleteMessage').replace('{item}', condo.name),

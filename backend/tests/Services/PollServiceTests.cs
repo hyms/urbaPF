@@ -3,6 +3,7 @@ using Moq;
 using UrbaPF.Infrastructure.DTOs;
 using UrbaPF.Infrastructure.Interfaces;
 using UrbaPF.Infrastructure.Services;
+using UrbaPF.Domain.Enums;
 
 namespace UrbaPF.Tests.Services;
 
@@ -17,15 +18,6 @@ public class PollServiceTests
     private static readonly Guid UserId = Guid.NewGuid();
     private static readonly Guid PollId = Guid.NewGuid();
 
-    private const int RoleAdministrator = 4;
-    private const int RoleManager = 3;
-    private const int RoleNeighbor = 2;
-
-    private const int PollStatusDraft = 1;
-    private const int PollStatusScheduled = 2;
-    private const int PollStatusActive = 3;
-    private const int PollStatusClosed = 4;
-    private const int PollStatusCancelled = 5;
 
     public PollServiceTests()
     {
@@ -51,18 +43,18 @@ public class PollServiceTests
             StartsAt = DateTime.UtcNow.AddDays(1),
             EndsAt = DateTime.UtcNow.AddDays(7),
             RequiresJustification = false,
-            MinRoleToVote = RoleNeighbor
+            MinRoleToVote = (int)UserRole.Neighbor
         };
 
         _pollRepositoryMock
-            .Setup(r => r.CreateAsync(dto, UserId, CondominiumId, PollStatusScheduled))
+            .Setup(r => r.CreateAsync(dto, UserId, CondominiumId, (int)PollStatus.Scheduled))
             .ReturnsAsync(PollId);
 
-        var result = await _pollService.CreateAsync(dto, UserId, CondominiumId, RoleManager);
+        var result = await _pollService.CreateAsync(dto, UserId, CondominiumId, UserRole.Manager);
 
         result.Should().NotBeNull();
         result!.Value.pollId.Should().Be(PollId);
-        result.Value.status.Should().Be(PollStatusScheduled);
+        result.Value.status.Should().Be((int)PollStatus.Scheduled);
         _auditServiceMock.Verify(a => a.LogEventAsync(UserId, CondominiumId, "POLL_CREATED", PollId, dto), Times.Once);
     }
 
@@ -78,17 +70,17 @@ public class PollServiceTests
             StartsAt = DateTime.UtcNow.AddDays(1),
             EndsAt = DateTime.UtcNow.AddDays(7),
             RequiresJustification = false,
-            MinRoleToVote = RoleNeighbor
+            MinRoleToVote = (int)UserRole.Neighbor
         };
 
         _pollRepositoryMock
-            .Setup(r => r.CreateAsync(dto, UserId, CondominiumId, PollStatusDraft))
+            .Setup(r => r.CreateAsync(dto, UserId, CondominiumId, (int)PollStatus.Draft))
             .ReturnsAsync(PollId);
 
-        var result = await _pollService.CreateAsync(dto, UserId, CondominiumId, RoleNeighbor);
+        var result = await _pollService.CreateAsync(dto, UserId, CondominiumId, UserRole.Neighbor);
 
         result.Should().NotBeNull();
-        result!.Value.status.Should().Be(PollStatusDraft);
+        result!.Value.status.Should().Be((int)PollStatus.Draft);
         _auditServiceMock.Verify(a => a.LogEventAsync(UserId, CondominiumId, "POLL_CREATED", PollId, dto), Times.Once);
     }
 
@@ -100,13 +92,13 @@ public class PollServiceTests
             Id = PollId,
             CondominiumId = CondominiumId,
             Title = "Test Poll",
-            Status = PollStatusActive,
+            Status = (int)PollStatus.Active,
             ServerSecret = "secret123"
         };
 
         _pollRepositoryMock.Setup(r => r.GetByIdAsync(PollId)).ReturnsAsync(poll);
 
-        var result = await _pollService.UpdateAsync(PollId, new UpdatePollDto { Title = "New Title" }, RoleManager);
+        var result = await _pollService.UpdateAsync(PollId, new UpdatePollDto { Title = "New Title" }, UserRole.Manager);
 
         result.success.Should().BeFalse();
         result.error.Should().Contain("activa o cerrada");
@@ -120,13 +112,13 @@ public class PollServiceTests
             Id = PollId,
             CondominiumId = CondominiumId,
             Title = "Test Poll",
-            Status = PollStatusClosed,
+            Status = (int)PollStatus.Closed,
             ServerSecret = "secret123"
         };
 
         _pollRepositoryMock.Setup(r => r.GetByIdAsync(PollId)).ReturnsAsync(poll);
 
-        var result = await _pollService.UpdateAsync(PollId, new UpdatePollDto { Title = "New Title" }, RoleManager);
+        var result = await _pollService.UpdateAsync(PollId, new UpdatePollDto { Title = "New Title" }, UserRole.Manager);
 
         result.success.Should().BeFalse();
         result.error.Should().Contain("activa o cerrada");
@@ -140,14 +132,14 @@ public class PollServiceTests
             Id = PollId,
             CondominiumId = CondominiumId,
             Title = "Test Poll",
-            Status = PollStatusDraft,
+            Status = (int)PollStatus.Draft,
             ServerSecret = "secret123"
         };
 
         _pollRepositoryMock.Setup(r => r.GetByIdAsync(PollId)).ReturnsAsync(poll);
         _voteRepositoryMock.Setup(r => r.HasAnyVotesAsync(PollId)).ReturnsAsync(true);
 
-        var result = await _pollService.DeleteAsync(PollId, RoleManager);
+        var result = await _pollService.DeleteAsync(PollId, UserRole.Manager);
 
         result.success.Should().BeFalse();
         result.error.Should().Contain("ya tiene votos");
@@ -161,16 +153,16 @@ public class PollServiceTests
             Id = PollId,
             CondominiumId = CondominiumId,
             Title = "Test Poll",
-            Status = PollStatusDraft,
+            Status = (int)PollStatus.Draft,
             StartsAt = DateTime.UtcNow.AddDays(1),
             EndsAt = DateTime.UtcNow.AddDays(7),
-            MinRoleToVote = RoleNeighbor,
+            MinRoleToVote = (int)UserRole.Neighbor,
             ServerSecret = "secret123"
         };
 
         _pollRepositoryMock.Setup(r => r.GetByIdAsync(PollId)).ReturnsAsync(poll);
 
-        var result = await _pollService.VoteAsync(PollId, UserId, RoleNeighbor, 0, "127.0.0.1");
+        var result = await _pollService.VoteAsync(PollId, UserId, UserRole.Neighbor, 0, "127.0.0.1");
 
         result.success.Should().BeFalse();
         result.error.Should().Contain("no está activa");
@@ -184,17 +176,17 @@ public class PollServiceTests
             Id = PollId,
             CondominiumId = CondominiumId,
             Title = "Test Poll",
-            Status = PollStatusActive,
+            Status = (int)PollStatus.Active,
             StartsAt = DateTime.UtcNow.AddDays(-1),
             EndsAt = DateTime.UtcNow.AddDays(7),
-            MinRoleToVote = RoleNeighbor,
+            MinRoleToVote = (int)UserRole.Neighbor,
             ServerSecret = "secret123"
         };
 
         _pollRepositoryMock.Setup(r => r.GetByIdAsync(PollId)).ReturnsAsync(poll);
         _voteRepositoryMock.Setup(r => r.HasUserVotedAsync(PollId, UserId)).ReturnsAsync(true);
 
-        var result = await _pollService.VoteAsync(PollId, UserId, RoleNeighbor, 0, "127.0.0.1");
+        var result = await _pollService.VoteAsync(PollId, UserId, UserRole.Neighbor, 0, "127.0.0.1");
 
         result.success.Should().BeFalse();
         result.error.Should().Contain("Ya has votado");
@@ -208,10 +200,10 @@ public class PollServiceTests
             Id = PollId,
             CondominiumId = CondominiumId,
             Title = "Test Poll",
-            Status = PollStatusActive,
+            Status = (int)PollStatus.Active,
             StartsAt = DateTime.UtcNow.AddDays(-1),
             EndsAt = DateTime.UtcNow.AddDays(7),
-            MinRoleToVote = RoleNeighbor,
+            MinRoleToVote = (int)UserRole.Neighbor,
             ServerSecret = "secret123"
         };
 
@@ -220,7 +212,7 @@ public class PollServiceTests
         _voteRepositoryMock.Setup(r => r.CreateAsync(UserId, PollId, 0, It.IsAny<string>(), "127.0.0.1"))
             .ReturnsAsync(Guid.NewGuid());
 
-        var result = await _pollService.VoteAsync(PollId, UserId, RoleNeighbor, 0, "127.0.0.1");
+        var result = await _pollService.VoteAsync(PollId, UserId, UserRole.Neighbor, 0, "127.0.0.1");
 
         result.success.Should().BeTrue();
         result.error.Should().BeNull();
@@ -235,16 +227,16 @@ public class PollServiceTests
             Id = PollId,
             CondominiumId = CondominiumId,
             Title = "Test Poll",
-            Status = PollStatusActive,
+            Status = (int)PollStatus.Active,
             StartsAt = DateTime.UtcNow.AddDays(-1),
             EndsAt = DateTime.UtcNow.AddDays(7),
-            MinRoleToVote = RoleManager,
+            MinRoleToVote = (int)UserRole.Manager,
             ServerSecret = "secret123"
         };
 
         _pollRepositoryMock.Setup(r => r.GetByIdAsync(PollId)).ReturnsAsync(poll);
 
-        var result = await _pollService.VoteAsync(PollId, UserId, RoleNeighbor, 0, "127.0.0.1");
+        var result = await _pollService.VoteAsync(PollId, UserId, UserRole.Neighbor, 0, "127.0.0.1");
 
         result.success.Should().BeFalse();
         result.error.Should().Contain("rol mínimo");
@@ -258,13 +250,13 @@ public class PollServiceTests
             Id = PollId,
             CondominiumId = CondominiumId,
             Title = "Test Poll",
-            Status = PollStatusDraft,
+            Status = (int)PollStatus.Draft,
             ServerSecret = "secret123"
         };
 
         _pollRepositoryMock.Setup(r => r.GetByIdAsync(PollId)).ReturnsAsync(poll);
 
-        var result = await _pollService.DeleteAsync(PollId, RoleNeighbor);
+        var result = await _pollService.DeleteAsync(PollId, UserRole.Neighbor);
 
         result.success.Should().BeFalse();
         result.error.Should().Contain("No tienes permiso");

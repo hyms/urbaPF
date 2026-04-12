@@ -1,4 +1,5 @@
 namespace UrbaPF.Infrastructure.DTOs;
+using UrbaPF.Domain.Enums;
 
 public class UserDto
 {
@@ -7,7 +8,7 @@ public class UserDto
     public string? PasswordHash { get; set; }
     public string FullName { get; set; } = string.Empty;
     public string? Phone { get; set; }
-    public int Role { get; set; }
+    public UserRole Role { get; set; }
     public int CredibilityLevel { get; set; }
     public int Status { get; set; }
     public Guid? CondominiumId { get; set; }
@@ -36,7 +37,7 @@ public class UpdateUserDto
 {
     public string? FullName { get; set; }
     public string? Phone { get; set; }
-    public int? Role { get; set; }
+    public UserRole? Role { get; set; }
     public int? CredibilityLevel { get; set; }
     public Guid? CondominiumId { get; set; }
     public string? LotNumber { get; set; }

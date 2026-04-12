@@ -23,7 +23,37 @@
           class="q-mr-xs"
           aria-label="Notificaciones"
         >
-          <q-badge color="red" floating>3</q-badge>
+          <q-badge v-if="notificationCount > 0" color="red" floating>{{ notificationCount }}</q-badge>
+          <q-menu>
+            <q-list style="min-width: 300px; max-height: 400px;">
+              <q-item-label header>
+                <div class="row items-center justify-between">
+                  <span>{{ t('notifications.title') }}</span>
+                  <q-btn v-if="notificationCount > 0" flat dense size="sm" :label="t('notifications.markAllRead')" @click="markAllAsRead" />
+                </div>
+              </q-item-label>
+              <q-separator />
+              <template v-if="pendingItems.length > 0">
+                <q-item v-for="(item, index) in pendingItems" :key="index" clickable v-close-popup>
+                  <q-item-section avatar>
+                    <q-icon :name="item.icon" :color="item.color" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label>{{ item.label }}</q-item-label>
+                    <q-item-label caption>{{ item.subtitle }}</q-item-label>
+                  </q-item-section>
+                  <q-item-section side>
+                    <q-badge :color="item.color">{{ item.count }}</q-badge>
+                  </q-item-section>
+                </q-item>
+              </template>
+              <q-item v-else>
+                <q-item-section class="text-grey text-center">
+                  {{ t('notifications.noNotifications') }}
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </q-menu>
         </q-btn>
 
         <q-btn flat round dense aria-label="Menú de usuario">
@@ -32,7 +62,7 @@
           </q-avatar>
           <q-menu>
             <q-list style="min-width: 150px">
-              <q-item clickable v-close-popup>
+              <q-item clickable v-close-popup to="/settings">
                 <q-item-section avatar>
                   <q-icon name="person" />
                 </q-item-section>
@@ -63,7 +93,7 @@
           {{ t('common.menu') }}
         </q-item-label>
 
-        <q-item clickable v-ripple to="/" exact active-class="text-primary bg-blue-1" aria-label="Ir al dashboard">
+        <q-item clickable v-ripple to="/" exact active-class="text-primary bg-grey-3" aria-label="Ir al dashboard">
           <q-item-section avatar>
             <q-icon name="dashboard" />
           </q-item-section>
@@ -76,7 +106,7 @@
           </q-item-section>
         </q-item>
 
-        <q-item clickable v-ripple to="/condominiums" active-class="text-primary bg-blue-1" aria-label="Ir a condominios">
+        <q-item clickable v-ripple to="/condominiums" active-class="text-primary bg-grey-3" aria-label="Ir a condominios">
           <q-item-section avatar>
             <q-icon name="home_work" />
           </q-item-section>
@@ -85,7 +115,7 @@
           </q-item-section>
         </q-item>
 
-        <q-item clickable v-ripple to="/posts" active-class="text-primary bg-blue-1" aria-label="Ir a publicaciones">
+        <q-item clickable v-ripple to="/posts" active-class="text-primary bg-grey-3" aria-label="Ir a publicaciones">
           <q-item-section avatar>
             <q-icon name="article" />
           </q-item-section>
@@ -94,7 +124,7 @@
           </q-item-section>
         </q-item>
 
-        <q-item clickable v-ripple to="/polls" active-class="text-primary bg-blue-1" aria-label="Ir a votaciones">
+        <q-item clickable v-ripple to="/polls" active-class="text-primary bg-grey-3" aria-label="Ir a votaciones">
           <q-item-section avatar>
             <q-icon name="poll" color="purple" />
           </q-item-section>
@@ -103,7 +133,7 @@
           </q-item-section>
         </q-item>
 
-        <q-item clickable v-ripple to="/incidents" active-class="text-primary bg-blue-1" aria-label="Ir a incidentes">
+        <q-item clickable v-ripple to="/incidents" active-class="text-primary bg-grey-3" aria-label="Ir a incidentes">
           <q-item-section avatar>
             <q-icon name="warning" color="orange" />
           </q-item-section>
@@ -112,14 +142,7 @@
           </q-item-section>
         </q-item>
 
-        <q-item clickable v-ripple to="/emergency" active-class="text-primary bg-red-1" aria-label="Emergencia">
-          <q-item-section avatar>
-            <q-icon name="emergency" color="red" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label class="text-red">Emergencia</q-item-label>
-          </q-item-section>
-        </q-item>
+
 
         <q-separator class="q-my-md" />
 
@@ -127,7 +150,7 @@
           {{ t('common.admin') }}
         </q-item-label>
 
-        <q-item clickable v-ripple to="/alerts" v-if="authStore.isManager" active-class="text-primary bg-blue-1" aria-label="Ir a alertas">
+        <q-item clickable v-ripple to="/alerts" v-if="authStore.isManager" active-class="text-primary bg-grey-3" aria-label="Ir a alertas">
           <q-item-section avatar>
             <q-icon name="notifications_active" color="red" />
           </q-item-section>
@@ -136,7 +159,7 @@
           </q-item-section>
         </q-item>
 
-        <q-item clickable v-ripple to="/security" v-if="authStore.isManager" active-class="text-primary bg-blue-1" aria-label="Ir a dashboard de seguridad">
+        <q-item clickable v-ripple to="/security" v-if="authStore.isManager" active-class="text-primary bg-grey-3" aria-label="Ir a dashboard de seguridad">
           <q-item-section avatar>
             <q-icon name="security" color="green" />
           </q-item-section>
@@ -145,7 +168,7 @@
           </q-item-section>
         </q-item>
 
-        <q-item clickable v-ripple to="/users" v-if="authStore.isAdmin" active-class="text-primary bg-blue-1" aria-label="Ir a gestión de usuarios">
+        <q-item clickable v-ripple to="/users" v-if="authStore.isAdmin" active-class="text-primary bg-grey-3" aria-label="Ir a gestión de usuarios">
           <q-item-section avatar>
             <q-icon name="people" />
           </q-item-section>
@@ -154,7 +177,7 @@
           </q-item-section>
         </q-item>
 
-        <q-item clickable v-ripple to="/settings" active-class="text-primary bg-blue-1" aria-label="Ir a configuración">
+        <q-item clickable v-ripple to="/settings" active-class="text-primary bg-grey-3" aria-label="Ir a configuración">
           <q-item-section avatar>
             <q-icon name="settings" />
           </q-item-section>
@@ -169,16 +192,7 @@
       <router-view />
     </q-page-container>
 
-    <q-footer v-if="authStore.isAuthenticated" class="lt-md bg-white text-primary shadow-3">
-      <q-tabs no-caps active-color="primary" indicator-color="primary" class="text-grey">
-        <q-route-tab to="/" icon="dashboard" label="Inicio" />
-        <q-route-tab to="/posts" icon="article" label="Avisos" />
-        <q-route-tab to="/polls" icon="poll" label="Votaciones" />
-        <q-route-tab to="/incidents" icon="warning" label="Incidentes" />
-        <q-route-tab to="/emergency" icon="emergency" label="Emergencia" class="text-red" />
-        <q-route-tab to="/settings" icon="settings" label="Ajustes" />
-      </q-tabs>
-    </q-footer>
+
   </q-layout>
 </template>
 
@@ -205,6 +219,43 @@ const alertStore = useAlertStore()
 const { t } = useI18n()
 
 const leftDrawerOpen = ref(false)
+
+const pendingItems = computed(() => {
+  const items = []
+  if (authStore.isManager) {
+    if (postStore.posts) {
+      const pendingPosts = postStore.posts.filter((p) => p.status === 1).length
+      if (pendingPosts > 0) {
+        items.push({ icon: 'article', color: 'orange', label: t('common.posts'), subtitle: t('dashboard.pendingApprovals'), count: pendingPosts })
+      }
+    }
+    if (pollStore.polls) {
+      const pendingPolls = pollStore.polls.filter((p) => p.status === 1).length
+      if (pendingPolls > 0) {
+        items.push({ icon: 'poll', color: 'purple', label: t('common.polls'), subtitle: t('dashboard.pendingApprovals'), count: pendingPolls })
+      }
+    }
+    if (incidentStore.incidents) {
+      const pendingIncidents = incidentStore.incidents.filter((i) => i.status === 1).length
+      if (pendingIncidents > 0) {
+        items.push({ icon: 'warning', color: 'orange', label: t('common.incidents'), subtitle: t('dashboard.pendingApprovals'), count: pendingIncidents })
+      }
+    }
+    if (alertStore.alerts) {
+      const pendingAlerts = alertStore.alerts.filter((a) => a.status === 1).length
+      if (pendingAlerts > 0) {
+        items.push({ icon: 'notifications_active', color: 'red', label: t('common.alerts'), subtitle: t('dashboard.pendingApprovals'), count: pendingAlerts })
+      }
+    }
+  }
+  return items
+})
+
+const notificationCount = computed(() => pendingItems.value.reduce((sum, item) => sum + item.count, 0))
+
+function markAllAsRead() {
+  // TODO: Implementar en MVP2 cuando haya backend de notificaciones
+}
 
 const pendingCount = computed(() => {
   if (!authStore.isManager) return 0

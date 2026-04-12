@@ -2,6 +2,7 @@ using UrbaPF.Infrastructure.DTOs;
 using UrbaPF.Infrastructure.Interfaces;
 using UrbaPF.Api.DTOs;
 using System.Security.Claims;
+using UrbaPF.Domain.Enums;
 
 namespace UrbaPF.Api.Routes;
 
@@ -19,7 +20,13 @@ public static class AuthRoutes
 
         app.MapPost("/api/auth/register", async (IAuthService authService, RegisterRequest request) =>
         {
-            var (userId, error) = await authService.RegisterAsync(request.Email, request.Password, request.FullName, request.Phone);
+            var createDto = new CreateUserDto
+            {
+                Email = request.Email,
+                FullName = request.FullName,
+                Phone = request.Phone
+            };
+            var (userId, error) = await authService.RegisterUserAsync(createDto, request.Password, UserRole.Neighbor); // Default to Neighbor role
             return userId.HasValue
                 ? Results.Created($"/api/users/{userId}", new { id = userId, message = "Usuario registrado" })
                 : Results.BadRequest(new { error });
