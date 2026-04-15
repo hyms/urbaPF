@@ -1,6 +1,11 @@
 {
   "version": 1,
   "skills": {
+    "Agent Browser": {
+      "source": "am-will/codex-skills",
+      "sourceType": "github",
+      "computedHash": "d515b2f9270652613bf688838875eed355e8d1427c9357039161bb2b125f2d12"
+    },
     "Frontend Responsive Design Standards": {
       "source": "am-will/codex-skills",
       "sourceType": "github",
@@ -10,6 +15,11 @@
       "source": "sickn33/antigravity-awesome-skills",
       "sourceType": "github",
       "computedHash": "af77b8995f255140f1643de753007baf87b734e8b87175489524aadc3559c42a"
+    },
+    "context7": {
+      "source": "am-will/codex-skills",
+      "sourceType": "github",
+      "computedHash": "23bf248f41970a3756d09533b697f07c6c78c2b2af5fcfa2ce0fc879fc769241"
     },
     "csharp-nunit": {
       "source": "github/awesome-copilot",
@@ -21,6 +31,16 @@
       "sourceType": "github",
       "computedHash": "9ef94db7f06c167d544369817e5a4415eeb7886dcff0d47026837a1aada260e3"
     },
+    "frontend-design": {
+      "source": "am-will/codex-skills",
+      "sourceType": "github",
+      "computedHash": "0792809c51bd57c9621ce64d7d4b7a99cb6ebc2f154bb303140d22b8eca34685"
+    },
+    "gemini-computer-use": {
+      "source": "am-will/codex-skills",
+      "sourceType": "github",
+      "computedHash": "313b3e3745896ff13dfd27c5f2f4c7cecd10ec99b90fe88721b3bbc88c148f29"
+    },
     "supabase-postgres-best-practices": {
       "source": "supabase/agent-skills",
       "sourceType": "github",
@@ -30,6 +50,11 @@
       "source": "nextlevelbuilder/ui-ux-pro-max-skill",
       "sourceType": "github",
       "computedHash": "0a413bf988d06481f69bb81df2070741c3ba12dd9f1be2706d57f259c905992d"
+    },
+    "vercel-react-best-practices": {
+      "source": "am-will/codex-skills",
+      "sourceType": "github",
+      "computedHash": "00659afe9249562bae6065c96145759b8cd3621b89aba6ef90c39ce53ec3a209"
     },
     "vue-best-practices": {
       "source": "hyf0/vue-skills",

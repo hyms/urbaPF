@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  backend:
+    container_name: urbapf-backend
+    image: urbapf-backend:local # Usaremos una imagen local, no de Docker Hub
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=urbapf_db
+      - DB_USER=urbapf_user
+      - DB_PASSWORD=urbapf_password
+      # Add other production environment variables here if needed, e.g., JWT_SECRET
+    depends_on:
+      - postgres
+    networks:
+      - urbapf-network
+
+  frontend:
+    container_name: urbapf-frontend
+    image: urbapf-frontend:local # Usaremos una imagen local, no de Docker Hub
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - urbapf-network
+
+  postgres:
+    container_name: urbapf-postgres
+    image: postgis/postgis:16-3.4
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: urbapf_db
+      POSTGRES_USER: urbapf_user
+      POSTGRES_PASSWORD: urbapf_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - urbapf-network
+
+networks:
+  urbapf-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
