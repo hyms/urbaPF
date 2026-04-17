@@ -91,9 +91,15 @@ export const useCondominiumStore = defineStore('condominium', {
     },
 
     loadCurrentCondominiumFromStorage(): void {
-      const id = localStorage.getItem('currentCondoId')
-      if (id && this.condominiums.length > 0) {
-        this.currentCondominium = this.condominiums.find(c => c.id === id) || null
+      if (this.condominiums.length === 0) return
+      
+      const savedId = localStorage.getItem('currentCondoId')
+      
+      if (savedId && this.condominiums.find(c => c.id === savedId)) {
+        this.currentCondominium = this.condominiums.find(c => c.id === savedId) || null
+      } else if (this.condominiums.length === 1) {
+        this.currentCondominium = this.condominiums[0]
+        localStorage.setItem('currentCondoId', this.condominiums[0].id)
       }
     }
   }

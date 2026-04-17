@@ -189,5 +189,33 @@ public class UserRepository : BaseRepository, IUserRepository
         var sql = "UPDATE users SET fcm_token = @FcmToken, updated_at = CURRENT_TIMESTAMP WHERE id = @Id AND deleted_at IS NULL";
         await ExecuteAsync(sql, new { Id = userId, FcmToken = fcmToken });
     }
+
+    public async Task<IEnumerable<UserSummaryDto>> GetNeighborsByCondominiumAsync(Guid condominiumId)
+    {
+        var sql = @"
+            SELECT id, full_name as FullName, lot_number as LotNumber, 
+            street_address as StreetAddress, photo_url as PhotoUrl, 
+            role as Role, is_validated as IsValidated, credibility_level as CredibilityLevel
+            FROM users 
+            WHERE condominium_id = @CondominiumId 
+            AND deleted_at IS NULL 
+            AND role >= @MinRole
+            AND is_validated = true
+            ORDER BY full_name ASC";
+        return await QueryAsync<UserSummaryDto>(sql, new { CondominiumId = condominiumId, MinRole = (int)UserRole.Neighbor });
+    }
+
+    public async Task<UserDetailsDto?> GetUserDetailsAsync(Guid id)
+    {
+        var sql = @"
+            SELECT id, email, full_name as FullName, phone, lot_number as LotNumber,
+            street_address as StreetAddress, photo_url as PhotoUrl, 
+            role as Role, credibility_level as CredibilityLevel, status,
+            is_validated as IsValidated, manager_votes as ManagerVotes,
+            created_at as CreatedAt, last_login_at as LastLoginAt
+            FROM users 
+            WHERE id = @Id AND deleted_at IS NULL";
+        return await QueryFirstOrDefaultAsync<UserDetailsDto>(sql, new { Id = id });
+    }
 }
 

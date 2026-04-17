@@ -16,4 +16,10 @@ public static class ClaimsPrincipalExtensions
         var roleClaim = user.FindFirst(ClaimTypes.Role)?.Value;
         return roleClaim != null ? (UserRole)int.Parse(roleClaim) : UserRole.Restricted;
     }
+
+    public static Guid GetCondominiumId(this ClaimsPrincipal user)
+    {
+        var claim = user.FindFirst("condominiumId")?.Value;
+        return claim != null ? Guid.Parse(claim) : Guid.Empty;
+    }
 }

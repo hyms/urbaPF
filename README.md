@@ -1,92 +1,163 @@
 # UrbaPF - Sistema de Coordinación Vecinal
 
-Plataforma integral de gestión comunitaria diseñada para centralizar la seguridad, la comunicación y la democracia participativa en barrios y condominios de Santa Cruz, Bolivia.
+Sistema integral de gestión, seguridad y transparencia financiera para barrios y condominios en Santa Cruz, Bolivia. Diseñado para optimizar la comunicación entre vecinos, encargados y guardias, eliminando el ruido de los grupos de chat convencionales.
 
 ## 🌟 Visión de Negocio
 
-Digitalizar la convivencia vecinal reduciendo la fricción de los grupos de WhatsApp y profesionalizando la respuesta ante emergencias y la toma de decisiones.
+Digitalizar la convivencia vecinal reduciendo la fricción en la comunicación, profesionalizando la respuesta ante emergencias y garantizando la transparencia absoluta en el manejo de fondos comunes.
+
+## 🚀 Stack Tecnológico
+
+-   **Frontend:** Quasar Framework v2 (Vue 3) + TypeScript + Vite.
+    
+-   **Backend:** .NET 10 Minimal APIs + Dapper (Consultas) + FluentMigrator (Migraciones).
+    
+-   **Base de Datos:** PostgreSQL + PostGIS (Geolocalización).
+    
+-   **Notificaciones:** Firebase Cloud Messaging (FCM).
+    
+-   **Infraestructura:** Docker (Producción) + VPS Linux.
+    
 
 ## 🛡️ Reglas de Gobernanza y Roles
 
-### 1\. Jerarquía de Usuarios
+### 1\. Jerarquía de Usuarios y Permisos
 
--   **Visitante:** Modo lectura. Solo ve Publicaciones y Emergencias. No interactúa.
+-   **Visitante / Restringido:** Modo lectura. Solo ve avisos oficiales y recibe alertas. Requiere validación para interactuar.
     
--   **Vecino (Validado):** Rol inicial tras registro. Puede publicar, votar y comentar.
+-   **Vecino (Validado):** Puede publicar, comentar, votar y reportar incidencias.
     
-
+-   **Guardia:** Rol operativo. Botón exclusivo "En Camino" para emergencias. Sin acceso al Tablón Social privado.
     
--   **Guardia:** Rol operativo. Botón exclusivo "En Camino" para emergencias. No accede al Tablón Social privado.
-    
--   **Encargado/Admin:** Moderación, aprobaciones de contenido y gestión de staff.
+-   **Encargado / Administrador:** Moderación, aprobación de vecinos, gestión de staff y control financiero.
     
 
-### 2\. Niveles de Credibilidad y Reputación (1-5)
+### 2\. Niveles de Credibilidad (Reputación 1-5)
 
--   **Nivel 5 (Referente):** Máxima prioridad en comentarios. Sus alertas de emergencia van directo a Guardias.
+-   **Nivel 5 (Referente):** Comentarios prioritarios y badge dorado.
     
--   **Nivel >= 4 (Buena Reputación):** La alerta de emergencia llega **directamente a los guardias**.
+-   **Nivel >= 4:** Alertas de emergencia se notifican **directamente** a los guardias.
     
--   **Nivel < 4 (Mala Reputación):** La alerta requiere **aprobación del Manager** para distribuirse a los vecinos.
+-   **Nivel < 4:** Las alertas requieren validación del Encargado antes de ser masivas.
     
--   **Nivel 1 (Irreverente):** Contenido colapsado/oculto por defecto.
-    
-
-## 🗳️ Sistema de Votaciones
-
--   **Votantes:** Solo Vecinos y Encargados. El Admin gestiona pero no vota.
-    
--   **Creación:** Vecinos requieren 2 aprobaciones de Encargados; Encargados publican directo.
-    
--   **Integridad:** Firma digital SHA256 (UserId + OptionId + Timestamp + Secret) para cada voto.
-    
--   **Inmutabilidad:** Prohibido editar o eliminar votaciones en estado **Activa** o **Cerrada**.
+-   **Nivel 1 (Irreverente):** Contenido colapsado por defecto; requiere un clic extra para visualizarse.
     
 
-## 🚨 Protocolo de Emergencia
+### 3\. Flujo de Validación de Identidad
 
--   **Ubicación:** Georeferencia obligatoria mediante Leaflet/OpenStreetMap.
+Todo usuario nuevo inicia como **Restringido**. Para subir a **Vecino** requiere:
+
+-   **2 Votos de confianza** de usuarios tipo Encargado.
     
--   **Re-notificación:** El creador del ticket puede enviar nuevamente la alerta a todos los vecinos si no hay respuesta.
-    
--   **Workflow:** Reportado -> En Proceso -> Resuelto -> Cerrado.
-    
-
-## 🚀 Estado del Proyecto (v1.1.0)
-
--   **✅ Completado:** Autenticación (Refresh Tokens), Gestión de Usuarios, Tablón Social, Motor de Votaciones, Gestión de Condominios.
-    
--   **⏳ En Desarrollo:** Módulo de Incidentes (Fase 5.2 - 5.4).
--   **Notas:** La funcionalidad de 'categorías' en publicaciones ha sido temporalmente deshabilitada y se considera para el MVP2.
-
-## 💡 Ideas para MVP2
-
--   **Módulo de Emergencia:** Refinar la funcionalidad del botón de emergencia, incluyendo notificaciones en tiempo real más robustas y un flujo de respuesta mejorado.
--   **Sistema de Notificaciones:** Implementar notificaciones push con OneSignal y un centro de notificaciones en el frontend.
-    -   Migración de base de datos para tabla `notifications`.
-    -   Rutas API (`NotificationRoutes.cs`) y repositorio (`NotificationRepository.cs`).
-    -   Conectar store de notificaciones con el menú del header.
--   **Refinamiento del Menú Inferior (Mobile):** Implementar navegación móvil completa.
+-   **1 Validación final** del Administrador.
     
 
+## 📦 Módulos Principales (v0.2)
+
+### 🗂️ Directorio Vecinal
+
+Directorio telefónico y de ubicación.
+
+-   **Vecinos:** Ven nombres y direcciones.
+    
+-   **Encargados:** Tienen acceso exclusivo al número de teléfono y detalle de perfil.
+    
+
+### 💰 Control de Gastos
+
+Módulo de transparencia financiera.
+
+-   **Dashboard:** Cuadro resumen con Saldo de Caja, Gastos del Mes y últimos 3 egresos visible para todos.
+    
+-   **Gestión:** CRUD completo para Encargados con carga de comprobantes digitales.
+    
+
+### 🚨 Respuesta de Emergencia
+
+-   **Botón de Pánico:** Alerta masiva con geolocalización (PostGIS).
+    
+-   **Seguimiento:** Los vecinos ven en tiempo real qué guardia está atendiendo el incidente.
+    
+
+### 🗳️ Gobernanza y Votaciones
+
+-   **Inmutabilidad:** Votos protegidos por firma digital SHA256.
+    
+-   **Tipos:** Consultivas (opinión) y Obligatorias (asambleas).
+    
 
 ## 📂 Estructura del Proyecto
 
-El sistema sigue una arquitectura modular y limpia, separando responsabilidades de forma estricta:
-
 ### 🖥️ Backend (.NET 10)
--   **`Api/`**: Capa de presentación con Minimal APIs y definición de rutas.
--   **`Domain/`**: Lógica de negocio pura, entidades de dominio y reglas de gobernanza.
--   **`Infrastructure/`**: Implementación de persistencia (Dapper), migraciones, servicios externos y repositorios (e.g., `UserRepository`, `RefreshTokenRepository`).
--   **`tests/`**: Suite de pruebas unitarias organizada por servicios y dominio.
+
+-   **`Api/`**: Minimal APIs, JWT Auth y Endpoints de negocio.
+    
+-   **`Domain/`**: Entidades puras y lógica de roles/reputación.
+    
+-   **`Infrastructure/`**: Repositorios Dapper, integración con Firebase y PostGIS.
+    
 
 ### 🎨 Frontend (Quasar)
--   **`src/pages/`**: Vistas principales de la aplicación.
--   **`src/components/`**: Componentes de UI modulares y reutilizables.
--   **`src/stores/`**: Gestión de estado global mediante Pinia.
--   **`src/boot/`**: Configuraciones de inicio (Axios/API interceptors).
 
-## 🇧🇴 Contexto Regional
+-   **`src/pages/`**: Vistas de Dashboard, Directorio y Gastos.
+    
+-   **`src/components/`**: UI Industrial con componentes `rounded-lg`.
+    
+-   **`src/stores/`**: Gestión de estado con Pinia.
+    
 
-Uso de terminología local: Manzano (Mza), Lote, Vobo, Expensas, Churrasquera, Portería.
+## 🛠️ Instalación y Desarrollo
 
+```
+# Clonar repositorio y levantar entorno completo
+docker-compose up --build
+```
+
+## 📱 Validación UX/UI Mobile (Indicios de Calidad)
+
+Para garantizar que el sistema es apto para el uso en calle y por personas de todas las edades, se aplican los siguientes criterios:
+
+- **Touch Targets:** Todos los elementos interactivos tienen un tamaño mínimo de 44x44px para evitar errores de pulsación.
+
+- **Thumb Zone Design:** Las acciones críticas (Botón de Emergencia, Reportar) están ubicadas en la zona de alcance natural del pulgar (parte inferior de la pantalla).
+
+- **Optimización de Carga:** Uso de `q-img` con placeholders y lazy-loading para minimizar el consumo de datos móviles en zonas con baja señal.
+
+- **Feedback Háptico y Visual:** Confirmación inmediata en pantalla tras acciones críticas y estados de carga (skeletons) para evitar múltiples clics por impaciencia.
+
+- **Legibilidad:** Uso de fuentes Sans-Serif con un tamaño base de 16px y contrastes altos para lectura bajo el sol cruceño.
+
+- **Navegación Adaptativa (Menú Mobile):** En móviles se utiliza una Bottom Navigation Bar para las 4 secciones principales. El menú lateral (Drawer) se reserva exclusivamente para configuraciones de perfil y cambio de condominio, liberando espacio visual en la pantalla principal.
+
+## 📋 Reglas de Negocio v0.2
+
+### 1. Selección Automática de Condominio
+
+-   Cuando existe un único condominio en el sistema, se selecciona automáticamente al iniciar sesión.
+-   El usuario no necesita seleccionar manualmente el condominio.
+-   Si hay más de uno, el usuario puede elegir desde el menú.
+
+### 2. Página de Detalle del Condominio
+
+-   **Encabezado:** Nombre, dirección y cuota mensual.
+-   **Descripción:** Texto libre sobre el condominio.
+-   **Reglas y Normas:** Lista de reglas mostradas una por línea con checkmarks.
+-   **Equipo de Gestión:** Lista de encargados y administradores con foto, nombre, rol y badge de validación.
+-   **Ubicación:**
+    -   Coordenadas GPS (latitud/longitud) editables por administradores.
+    -   Mapa interactivo (Leaflet) centrado en las coordenadas.
+    -   Valor por defecto: `-17.607406, -63.097274` (Santa Cruz, Bolivia).
+    -   Botón "Obtener ubicación actual" para usar geolocalización del navegador.
+
+### 3. Control de Gastos - Permisos
+
+-   **Administradores/Encargados:**
+    -   Pueden crear nuevos registros de gasto.
+    -   Pueden editar registros existentes.
+    -   Pueden eliminar registros.
+    -   Ver botón "Nuevo Registro" y acciones de editar/eliminar en la tabla.
+-   **Vecinos/Guardias/Restringidos:**
+    -   Solo modo lectura.
+    -   Pueden ver el resumen (Saldo en Caja, Egresos del Mes, Top 3 Gastos).
+    -   Pueden ver la tabla completa de registros sin opciones de edición.
+    -   No ven el botón de crear ni las acciones en la tabla.

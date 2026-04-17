@@ -12,6 +12,8 @@ public class CondominiumDto
     public string Currency { get; set; } = "BOB";
     public DateTime CreatedAt { get; set; }
     public bool IsActive { get; set; }
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
 }
 
 public class CreateCondominiumDto
@@ -22,6 +24,8 @@ public class CreateCondominiumDto
     public string? Rules { get; set; }
     public decimal MonthlyFee { get; set; }
     public string? Currency { get; set; }
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
 }
 
 public class UpdateCondominiumDto
@@ -33,4 +37,6 @@ public class UpdateCondominiumDto
     public string? Rules { get; set; }
     public decimal? MonthlyFee { get; set; }
     public bool? IsActive { get; set; }
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
 }

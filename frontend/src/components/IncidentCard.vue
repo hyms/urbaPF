@@ -29,6 +29,7 @@
           v-for="(media, idx) in parseMedia(incident.media)"
           :key="idx"
           :src="media.path"
+          loading="lazy"
           class="rounded-borders q-mr-sm"
           style="width: 60px; height: 60px; display: inline-block"
         />

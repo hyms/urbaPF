@@ -130,6 +130,8 @@ export interface Condominium {
   monthlyFee: number
   currency: string
   isActive: boolean
+  latitude?: number
+  longitude?: number
   created_at: string
   updatedAt?: string
   deletedAt?: string
@@ -143,6 +145,8 @@ export interface CreateCondominiumRequest {
   rules?: string
   monthlyFee: number
   currency: string
+  latitude?: number
+  longitude?: number
 }
 
 export interface UpdateCondominiumRequest {
@@ -154,6 +158,8 @@ export interface UpdateCondominiumRequest {
   monthlyFee?: number
   currency?: string
   isActive?: boolean
+  latitude?: number
+  longitude?: number
 }
 
 export interface Poll {

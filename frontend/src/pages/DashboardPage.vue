@@ -2,6 +2,48 @@
   <q-page class="q-pa-md">
     <div class="text-h4 q-mb-md">{{ t('dashboard.title') }}</div>
 
+    <!-- Expense Summary Widget (Mandatory by AGENTS.md) -->
+    <div class="row q-col-gutter-md q-mb-md" v-if="condoStore.currentCondominium">
+      <div class="col-12">
+        <q-card flat bordered class="rounded-lg">
+          <q-card-section class="row items-center q-pb-none">
+            <div class="text-h6">{{ t('expenses.title') }}</div>
+            <q-space />
+            <q-btn flat color="primary" :label="t('common.viewAll')" to="/expenses" />
+          </q-card-section>
+          
+          <q-card-section>
+            <div class="row q-col-gutter-md">
+              <div class="col-12 col-md-4">
+                <div class="text-caption text-grey-7">{{ t('expenses.balance') }}</div>
+                <div class="text-h4 text-weight-bold text-primary">{{ formatCurrency(expenseStore.summary?.balance || 0) }}</div>
+              </div>
+              <div class="col-12 col-md-4">
+                <div class="text-caption text-grey-7">{{ t('expenses.monthlyTotal') }}</div>
+                <div class="text-h4 text-weight-bold text-negative">{{ formatCurrency(expenseStore.summary?.totalMonthlyExpenses || 0) }}</div>
+              </div>
+              <div class="col-12 col-md-4">
+                <div class="text-caption text-grey-7 q-mb-xs">{{ t('expenses.topExpenses') }}</div>
+                <q-list dense>
+                  <q-item v-for="exp in expenseStore.summary?.topExpenses" :key="exp.id" class="q-px-none min-height-0">
+                    <q-item-section>
+                      <q-item-label class="text-weight-medium">{{ exp.category }}</q-item-label>
+                    </q-item-section>
+                    <q-item-section side>
+                      <div class="text-weight-bold text-negative">{{ formatCurrency(exp.amount) }}</div>
+                    </q-item-section>
+                  </q-item>
+                  <div v-if="!expenseStore.summary?.topExpenses?.length" class="text-caption text-grey-5">
+                    Sin egresos relevantes este mes
+                  </div>
+                </q-list>
+              </div>
+            </div>
+          </q-card-section>
+        </q-card>
+      </div>
+    </div>
+
     <q-tabs v-model="activeTab" class="q-mb-md" align="left" dense>
       <q-tab name="overview" :label="t('dashboard.overview')" />
       <q-tab name="myactivity" :label="t('dashboard.myActivity')" />
@@ -307,9 +349,11 @@ import { usePostStore } from '@/stores/post'
 import { useIncidentStore } from '@/stores/incident'
 import { usePollStore } from '@/stores/poll'
 import { useAlertStore } from '@/stores/alert'
+import { useExpenseStore } from '@/stores/expense'
 import { Post, Incident, Alert, Poll } from '@/types/models'
 import { useAuthStore } from '@/stores/auth'
 import { useI18n } from '@/composables/useI18n'
+import { formatCurrency } from '@/utils/format'
 import PostItem from '../components/PostItem.vue'
 import IncidentItem from '../components/IncidentItem.vue'
 import AlertItem from '../components/alert/AlertItem.vue'
@@ -326,6 +370,7 @@ const postStore = usePostStore()
 const incidentStore = useIncidentStore()
 const pollStore = usePollStore()
 const alertStore = useAlertStore()
+const expenseStore = useExpenseStore()
 const authStore = useAuthStore()
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const { t } = useI18n()
@@ -410,7 +455,6 @@ const statusOptions = [
 
 onMounted(async () => {
   const condos = await condoStore.fetchAll()
-  stats.value.condominiums = condos.length
 
   if (condos.length > 0) {
     const condoId = condos[0].id
@@ -423,6 +467,7 @@ onMounted(async () => {
 
     allPolls.value = await pollStore.fetchByCondominium(condoId)
     allAlerts.value = await alertStore.fetchByCondominium(condoId)
+    await expenseStore.fetchSummary()
 
     stats.value.polls = allPolls.value.length
     stats.value.alerts = allAlerts.value.length

@@ -109,6 +109,28 @@ public static class UserRoutes
             await repo.UpdateFcmTokenAsync(id, request.FcmToken);
             return Results.Ok(new { message = "Token actualizado" });
         }).RequireAuthorization();
+
+        app.MapGet("/api/condominiums/{condominiumId}/neighbors", async (Guid condominiumId, IUserRepository repo, ClaimsPrincipal user) =>
+        {
+            var currentUserRole = user.GetUserRole();
+            if (currentUserRole < UserRole.Neighbor)
+            {
+                return Results.Problem("No tiene permisos para ver el directorio", statusCode: StatusCodes.Status403Forbidden);
+            }
+            var neighbors = await repo.GetNeighborsByCondominiumAsync(condominiumId);
+            return Results.Ok(neighbors);
+        }).RequireAuthorization();
+
+        app.MapGet("/api/users/{id:guid}/details", async (Guid id, IUserRepository repo, ClaimsPrincipal user) =>
+        {
+            var currentUserRole = user.GetUserRole();
+            if (currentUserRole < UserRole.Manager)
+            {
+                return Results.Problem("No tiene permisos para ver los detalles completos", statusCode: StatusCodes.Status403Forbidden);
+            }
+            var userDetails = await repo.GetUserDetailsAsync(id);
+            return userDetails != null ? Results.Ok(userDetails) : Results.NotFound();
+        }).RequireAuthorization();
     }
 
     public record UpdateFcmTokenRequest(string? FcmToken);

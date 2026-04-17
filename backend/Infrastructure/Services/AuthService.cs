@@ -156,13 +156,19 @@ public class AuthService : IAuthService
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSecret));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        var claims = new[]
+        var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
             new Claim(ClaimTypes.Email, email),
             new Claim(ClaimTypes.Role, role.ToString()),
             new Claim("fullName", fullName)
         };
+
+        var user = _userRepository.GetByIdAsync(userId).Result;
+        if (user?.CondominiumId != null)
+        {
+            claims.Add(new Claim("condominiumId", user.CondominiumId.ToString()!));
+        }
 
         var token = new JwtSecurityToken(
             issuer: "UrbaPF",

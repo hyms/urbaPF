@@ -13,13 +13,13 @@ public class CondominiumRepository : BaseRepository, ICondominiumRepository
 
     public async Task<IEnumerable<CondominiumDto>> GetAllAsync()
     {
-        var sql = "SELECT id, name, address, logo_url as LogoUrl, description, rules, monthly_fee as MonthlyFee, currency, created_at as CreatedAt, is_active as IsActive FROM condominiums WHERE deleted_at IS NULL AND is_active = true ORDER BY name";
+        var sql = "SELECT id, name, address, logo_url as LogoUrl, description, rules, monthly_fee as MonthlyFee, currency, created_at as CreatedAt, is_active as IsActive, latitude, longitude FROM condominiums WHERE deleted_at IS NULL AND is_active = true ORDER BY name";
         return await QueryAsync<CondominiumDto>(sql);
     }
 
     public async Task<CondominiumDto?> GetByIdAsync(Guid id)
     {
-        var sql = "SELECT id, name, address, logo_url as LogoUrl, description, rules, monthly_fee as MonthlyFee, currency, created_at as CreatedAt, is_active as IsActive FROM condominiums WHERE id = @Id AND deleted_at IS NULL";
+        var sql = "SELECT id, name, address, logo_url as LogoUrl, description, rules, monthly_fee as MonthlyFee, currency, created_at as CreatedAt, is_active as IsActive, latitude, longitude FROM condominiums WHERE id = @Id AND deleted_at IS NULL";
         return await QueryFirstOrDefaultAsync<CondominiumDto>(sql, new { Id = id });
     }
 
@@ -75,6 +75,16 @@ public class CondominiumRepository : BaseRepository, ICondominiumRepository
         {
             sql.Add("is_active = @IsActive");
             parameters.Add("IsActive", dto.IsActive);
+        }
+        if (dto.Latitude.HasValue)
+        {
+            sql.Add("latitude = @Latitude");
+            parameters.Add("Latitude", dto.Latitude);
+        }
+        if (dto.Longitude.HasValue)
+        {
+            sql.Add("longitude = @Longitude");
+            parameters.Add("Longitude", dto.Longitude);
         }
 
         if (sql.Count == 0) return;

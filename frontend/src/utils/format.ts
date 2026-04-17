@@ -62,6 +62,13 @@ export function formatDateTime(date: string | Date | undefined): string {
 
 
 
+export function formatCurrency(amount: number, currency = 'Bs.'): string {
+  return `${currency} ${new Intl.NumberFormat('es-BO', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(amount)}`
+}
+
 export function parseMedia(mediaJson: string) {
   try {
     return JSON.parse(mediaJson)

@@ -5,6 +5,8 @@ import { User, CreateUserRequest, UpdateUserRequest, ChangePasswordRequest } fro
 interface UserState {
   users: User[]
   currentUser: User | null
+  neighbors: User[]
+  neighborDetails: User | null
   loading: boolean
   error: string | null
 }
@@ -13,6 +15,8 @@ export const useUserStore = defineStore('user', {
   state: (): UserState => ({
     users: [],
     currentUser: null,
+    neighbors: [],
+    neighborDetails: null,
     loading: false,
     error: null
   }),
@@ -95,6 +99,34 @@ export const useUserStore = defineStore('user', {
         return false;
       } finally {
         this.loading = false;
+      }
+    },
+
+    async fetchNeighbors(condominiumId: string): Promise<User[]> {
+      this.loading = true
+      try {
+        const response = await api.get(`/condominiums/${condominiumId}/neighbors`)
+        this.neighbors = response.data
+        return response.data
+      } catch (error) {
+        this.error = (error as Error).message
+        return []
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async fetchUserDetails(userId: string): Promise<User | null> {
+      this.loading = true
+      try {
+        const response = await api.get(`/users/${userId}/details`)
+        this.neighborDetails = response.data
+        return response.data
+      } catch (error) {
+        this.error = (error as Error).message
+        return null
+      } finally {
+        this.loading = false
       }
     }
   }

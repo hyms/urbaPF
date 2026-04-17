@@ -30,7 +30,8 @@ export default {
     confirmDelete: 'Confirmar eliminación',
     deleteMessage: '¿Eliminar {item}?',
     clearFilters: 'Limpiar filtros',
-    close: 'Cerrar'
+    close: 'Cerrar',
+    viewAll: 'Ver todo'
   },
   dashboard: {
     title: 'Panel',
@@ -120,6 +121,7 @@ export default {
     password: 'Contraseña',
     fullName: 'Nombre completo',
     phone: 'Teléfono',
+    address: 'Dirección',
     loginButton: 'Ingresar',
     registerButton: 'Registrarse',
     noAccount: '¿No tienes cuenta?',
@@ -142,6 +144,20 @@ export default {
     photo: 'Foto de Perfil',
     uploadPhoto: 'Subir Foto',
     removePhoto: 'Eliminar Foto',
+    credibilityLevel: 'Nivel de Credibilidad',
+    createdAt: 'Fecha de Registro',
+    lastLogin: 'Último Acceso',
+    votes: 'Votos',
+    active: 'Activo',
+    inactive: 'Inactivo',
+    noUsers: 'No hay usuarios',
+    userCreated: 'Usuario creado exitosamente',
+    userUpdated: 'Usuario actualizado',
+    userDeleted: 'Usuario eliminado',
+    changePassword: 'Cambiar Contraseña',
+    passwordChanged: 'Contraseña actualizada'
+  },
+  profile: {
     changePassword: 'Cambiar Contraseña',
     oldPassword: 'Contraseña Actual',
     newPassword: 'Nueva Contraseña',
@@ -210,6 +226,8 @@ export default {
     name: 'Nombre',
     address: 'Dirección',
     description: 'Descripción',
+    rules: 'Reglas y Normas',
+    location: 'Ubicación',
     monthlyFee: 'Cuota mensual',
     currency: 'Moneda',
     status: 'Estado',
@@ -217,6 +235,7 @@ export default {
     inactive: 'Inactivo',
     noUsers: 'No hay usuarios registrados',
     noCondos: 'No hay condominios registrados aún',
+    team: 'Equipo de Gestión',
   },
   roles: {
     restrictedAccess: 'Acceso Restringido',
@@ -266,5 +285,34 @@ export default {
     title: 'Notificaciones',
     markAllRead: 'Marcar todo como leído',
     noNotifications: 'No hay notificaciones'
+  },
+  directory: {
+    title: 'Directorio de Vecinos',
+    noCondominium: 'No perteneces a un condominio',
+    noNeighbors: 'No hay vecinos registrados',
+    lot: 'Lote',
+    mza: 'Manzano (Mza)',
+    hidden: 'Oculto',
+    userDetails: 'Detalles del Vecino',
+    managerDetails: 'Información de Administración'
+  },
+  expenses: {
+    title: 'Control de Gastos',
+    balance: 'Saldo en Caja',
+    monthlyTotal: 'Egresos del Mes',
+    topExpenses: 'Top 3 Gastos',
+    newExpense: 'Nuevo Registro',
+    editExpense: 'Editar Registro',
+    type: 'Tipo',
+    income: 'Ingreso',
+    expense: 'Egreso',
+    category: 'Categoría',
+    amount: 'Monto',
+    date: 'Fecha',
+    description: 'Descripción',
+    receipt: 'Comprobante',
+    responsible: 'Responsable',
+    noExpenses: 'No hay registros financieros',
+    confirmDelete: '¿Eliminar este registro financiero?'
   }
 }

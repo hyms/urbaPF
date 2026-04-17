@@ -80,6 +80,8 @@ builder.Services.AddScoped<IAlertService, AlertService>();
 builder.Services.AddScoped<AlertDomainService>();
 builder.Services.AddScoped<IAuditRepository, AuditRepository>();
 builder.Services.AddScoped<IAuditService, AuditService>();
+builder.Services.AddScoped<IExpenseRepository, ExpenseRepository>();
+builder.Services.AddScoped<IExpenseService, ExpenseService>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddSingleton<Func<DateTime>>(() => DateTime.UtcNow);
 builder.Services.AddHttpClient<IPushNotificationService, PushNotificationService>();
@@ -170,5 +172,6 @@ app.MapPostRoutes();
 app.MapPollRoutes();
 app.MapIncidentRoutes();
 app.MapAlertRoutes();
+app.MapExpenseRoutes();
 
 app.Run();
