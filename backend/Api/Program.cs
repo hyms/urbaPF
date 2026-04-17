@@ -14,8 +14,45 @@ using Microsoft.AspNetCore.Mvc;
 using FluentMigrator.Runner;
 using UrbaPF.Infrastructure.Migrations;
 using UrbaPF.Api.Extensions;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Initialize Firebase Admin
+var firebaseCredPath = builder.Configuration["FIREBASE_SERVICE_ACCOUNT_PATH"] ?? "/app/firebase-service-account.json";
+if (File.Exists(firebaseCredPath))
+{
+    FirebaseApp.Create(new AppOptions
+    {
+        Credential = GoogleCredential.FromFile(firebaseCredPath)
+    });
+    Console.WriteLine("[Firebase] Admin SDK initialized successfully.");
+}
+else
+{
+    var firebaseJson = builder.Configuration["FIREBASE_SERVICE_ACCOUNT_JSON"];
+    if (!string.IsNullOrEmpty(firebaseJson))
+    {
+        try
+        {
+            var credential = GoogleCredential.FromJson(firebaseJson);
+            FirebaseApp.Create(new AppOptions
+            {
+                Credential = credential
+            });
+            Console.WriteLine("[Firebase] Admin SDK initialized from JSON.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Firebase] Failed to initialize from JSON: {ex.Message}");
+        }
+    }
+    else
+    {
+        Console.WriteLine("[Firebase] Not configured. Push notifications will be disabled.");
+    }
+}
 
 var jwtSecret = builder.Configuration["JWT_SECRET"] ?? "UrbaPFSuperSecretKey2026!ThisMustBeLongEnough";
 var jwtIssuer = "UrbaPF";

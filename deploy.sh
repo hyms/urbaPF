@@ -47,6 +47,8 @@ ssh -i "$PEM_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "
 
 rsync -avzP -e "ssh -i \"$PEM_PATH\" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
     ./docker-compose.yml \
+    ./certs/ \
+    ./firebase-service-account.json \
     ubuntu@"$SERVER_ADDRESS":~/urbapf_deploy/
 
 if [ -f urbapf-backend.tar ]; then

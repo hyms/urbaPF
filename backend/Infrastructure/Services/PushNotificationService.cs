@@ -1,5 +1,5 @@
-using System.Net.Http.Json;
-using System.Text.Json;
+using FirebaseAdmin.Messaging;
+using Google.Apis.Auth.OAuth2;
 using Microsoft.Extensions.Configuration;
 using UrbaPF.Infrastructure.Repositories;
 using UrbaPF.Infrastructure.Interfaces;
@@ -10,37 +10,28 @@ namespace UrbaPF.Infrastructure.Services;
 public interface IPushNotificationService
 {
     Task<bool> SendNotificationToUserAsync(string userId, string title, string message, Dictionary<string, string>? data = null);
-    Task<bool> SendNotificationToSegmentAsync(string segment, string title, string message, Dictionary<string, string>? data = null);
     Task<bool> NotifyEmergencyAsync(string title, string message, Guid condominiumId);
     Task<bool> NotifyIncidentAsync(string title, string message, int priority, Guid condominiumId);
 }
 
 public class PushNotificationService : IPushNotificationService
 {
-    private readonly IHttpClientFactory _httpClientFactory;
     private readonly IUserRepository _userRepository;
-    private readonly string? _oneSignalAppId;
-    private readonly string? _oneSignalApiKey;
-    private readonly string? _oneSignalRestApiKey;
+    private readonly bool _isFirebaseConfigured;
 
     public PushNotificationService(
-        IHttpClientFactory httpClientFactory,
         IUserRepository userRepository,
         IConfiguration configuration)
     {
-        _httpClientFactory = httpClientFactory;
         _userRepository = userRepository;
-        
-        _oneSignalAppId = configuration["ONESIGNAL_APP_ID"];
-        _oneSignalApiKey = configuration["ONESIGNAL_API_KEY"];
-        _oneSignalRestApiKey = configuration["ONESIGNAL_REST_API_KEY"];
+        _isFirebaseConfigured = FirebaseMessaging.DefaultInstance != null;
     }
 
     public async Task<bool> SendNotificationToUserAsync(string userId, string title, string message, Dictionary<string, string>? data = null)
     {
-        if (string.IsNullOrEmpty(_oneSignalAppId) || string.IsNullOrEmpty(_oneSignalRestApiKey))
+        if (!_isFirebaseConfigured)
         {
-            Console.WriteLine("[Push] OneSignal not configured. Notification skipped.");
+            Console.WriteLine("[Push] Firebase not configured. Notification skipped.");
             return false;
         }
 
@@ -53,17 +44,32 @@ public class PushNotificationService : IPushNotificationService
                 return false;
             }
 
-            var payload = new
+            var notification = new Notification
             {
-                app_id = _oneSignalAppId,
-                contents = new { en = message },
-                headings = new { en = title },
-                include_player_ids = new[] { user.FcmToken },
-                data = data ?? new Dictionary<string, string>(),
-                priority = 10
+                Title = title,
+                Body = message
             };
 
-            return await SendToOneSignal(payload);
+            var messageData = new Dictionary<string, string>();
+            if (data != null)
+            {
+                foreach (var kvp in data)
+                {
+                    messageData[kvp.Key] = kvp.Value;
+                }
+            }
+            messageData["click_action"] = "OPEN_APP";
+
+            var fcmMessage = new Message
+            {
+                Notification = notification,
+                Token = user.FcmToken,
+                Data = messageData
+            };
+
+            var result = await FirebaseMessaging.DefaultInstance.SendAsync(fcmMessage);
+            Console.WriteLine($"[Push] Notification sent to user {userId}: {result}");
+            return true;
         }
         catch (Exception ex)
         {
@@ -72,75 +78,51 @@ public class PushNotificationService : IPushNotificationService
         }
     }
 
-    public async Task<bool> SendNotificationToSegmentAsync(string segment, string title, string message, Dictionary<string, string>? data = null)
-    {
-        if (string.IsNullOrEmpty(_oneSignalAppId) || string.IsNullOrEmpty(_oneSignalRestApiKey))
-        {
-            Console.WriteLine("[Push] OneSignal not configured. Notification skipped.");
-            return false;
-        }
-
-        try
-        {
-            var payload = new
-            {
-                app_id = _oneSignalAppId,
-                contents = new { en = message },
-                headings = new { en = title },
-                included_segments = new[] { segment },
-                data = data ?? new Dictionary<string, string>(),
-                priority = 10
-            };
-
-            return await SendToOneSignal(payload);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[Push] Error sending to segment {segment}: {ex.Message}");
-            return false;
-        }
-    }
-
     public async Task<bool> NotifyEmergencyAsync(string title, string message, Guid condominiumId)
     {
+        if (!_isFirebaseConfigured)
+        {
+            Console.WriteLine("[Push] Firebase not configured. Emergency notification skipped.");
+            return false;
+        }
+
         var users = await _userRepository.GetByCondominiumAsync(condominiumId);
         
-        var playerIds = users
+        var tokens = users
             .Where(u => !string.IsNullOrEmpty(u.FcmToken))
             .Select(u => u.FcmToken!)
             .Distinct()
             .ToList();
 
-        if (playerIds.Count == 0)
+        if (tokens.Count == 0)
         {
             Console.WriteLine("[Push] No FCM tokens found for emergency notification.");
             return false;
         }
 
-        if (string.IsNullOrEmpty(_oneSignalAppId) || string.IsNullOrEmpty(_oneSignalRestApiKey))
-        {
-            Console.WriteLine("[Push] OneSignal not configured. Emergency notification skipped.");
-            return false;
-        }
-
         try
         {
-            var payload = new
+            var notification = new Notification
             {
-                app_id = _oneSignalAppId,
-                contents = new { en = message },
-                headings = new { en = $"🚨 {title}" },
-                include_player_ids = playerIds,
-                data = new Dictionary<string, string>
-                {
-                    { "type", "emergency" },
-                    { "title", title }
-                },
-                priority = 10,
-                ttl = 3600
+                Title = $"🚨 {title}",
+                Body = message
             };
 
-            return await SendToOneSignal(payload);
+            var multicastMessage = new MulticastMessage
+            {
+                Notification = notification,
+                Tokens = tokens,
+                Data = new Dictionary<string, string>
+                {
+                    { "type", "emergency" },
+                    { "title", title },
+                    { "click_action", "OPEN_APP" }
+                }
+            };
+
+            var result = await FirebaseMessaging.DefaultInstance.SendEachForMulticastAsync(multicastMessage);
+            Console.WriteLine($"[Push] Emergency notification sent to {result.SuccessCount}/{tokens.Count} devices.");
+            return result.SuccessCount > 0;
         }
         catch (Exception ex)
         {
@@ -156,75 +138,52 @@ public class PushNotificationService : IPushNotificationService
             return false;
         }
 
+        if (!_isFirebaseConfigured)
+        {
+            Console.WriteLine("[Push] Firebase not configured. Incident notification skipped.");
+            return false;
+        }
+
         var users = await _userRepository.GetByCondominiumAsync(condominiumId);
         
-        var playerIds = users
+        var tokens = users
             .Where(u => !string.IsNullOrEmpty(u.FcmToken) && u.Role >= UserRole.Manager)
             .Select(u => u.FcmToken!)
             .Distinct()
             .ToList();
 
-        if (playerIds.Count == 0)
+        if (tokens.Count == 0)
         {
-            return false;
-        }
-
-        if (string.IsNullOrEmpty(_oneSignalAppId) || string.IsNullOrEmpty(_oneSignalRestApiKey))
-        {
-            Console.WriteLine("[Push] OneSignal not configured. Incident notification skipped.");
             return false;
         }
 
         try
         {
-            var payload = new
+            var notification = new Notification
             {
-                app_id = _oneSignalAppId,
-                contents = new { en = message },
-                headings = new { en = $"⚠️ {title}" },
-                include_player_ids = playerIds,
-                data = new Dictionary<string, string>
-                {
-                    { "type", "incident" },
-                    { "priority", priority.ToString() }
-                },
-                priority = priority == 4 ? 10 : 5
+                Title = $"⚠️ {title}",
+                Body = message
             };
 
-            return await SendToOneSignal(payload);
+            var multicastMessage = new MulticastMessage
+            {
+                Notification = notification,
+                Tokens = tokens,
+                Data = new Dictionary<string, string>
+                {
+                    { "type", "incident" },
+                    { "priority", priority.ToString() },
+                    { "click_action", "OPEN_APP" }
+                }
+            };
+
+            var result = await FirebaseMessaging.DefaultInstance.SendEachForMulticastAsync(multicastMessage);
+            Console.WriteLine($"[Push] Incident notification sent to {result.SuccessCount}/{tokens.Count} managers.");
+            return result.SuccessCount > 0;
         }
         catch (Exception ex)
         {
             Console.WriteLine($"[Push] Error sending incident notification: {ex.Message}");
-            return false;
-        }
-    }
-
-    private async Task<bool> SendToOneSignal(object payload)
-    {
-        try
-        {
-            var client = _httpClientFactory.CreateClient();
-            client.DefaultRequestHeaders.Add("Authorization", $"Basic {_oneSignalRestApiKey}");
-            client.DefaultRequestHeaders.Add("Content-Type", "application/json");
-
-            var response = await client.PostAsJsonAsync(
-                "https://onesignal.com/api/v1/notifications",
-                payload);
-
-            if (response.IsSuccessStatusCode)
-            {
-                Console.WriteLine("[Push] Notification sent successfully.");
-                return true;
-            }
-            
-            var errorContent = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"[Push] OneSignal error: {errorContent}");
-            return false;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[Push] Exception: {ex.Message}");
             return false;
         }
     }

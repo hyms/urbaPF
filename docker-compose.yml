@@ -15,8 +15,9 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRY_DAYS: ${JWT_EXPIRY_DAYS}
-      ONESIGNAL_APP_ID: ${ONESIGNAL_APP_ID}
-      ONESIGNAL_REST_API_KEY: ${ONESIGNAL_REST_API_KEY}
+      FIREBASE_SERVICE_ACCOUNT_JSON: ${FIREBASE_SERVICE_ACCOUNT_JSON}
+    volumes:
+      - ./firebase-service-account.json:/app/firebase-service-account.json:ro
     depends_on:
       - postgres
     networks:
@@ -27,6 +28,9 @@ services:
     image: urbapf-frontend:local
     ports:
       - "80:80"
+      - "443:443"
+    volumes:
+      - ./certs:/etc/nginx/certs:ro
     depends_on:
       - backend
     networks:
