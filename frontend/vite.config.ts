@@ -4,8 +4,6 @@ import { quasar, transformAssetUrls } from '@quasar/vite-plugin'
 import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), '')
-
   return {
     plugins: [
       vue({
@@ -29,11 +27,6 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true
         }
       }
-    },
-    define: {
-      'import.meta.env': JSON.stringify({
-        VITE_API_URL: env.VITE_API_URL
-      })
     }
   }
 })

@@ -3,20 +3,20 @@ version: '3.8'
 services:
   backend:
     container_name: urbapf-backend
-    image: urbapf-backend:local # Usaremos una imagen local, no de Docker Hub
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: urbapf-backend:local
     ports:
       - "5000:5000"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_NAME=urbapf_db
-      - DB_USER=urbapf_user
-      - DB_PASSWORD=urbapf_password
-      # Add other production environment variables here if needed, e.g., JWT_SECRET
+      ASPNETCORE_ENVIRONMENT: Production
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRY_DAYS: ${JWT_EXPIRY_DAYS}
+      ONESIGNAL_APP_ID: ${ONESIGNAL_APP_ID}
+      ONESIGNAL_REST_API_KEY: ${ONESIGNAL_REST_API_KEY}
     depends_on:
       - postgres
     networks:
@@ -24,10 +24,7 @@ services:
 
   frontend:
     container_name: urbapf-frontend
-    image: urbapf-frontend:local # Usaremos una imagen local, no de Docker Hub
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    image: urbapf-frontend:local
     ports:
       - "80:80"
     depends_on:
@@ -41,9 +38,9 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: urbapf_db
-      POSTGRES_USER: urbapf_user
-      POSTGRES_PASSWORD: urbapf_password
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
