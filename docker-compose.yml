@@ -8,15 +8,16 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
+      DB_NAME: ${DB_NAME:-urbapf}
+      DB_USER: ${DB_USER:-postgres}
       DB_PASSWORD: ${DB_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRY_DAYS: ${JWT_EXPIRY_DAYS}
     volumes:
       - ./firebase-service-account.json:/app/firebase-service-account.json:ro
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - urbapf-network
 
@@ -26,8 +27,8 @@ services:
     ports:
       - "80:80"
       - "443:443"
-    volumes:
-      - ./certs:/etc/nginx/certs:ro
+    environment:
+      - VITE_API_URL=/api
     depends_on:
       - backend
     networks:
@@ -39,11 +40,16 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
+      POSTGRES_DB: ${DB_NAME:-urbapf}
+      POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-urbapf}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     networks:
       - urbapf-network
 
