@@ -1,17 +1,18 @@
 <template>
-  <q-card style="min-width: 450px; max-width: 90vw;">
+  <q-card :style="$q.screen.lt.sm ? 'width: 100%; max-width: 100%;' : 'min-width: 450px; max-width: 90vw;'">
     <q-card-section class="row items-center q-pb-none">
       <div class="text-h6">{{ editingUser ? t('users.editUser') : t('users.newUser') }}</div>
       <q-space />
       <q-btn icon="close" flat round dense v-close-popup @click="$emit('cancel')" aria-label="Cerrar" />
     </q-card-section>
 
-    <q-card-section>
+    <q-card-section class="q-pt-md">
       <q-form @submit="onSubmit" class="q-gutter-md">
         <q-input
           v-model="form.fullName"
           :label="t('auth.fullName') + ' *'"
           filled
+          dense
           :rules="[v => !!v || t('common.required')]"
         />
 
@@ -20,6 +21,7 @@
           :label="t('auth.email') + ' *'"
           type="email"
           filled
+          dense
           :rules="[v => !!v || t('common.required'), v => /.+@.+\..+/.test(v) || t('auth.invalidEmail')]"
           :disable="!!editingUser"
         />
@@ -30,6 +32,7 @@
           :label="t('auth.password') + ' *'"
           :type="showPassword ? 'text' : 'password'"
           filled
+          dense
           :rules="[v => !!v || t('common.required'), v => v.length >= 6 || t('users.passwordMinLength')]"
         >
           <template v-slot:append>
@@ -47,12 +50,14 @@
           :label="t('auth.phone')"
           type="tel"
           filled
+          dense
         />
 
         <q-input
           v-model="form.streetAddress"
           :label="t('users.address')"
           filled
+          dense
         />
 
         <q-select
@@ -61,11 +66,24 @@
           :options="roleOptions"
           :label="t('users.role') + ' *'"
           filled
+          dense
           emit-value
           map-options
         />
 
-        <div class="row justify-end q-mt-md">
+        <!-- Admin can change user password when editing -->
+        <div v-if="editingUser && authStore.isAdmin" class="q-mt-md">
+          <q-btn 
+            outline 
+            color="warning" 
+            icon="lock_reset" 
+            label="Cambiar Contraseña" 
+            class="full-width"
+            @click="showAdminChangePassword = true"
+          />
+        </div>
+
+        <div class="row justify-end q-mt-lg">
           <q-btn 
             flat 
             :label="t('common.cancel')" 
@@ -83,6 +101,43 @@
         </div>
       </q-form>
     </q-card-section>
+
+    <!-- Admin Password Reset Dialog -->
+    <q-dialog v-model="showAdminChangePassword" persistent>
+      <q-card style="min-width: 300px">
+        <q-card-section class="row items-center">
+          <div class="text-h6">Resetear Contraseña</div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+
+        <q-card-section>
+          <div class="text-body2 q-mb-md">Ingrese la nueva contraseña para {{ form.fullName }}</div>
+          <q-input
+            v-model="adminNewPassword"
+            label="Nueva Contraseña"
+            :type="showAdminPassword ? 'text' : 'password'"
+            filled
+            dense
+            autofocus
+            :rules="[v => !!v || 'Campo requerido', v => v.length >= 6 || 'Min 6 caracteres']"
+          >
+            <template v-slot:append>
+              <q-icon
+                :name="showAdminPassword ? 'visibility' : 'visibility_off'"
+                class="cursor-pointer"
+                @click="showAdminPassword = !showAdminPassword"
+              />
+            </template>
+          </q-input>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="Cancelar" v-close-popup />
+          <q-btn color="warning" label="Actualizar" @click="onAdminUpdatePassword" :loading="adminPasswordLoading" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-card>
 </template>
 
@@ -92,6 +147,8 @@ import { useI18n } from 'vue-i18n'
 import { User } from '@/types/models'
 import { UserRole, UserRoleLabel } from '@/utils/appEnums'
 import { useAuthStore } from '@/stores/auth'
+import { useUserStore } from '@/stores/user'
+import { useQuasar } from 'quasar'
 
 const props = defineProps<{
   user?: User | null
@@ -99,15 +156,22 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'submit', formData: any): void // Use `any` for now, define specific DTO later
+  (e: 'submit', formData: any): void 
   (e: 'cancel'): void
 }>()
 
 const { t } = useI18n()
+const $q = useQuasar()
 const authStore = useAuthStore()
+const userStore = useUserStore()
 
 const editingUser = ref<User | null>(null)
 const showPassword = ref(false)
+
+const showAdminChangePassword = ref(false)
+const adminNewPassword = ref('')
+const showAdminPassword = ref(false)
+const adminPasswordLoading = ref(false)
 
 const form = ref({
   email: '',
@@ -133,7 +197,7 @@ watch(() => props.user, (newVal) => {
       email: newVal.email,
       fullName: newVal.fullName,
       phone: newVal.phone || '',
-      password: '', // Password is not edited via this form
+      password: '', 
       role: newVal.role,
       streetAddress: newVal.streetAddress || ''
     }
@@ -152,5 +216,25 @@ watch(() => props.user, (newVal) => {
 
 const onSubmit = () => {
   emit('submit', form.value)
+}
+
+const onAdminUpdatePassword = async () => {
+  if (!editingUser.value || adminNewPassword.value.length < 6) return
+  
+  adminPasswordLoading.value = true
+  try {
+    const success = await userStore.updatePassword(editingUser.value.id, adminNewPassword.value)
+    if (success) {
+      $q.notify({ type: 'positive', message: 'Contraseña actualizada correctamente' })
+      showAdminChangePassword.value = false
+      adminNewPassword.value = ''
+    } else {
+      $q.notify({ type: 'negative', message: 'Error al actualizar contraseña' })
+    }
+  } catch (e) {
+    $q.notify({ type: 'negative', message: 'Error inesperado' })
+  } finally {
+    adminPasswordLoading.value = false
+  }
 }
 </script>

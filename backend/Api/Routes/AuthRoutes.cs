@@ -18,13 +18,17 @@ public static class AuthRoutes
                 : Results.Unauthorized();
         });
 
-        app.MapPost("/api/auth/register", async (IAuthService authService, RegisterRequest request) =>
+        app.MapPost("/api/auth/register", async (IAuthService authService, ICondominiumRepository condoRepo, RegisterRequest request) =>
         {
+            var condominiums = await condoRepo.GetAllAsync();
+            Guid? defaultCondoId = condominiums.FirstOrDefault()?.Id;
+
             var createDto = new CreateUserDto
             {
                 Email = request.Email,
                 FullName = request.FullName,
-                Phone = request.Phone
+                Phone = request.Phone,
+                CondominiumId = defaultCondoId
             };
             var (userId, error) = await authService.RegisterUserAsync(createDto, request.Password, UserRole.Neighbor); // Default to Neighbor role
             return userId.HasValue

@@ -76,19 +76,20 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const $q = useQuasar()
 
-const form = ref({
-  incidents: false,
-  alerts: false,
-  polls: false,
-  posts: false
-})
+const form = ref({ ...props.notifications })
+
+let isInternalUpdate = false
 
 watch(() => props.notifications, (newVal) => {
-  form.value = { ...newVal }
+  if (!isInternalUpdate) {
+    form.value = { ...newVal }
+  }
 }, { immediate: true })
 
-watch(() => form.value, (newVal) => {
-  emit('update:notifications', newVal)
+watch(form, (newVal) => {
+  isInternalUpdate = true
+  emit('update:notifications', { ...newVal })
+  setTimeout(() => { isInternalUpdate = false }, 0)
 }, { deep: true })
 
 const copyToken = () => {

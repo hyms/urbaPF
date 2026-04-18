@@ -46,7 +46,7 @@
     </div>
 
     <q-dialog v-model="showConfirmDialog">
-      <q-card style="min-width: 350px">
+      <q-card :style="$q.screen.lt.sm ? 'width: 100%; max-width: 100%;' : 'min-width: 350px'">
         <q-card-section>
           <div class="text-h6 text-negative">Confirmar Emergencia</div>
         </q-card-section>

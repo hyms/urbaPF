@@ -131,7 +131,23 @@ public static class UserRoutes
             var userDetails = await repo.GetUserDetailsAsync(id);
             return userDetails != null ? Results.Ok(userDetails) : Results.NotFound();
         }).RequireAuthorization();
+
+        app.MapPatch("/api/users/{id:guid}/reset-password", async (Guid id, ResetPasswordRequest request, ClaimsPrincipal user, IUserRepository repo, IAuthService authService) =>
+        {
+            var currentUserRole = user.GetUserRole();
+            if ((int)currentUserRole != (int)UserRole.Administrator)
+            {
+                return Results.Problem("Solo el administrador puede resetear contraseñas.", statusCode: StatusCodes.Status403Forbidden);
+            }
+
+            // In a real app, we would use a more direct method, but for now we update the hash via repository
+            var newPasswordHash = new PasswordHasher().Hash(request.NewPassword);
+            await repo.UpdatePasswordHashAsync(id, newPasswordHash);
+            
+            return Results.Ok(new { message = "Contraseña reseteada con éxito" });
+        }).RequireAuthorization();
     }
 
     public record UpdateFcmTokenRequest(string? FcmToken);
+    public record ResetPasswordRequest(string NewPassword);
 }

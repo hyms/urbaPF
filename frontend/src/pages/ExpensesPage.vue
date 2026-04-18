@@ -120,7 +120,7 @@
 
     <!-- Create/Edit Dialog -->
     <q-dialog v-model="showDialog" persistent>
-      <q-card style="min-width: 400px" class="rounded-lg">
+      <q-card :style="$q.screen.lt.sm ? 'width: 100%; max-width: 100%;' : 'min-width: 400px'" class="rounded-lg">
         <q-card-section class="row items-center">
           <div class="text-h6">{{ editingExpense ? t('expenses.editExpense') : t('expenses.newExpense') }}</div>
           <q-space />
@@ -142,14 +142,6 @@
                 { label: t('expenses.income'), value: 'INGRESO' },
                 { label: t('expenses.expense'), value: 'EGRESO' }
               ]"
-            />
-
-            <q-input 
-              v-model="form.category" 
-              :label="t('expenses.category')" 
-              required 
-              outlined 
-              dense 
             />
             
             <q-input 
@@ -237,7 +229,6 @@ const form = reactive({
 const columns = computed(() => [
   { name: 'date', label: t('expenses.date'), field: 'date', format: (val: string) => formatDate(val), sortable: true, align: 'left' as const },
   { name: 'type', label: t('expenses.type'), field: 'type', align: 'center' as const },
-  { name: 'category', label: t('expenses.category'), field: 'category', sortable: true, align: 'left' as const },
   { name: 'amount', label: t('expenses.amount'), field: 'amount', sortable: true, align: 'right' as const },
   { name: 'responsible', label: t('expenses.responsible'), field: 'usuarioName', align: 'left' as const },
   { name: 'receipt', label: '', field: 'receiptUrl', align: 'center' as const },

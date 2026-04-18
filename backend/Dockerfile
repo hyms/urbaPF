@@ -7,7 +7,6 @@ COPY UrbaPF.sln .
 COPY Api/UrbaPF.Api.csproj ./Api/
 COPY Domain/UrbaPF.Domain.csproj ./Domain/
 COPY Infrastructure/UrbaPF.Infrastructure.csproj ./Infrastructure/
-COPY tests/UrbaPF.Tests.csproj ./tests/
 
 # 2. Restaurar dependencias
 RUN dotnet restore

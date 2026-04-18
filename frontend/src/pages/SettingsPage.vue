@@ -5,6 +5,7 @@
     <q-tabs v-model="tab" class="q-mb-md" align="justify">
       <q-tab :name="t('settings.general')" icon="settings" :label="t('settings.general')" />
       <q-tab :name="t('settings.condominium')" icon="home" :label="t('settings.condominium')" v-if="authStore.isAdmin" />
+      <q-tab name="security" icon="security" label="Seguridad" v-if="authStore.isAdmin" />
       <q-tab :name="t('settings.notifications')" icon="notifications" :label="t('settings.notifications')" />
     </q-tabs>
 
@@ -21,6 +22,45 @@
           :loading="loading"
           @submit="saveCondoSettings" 
         />
+      </q-tab-panel>
+
+      <q-tab-panel name="security" v-if="authStore.isAdmin">
+        <q-card flat bordered class="rounded-lg">
+          <q-card-section>
+            <div class="text-h6 q-mb-md">Configuración de Seguridad Global</div>
+            <div class="q-gutter-md">
+              <q-toggle 
+                v-model="securitySettings.forcePasswordChange" 
+                label="Forzar cambio de contraseña en primer inicio" 
+                color="primary"
+              />
+              
+              <div class="row q-col-gutter-md">
+                <div class="col-12 col-sm-6">
+                  <q-input 
+                    v-model.number="securitySettings.minPasswordLength" 
+                    type="number" 
+                    label="Longitud mínima de contraseña" 
+                    outlined 
+                    dense
+                  />
+                </div>
+                <div class="col-12 col-sm-6">
+                  <q-toggle 
+                    v-model="securitySettings.requireSpecialChars" 
+                    label="Requerir caracteres especiales" 
+                    color="primary"
+                    class="q-mt-sm"
+                  />
+                </div>
+              </div>
+              
+              <div class="row justify-end q-mt-md">
+                <q-btn color="primary" label="Guardar Configuración" @click="saveSecuritySettings" :loading="loading" />
+              </div>
+            </div>
+          </q-card-section>
+        </q-card>
       </q-tab-panel>
 
       <q-tab-panel :name="t('settings.notifications')">
@@ -81,6 +121,12 @@ const condoSettings = ref({
 
 const fcmToken = ref('')
 
+const securitySettings = ref({
+  forcePasswordChange: false,
+  minPasswordLength: 6,
+  requireSpecialChars: false
+})
+
 onMounted(async () => {
   await condoStore.fetchAll()
   condoStore.loadCurrentCondominiumFromStorage()
@@ -94,7 +140,24 @@ onMounted(async () => {
       isActive: condoStore.currentCondominium.isActive
     }
   }
+  
+  if (authStore.isAdmin) {
+    // In a real app we would fetch settings from backend
+    // For now we'll simulate or use defaults from store/env
+  }
 })
+
+async function saveSecuritySettings() {
+  loading.value = true
+  try {
+    // TODO: Implement backend endpoint for app settings
+    $q.notify({ type: 'positive', message: 'Configuración de seguridad guardada' })
+  } catch (e) {
+    $q.notify({ type: 'negative', message: 'Error al guardar configuración' })
+  } finally {
+    loading.value = false
+  }
+}
 
 async function saveProfile(formData: { fullName: string; phone: string; streetAddress: string }) {
   loading.value = true

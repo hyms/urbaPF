@@ -20,6 +20,7 @@ public class UserDto
     public bool IsValidated { get; set; }
     public int ManagerVotes { get; set; }
     public string? FcmToken { get; set; }
+    public bool ForcePasswordChange { get; set; }
 }
 
 public class CreateUserDto
@@ -31,6 +32,7 @@ public class CreateUserDto
     public string? LotNumber { get; set; }
     public string? StreetAddress { get; set; }
     public string? PhotoUrl { get; set; }
+    public bool ForcePasswordChange { get; set; }
 }
 
 public class UpdateUserDto
@@ -44,6 +46,7 @@ public class UpdateUserDto
     public string? StreetAddress { get; set; }
     public string? PhotoUrl { get; set; }
     public string? FcmToken { get; set; }
+    public bool? ForcePasswordChange { get; set; }
 }
 
 public class ChangePasswordDto
@@ -80,4 +83,5 @@ public class UserDetailsDto
     public int ManagerVotes { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? LastLoginAt { get; set; }
+    public bool ForcePasswordChange { get; set; }
 }

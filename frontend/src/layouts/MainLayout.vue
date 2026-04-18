@@ -6,7 +6,7 @@
         <q-toolbar-title class="text-weight-bold">UrbaPF</q-toolbar-title>
         
         <!-- Desktop Header Right -->
-        <div class="gt-xs row items-center">
+        <div class="row items-center">
           <q-btn flat round dense icon="notifications" class="q-mr-xs" aria-label="Notificaciones">
             <q-badge v-if="notificationCount > 0" color="red" floating>{{ notificationCount }}</q-badge>
             <q-menu>
@@ -43,12 +43,16 @@
           <q-btn flat round dense aria-label="Menú de usuario">
             <q-avatar size="32px" color="white" text-color="primary">{{ userInitials }}</q-avatar>
             <q-menu>
-              <q-list style="min-width: 150px">
+              <q-list style="min-width: 200px">
                 <q-item clickable v-close-popup to="/settings">
                   <q-item-section avatar><q-icon name="person" /></q-item-section>
                   <q-item-section>{{ t('common.profile') }}</q-item-section>
                 </q-item>
-                <q-separator />
+                <q-item v-if="authStore.isAdmin" clickable v-close-popup to="/users">
+                  <q-item-section avatar><q-icon name="admin_panel_settings" /></q-item-section>
+                  <q-item-section>Admin - Gestionar Usuarios</q-item-section>
+                </q-item>
+                <q-separator v-if="authStore.isAdmin" />
                 <q-item clickable v-close-popup @click="logout">
                   <q-item-section avatar><q-icon name="logout" /></q-item-section>
                   <q-item-section>{{ t('common.logout') }}</q-item-section>
@@ -107,12 +111,12 @@
 
         <q-item clickable v-ripple to="/directory" v-if="authStore.isNeighbor || authStore.isManager || authStore.isAdmin" active-class="text-primary bg-grey-3" aria-label="Ir al directorio">
           <q-item-section avatar><q-icon name="contacts" color="teal" /></q-item-section>
-          <q-item-section><q-item-label>Directorio</q-item-label></q-item-section>
+          <q-item-section><q-item-label>Vecinos</q-item-label></q-item-section>
         </q-item>
 
         <q-item clickable v-ripple to="/expenses" active-class="text-primary bg-grey-3" aria-label="Ir a control de gastos">
           <q-item-section avatar><q-icon name="account_balance_wallet" color="green" /></q-item-section>
-          <q-item-section><q-item-label>Control de Gastos</q-item-label></q-item-section>
+          <q-item-section><q-item-label>Tesorería</q-item-label></q-item-section>
         </q-item>
 
         <q-separator class="q-my-md" />

@@ -179,13 +179,15 @@
     </div>
   </q-page>
 
-  <q-dialog v-model="showEditDialog" persistent>
-    <q-card style="min-width: 450px">
-      <q-card-section>
+  <q-dialog v-model="showEditDialog" persistent :maximized="$q.screen.lt.sm">
+    <q-card style="min-width: 350px; width: 100%; max-width: 500px">
+      <q-card-section class="row items-center">
         <div class="text-h6">{{ t('condominiums.editCondo') }}</div>
+        <q-space />
+        <q-btn icon="close" flat round dense v-close-popup v-if="$q.screen.lt.sm" />
       </q-card-section>
 
-      <q-card-section>
+      <q-card-section class="q-pt-none">
         <q-form class="q-gutter-md">
           <q-input v-model="editCondo.name" :label="t('condominiums.name')" filled :rules="[v => !!v || t('common.required')]"></q-input>
           <q-input v-model="editCondo.address" :label="t('condominiums.address')" filled :rules="[v => !!v || t('common.required')]"></q-input>
@@ -196,20 +198,22 @@
         </q-form>
       </q-card-section>
 
-      <q-card-actions align="right">
+      <q-card-actions align="right" class="q-pa-md">
         <q-btn flat :label="t('common.cancel')" v-close-popup aria-label="Cancelar"></q-btn>
         <q-btn color="primary" :label="t('common.save')" @click="saveCondo" :loading="loading" aria-label="Guardar condominio"></q-btn>
       </q-card-actions>
     </q-card>
   </q-dialog>
 
-  <q-dialog v-model="showLocationDialog" persistent>
-    <q-card style="min-width: 400px">
-      <q-card-section>
+  <q-dialog v-model="showLocationDialog" persistent :maximized="$q.screen.lt.sm">
+    <q-card style="min-width: 350px; width: 100%; max-width: 500px">
+      <q-card-section class="row items-center">
         <div class="text-h6">{{ t('condominiums.location') }}</div>
+        <q-space />
+        <q-btn icon="close" flat round dense v-close-popup v-if="$q.screen.lt.sm" />
       </q-card-section>
 
-      <q-card-section>
+      <q-card-section class="q-pt-none">
         <div class="row q-col-gutter-sm">
           <div class="col-6">
             <q-input
@@ -238,12 +242,12 @@
           icon="my_location"
           :label="t('incidents.getCurrentLocation')"
           @click="getCurrentLocation"
-          class="q-mt-md"
+          class="q-mt-md full-width"
           :loading="loadingLocation"
         />
       </q-card-section>
 
-      <q-card-actions align="right">
+      <q-card-actions align="right" class="q-pa-md">
         <q-btn flat :label="t('common.cancel')" v-close-popup aria-label="Cancelar"></q-btn>
         <q-btn color="primary" :label="t('common.save')" @click="saveLocation" :loading="loading" aria-label="Guardar ubicación"></q-btn>
       </q-card-actions>

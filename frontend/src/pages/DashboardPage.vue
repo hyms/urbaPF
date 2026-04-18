@@ -56,17 +56,14 @@
     <q-tab-panels v-model="activeTab" animated>
       <!-- Overview Tab -->
       <q-tab-panel name="overview" class="q-pa-none">
-        <div class="row q-col-gutter-md q-mb-md" v-if="stats.condominiums > 0 || stats.incidents > 0 || stats.polls > 0 || stats.alerts > 0">
-          <div class="col-12 col-sm-6 col-lg-3">
-            <StatsCard :title="t('common.condominiums')" :value="stats.condominiums" icon="home_work" bgColor="bg-primary" />
-          </div>
-          <div class="col-12 col-sm-6 col-lg-3">
+        <div class="row q-col-gutter-md q-mb-md" v-if="stats.incidents > 0 || stats.polls > 0 || stats.alerts > 0">
+          <div class="col-12 col-sm-4">
             <StatsCard :title="t('common.incidents')" :value="stats.incidents" icon="warning" bgColor="bg-orange" />
           </div>
-          <div class="col-12 col-sm-6 col-lg-3">
+          <div class="col-12 col-sm-4">
             <StatsCard :title="t('common.polls')" :value="stats.polls" icon="poll" bgColor="bg-purple" />
           </div>
-          <div class="col-12 col-sm-6 col-lg-3">
+          <div class="col-12 col-sm-4">
             <StatsCard :title="t('common.alerts')" :value="stats.alerts" icon="notifications_active" bgColor="bg-red" />
           </div>
         </div>

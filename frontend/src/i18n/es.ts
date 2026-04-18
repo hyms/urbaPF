@@ -25,13 +25,18 @@ export default {
     no: 'No',
     menu: 'Menú Principal',
     admin: 'Administración',
-    edit: 'Editar',
-    view: 'Ver',
-    confirmDelete: 'Confirmar eliminación',
-    deleteMessage: '¿Eliminar {item}?',
-    clearFilters: 'Limpiar filtros',
-    close: 'Cerrar',
-    viewAll: 'Ver todo'
+    users: 'Usuarios',
+    settings: 'Configuración',
+    logout: 'Cerrar Sesión',
+    profile: 'Mi Perfil',
+    menu: 'Menú Principal',
+    viewAll: 'Ver Todo',
+  },
+  users: {
+    title: 'Gestión de Usuarios',
+    newUser: 'Nuevo Usuario',
+    editUser: 'Editar Usuario',
+    passwordMinLength: 'La contraseña debe tener al menos 6 caracteres',
   },
   dashboard: {
     title: 'Panel',
@@ -287,7 +292,7 @@ export default {
     noNotifications: 'No hay notificaciones'
   },
   directory: {
-    title: 'Directorio de Vecinos',
+    title: 'Vecinos',
     noCondominium: 'No perteneces a un condominio',
     noNeighbors: 'No hay vecinos registrados',
     lot: 'Lote',
@@ -297,7 +302,7 @@ export default {
     managerDetails: 'Información de Administración'
   },
   expenses: {
-    title: 'Control de Gastos',
+    title: 'Tesorería',
     balance: 'Saldo en Caja',
     monthlyTotal: 'Egresos del Mes',
     topExpenses: 'Top 3 Gastos',

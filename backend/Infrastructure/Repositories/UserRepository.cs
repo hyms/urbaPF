@@ -17,8 +17,8 @@ public class UserRepository : BaseRepository, IUserRepository
         var sql = @"
             SELECT id, email, full_name as FullName, phone, role, credibility_level as CredibilityLevel,
             status, condominium_id as CondominiumId, lot_number as LotNumber,
-            street_address as StreetAddress, photo_url as PhotoUrl, created_at as CreatedAt, last_login_at as LastLoginAt,
-            is_validated as IsValidated, manager_votes as ManagerVotes
+             street_address as StreetAddress, photo_url as PhotoUrl, created_at as CreatedAt, last_login_at as LastLoginAt,
+            is_validated as IsValidated, manager_votes as ManagerVotes, force_password_change as ForcePasswordChange
             FROM users 
             WHERE deleted_at IS NULL
             ORDER BY created_at DESC";
@@ -31,7 +31,7 @@ public class UserRepository : BaseRepository, IUserRepository
             SELECT id, email, full_name as FullName, phone, role, credibility_level as CredibilityLevel,
             status, condominium_id as CondominiumId, lot_number as LotNumber,
             street_address as StreetAddress, photo_url as PhotoUrl, created_at as CreatedAt, last_login_at as LastLoginAt,
-            is_validated as IsValidated, manager_votes as ManagerVotes
+            is_validated as IsValidated, manager_votes as ManagerVotes, force_password_change as ForcePasswordChange
             FROM users 
             WHERE id = @Id AND deleted_at IS NULL";
         return await QueryFirstOrDefaultAsync<UserDto>(sql, new { Id = id });
@@ -43,7 +43,7 @@ public class UserRepository : BaseRepository, IUserRepository
             SELECT id, email, full_name as FullName, phone, role, credibility_level as CredibilityLevel,
             status, condominium_id as CondominiumId, lot_number as LotNumber,
             street_address as StreetAddress, photo_url as PhotoUrl, created_at as CreatedAt, last_login_at as LastLoginAt,
-            is_validated as IsValidated, manager_votes as ManagerVotes
+            is_validated as IsValidated, manager_votes as ManagerVotes, force_password_change as ForcePasswordChange
             FROM users 
             WHERE email = @Email AND deleted_at IS NULL";
         return await QueryFirstOrDefaultAsync<UserDto>(sql, new { Email = email });
@@ -55,7 +55,7 @@ public class UserRepository : BaseRepository, IUserRepository
             SELECT id, email, password_hash as PasswordHash, full_name as FullName, phone, role, 
             credibility_level as CredibilityLevel, status, condominium_id as CondominiumId, 
             lot_number as LotNumber, street_address as StreetAddress, created_at as CreatedAt, 
-            last_login_at as LastLoginAt, is_validated as IsValidated, manager_votes as ManagerVotes
+            last_login_at as LastLoginAt, is_validated as IsValidated, manager_votes as ManagerVotes, force_password_change as ForcePasswordChange
             FROM users 
             WHERE email = @Email AND deleted_at IS NULL";
         return await QueryFirstOrDefaultAsync<UserDto>(sql, new { Email = email });
@@ -65,9 +65,9 @@ public class UserRepository : BaseRepository, IUserRepository
     {
         var sql = @"
             INSERT INTO users (id, email, password_hash, full_name, phone, role, credibility_level, status,
-            condominium_id, lot_number, street_address, photo_url, is_validated, manager_votes)
+            condominium_id, lot_number, street_address, photo_url, is_validated, manager_votes, force_password_change)
             VALUES (gen_random_uuid(), @Email, @PasswordHash, @FullName, @Phone, @Role, 1, 1, @CondominiumId, @LotNumber, 
-            @StreetAddress, @PhotoUrl, false, 0)
+            @StreetAddress, @PhotoUrl, false, 0, @ForcePasswordChange)
             RETURNING id";
         
         return await ExecuteScalarAsync<Guid>(sql, new 
@@ -80,7 +80,8 @@ public class UserRepository : BaseRepository, IUserRepository
             dto.CondominiumId, 
             dto.LotNumber, 
             dto.StreetAddress,
-            dto.PhotoUrl
+            dto.PhotoUrl,
+            dto.ForcePasswordChange
         });
     }
 
@@ -135,6 +136,11 @@ public class UserRepository : BaseRepository, IUserRepository
             sql.Add("fcm_token = @FcmToken");
             parameters.Add("FcmToken", dto.FcmToken);
         }
+        if (dto.ForcePasswordChange.HasValue)
+        {
+            sql.Add("force_password_change = @ForcePasswordChange");
+            parameters.Add("ForcePasswordChange", dto.ForcePasswordChange.Value);
+        }
 
         if (sql.Count == 0) return;
 
@@ -177,7 +183,7 @@ public class UserRepository : BaseRepository, IUserRepository
             SELECT id, email, full_name as FullName, phone, role, credibility_level as CredibilityLevel,
             status, condominium_id as CondominiumId, lot_number as LotNumber,
             street_address as StreetAddress, photo_url as PhotoUrl, created_at as CreatedAt, last_login_at as LastLoginAt,
-            is_validated as IsValidated, manager_votes as ManagerVotes, fcm_token as FcmToken
+            is_validated as IsValidated, manager_votes as ManagerVotes, fcm_token as FcmToken, force_password_change as ForcePasswordChange
             FROM users 
             WHERE condominium_id = @CondominiumId AND deleted_at IS NULL
             ORDER BY created_at DESC";
@@ -212,7 +218,7 @@ public class UserRepository : BaseRepository, IUserRepository
             street_address as StreetAddress, photo_url as PhotoUrl, 
             role as Role, credibility_level as CredibilityLevel, status,
             is_validated as IsValidated, manager_votes as ManagerVotes,
-            created_at as CreatedAt, last_login_at as LastLoginAt
+            created_at as CreatedAt, last_login_at as LastLoginAt, force_password_change as ForcePasswordChange
             FROM users 
             WHERE id = @Id AND deleted_at IS NULL";
         return await QueryFirstOrDefaultAsync<UserDetailsDto>(sql, new { Id = id });

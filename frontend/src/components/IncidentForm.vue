@@ -1,5 +1,5 @@
 <template>
-  <q-card style="min-width: 500px; max-width: 90vw">
+  <q-card :style="$q.screen.lt.sm ? 'width: 100%; max-width: 100%;' : 'min-width: 500px; max-width: 90vw'">
     <q-card-section>
       <div class="text-h6">{{ isEditing ? t('incidents.editIncident') : t('incidents.report') }}</div>
     </q-card-section>

@@ -1,5 +1,5 @@
 <template>
-  <q-card style="min-width: 500px">
+  <q-card :style="$q.screen.lt.sm ? 'width: 100%; max-width: 100%;' : 'min-width: 500px'">
     <q-card-section>
       <div class="text-h6">{{ isEditing ? t('polls.editPoll') : t('polls.newPoll') }}</div>
     </q-card-section>

@@ -128,6 +128,19 @@ export const useUserStore = defineStore('user', {
       } finally {
         this.loading = false
       }
+    },
+
+    async updatePassword(userId: string, newPassword: string): Promise<boolean> {
+      this.loading = true
+      try {
+        await api.patch(`/users/${userId}/reset-password`, { newPassword })
+        return true
+      } catch (error) {
+        this.error = (error as Error).message
+        return false
+      } finally {
+        this.loading = false
+      }
     }
   }
 })
