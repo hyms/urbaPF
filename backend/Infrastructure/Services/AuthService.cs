@@ -33,9 +33,27 @@ public class AuthService : IAuthService
         _refreshTokenRepository = refreshTokenRepository ?? throw new ArgumentNullException(nameof(refreshTokenRepository));
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         _passwordHasher = passwordHasher ?? throw new ArgumentNullException(nameof(passwordHasher));
-        _jwtSecret = _configuration["JWT_SECRET"] ?? "UrbaPFSuperSecretKey2026!ThisMustBeLongEnough";
-        _jwtExpiryMinutes = int.Parse(_configuration["JWT_EXPIRY_MINUTES"] ?? "60");
-        _refreshTokenExpiryDays = int.Parse(_configuration["REFRESH_TOKEN_EXPIRY_DAYS"] ?? "30");
+        
+        var jwtSecret = _configuration["JWT_SECRET"];
+        if (string.IsNullOrEmpty(jwtSecret) || jwtSecret.Length < 32)
+        {
+            _jwtSecret = "UrbaPF_Default_Super_Secure_And_Long_Secret_Key_2026_Check_Env_File";
+        }
+        else
+        {
+            _jwtSecret = jwtSecret;
+        }
+        
+        if (!int.TryParse(_configuration["JWT_EXPIRY_MINUTES"], out _jwtExpiryMinutes))
+        {
+            _jwtExpiryMinutes = 60; // Default 1 hour
+        }
+
+        if (!int.TryParse(_configuration["REFRESH_TOKEN_EXPIRY_DAYS"] ?? _configuration["JWT_EXPIRY_DAYS"], out _refreshTokenExpiryDays))
+        {
+            _refreshTokenExpiryDays = 30; // Default 30 days
+        }
+        
         _utcNow = utcNow;
     }
 
@@ -63,22 +81,18 @@ public class AuthService : IAuthService
 
         await _userRepository.UpdateLastLoginAsync(user.Id);
 
-        var token = GenerateJwtToken(user.Id, user.Email, (int)user.Role, user.FullName);
+        var token = GenerateJwtToken(user.Id, user.Email, (int)user.Role, user.FullName, user.CondominiumId);
         var refreshToken = GenerateRefreshToken();
         var expiresAt = _utcNow().AddMinutes(_jwtExpiryMinutes);
 
         await _refreshTokenRepository.SaveAsync(user.Id, refreshToken, expiresAt);
-
-        var userDto = await _userRepository.GetByIdAsync(user.Id);
-        if (userDto == null)
-            return (null, "Error al obtener datos del usuario");
 
         return (new AuthResponseDto
         {
             Token = token,
             RefreshToken = refreshToken,
             ExpiresAt = expiresAt,
-            User = userDto
+            User = user
         }, null);
     }
 
@@ -130,7 +144,7 @@ public class AuthService : IAuthService
 
         await RevokeRefreshTokenAsync(refreshToken);
 
-        var newToken = GenerateJwtToken(user.Id, user.Email, (int)user.Role, user.FullName);
+        var newToken = GenerateJwtToken(user.Id, user.Email, (int)user.Role, user.FullName, user.CondominiumId);
         var newRefreshToken = GenerateRefreshToken();
         var expiresAt = _utcNow().AddMinutes(_jwtExpiryMinutes);
 
@@ -151,7 +165,7 @@ public class AuthService : IAuthService
         return (true, null);
     }
 
-    private string GenerateJwtToken(Guid userId, string email, int role, string fullName)
+    private string GenerateJwtToken(Guid userId, string email, int role, string fullName, Guid? condominiumId)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSecret));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -164,10 +178,9 @@ public class AuthService : IAuthService
             new Claim("fullName", fullName)
         };
 
-        var user = _userRepository.GetByIdAsync(userId).Result;
-        if (user?.CondominiumId != null)
+        if (condominiumId != null)
         {
-            claims.Add(new Claim("condominiumId", user.CondominiumId.ToString()!));
+            claims.Add(new Claim("condominiumId", condominiumId.ToString()!));
         }
 
         var token = new JwtSecurityToken(

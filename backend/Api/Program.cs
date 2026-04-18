@@ -67,7 +67,11 @@ if (!firebaseInitialized)
     Console.WriteLine("[Firebase] Not configured or failed to initialize. Push notifications will be disabled.");
 }
 
-var jwtSecret = builder.Configuration["JWT_SECRET"] ?? "UrbaPFSuperSecretKey2026!ThisMustBeLongEnough";
+var jwtSecret = builder.Configuration["JWT_SECRET"];
+if (string.IsNullOrEmpty(jwtSecret) || jwtSecret.Length < 32)
+{
+    jwtSecret = "UrbaPF_Default_Super_Secure_And_Long_Secret_Key_2026_Check_Env_File";
+}
 var jwtIssuer = "UrbaPF";
 var jwtAudience = "UrbaPF";
 
@@ -107,6 +111,7 @@ var database = builder.Configuration["DB_NAME"] ?? "urbapf";
 var user = builder.Configuration["DB_USER"] ?? "postgres";
 var password = builder.Configuration["DB_PASSWORD"] ?? "postgres";
 var connectionString = $"Host={host};Port={port};Database={database};Username={user};Password={password}";
+Console.WriteLine($"[Database] Connecting to {host}:{port} ({database}) as {user}...");
 
 // Configure FluentMigrator for data migrations only
 builder.Services.AddFluentMigratorCore()
@@ -163,6 +168,29 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+// Enable detailed errors in Production for debugging (Temporary)
+if (app.Environment.IsProduction())
+{
+    app.Use(async (context, next) =>
+    {
+        try
+        {
+            await next();
+        }
+        catch (Exception ex)
+        {
+            context.Response.StatusCode = 500;
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsJsonAsync(new 
+            { 
+                error = "Internal Server Error", 
+                message = ex.Message,
+                detail = ex.StackTrace
+            });
+        }
+    });
+}
 
 // Run migrations
 app.RunMigrations();

@@ -67,25 +67,24 @@ fi
 
 # 4. Despliegue en el servidor
 echo "--- Remote Deployment ---"
-ssh -i "$PEM_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "ubuntu@$SERVER_ADDRESS" << 'EOF'
+ssh -i "$PEM_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "ubuntu@$SERVER_ADDRESS" << EOF
     set -e
     cd ~/urbapf_deploy
 
-    echo "Stopping current services..."
-    docker compose down
-
-    echo "Removing old images..."
-    docker rmi urbapf-backend:local urbapf-frontend:local 2>/dev/null || true
-
     echo "Loading new images..."
     if [ -f urbapf-backend.tar ]; then
+        echo "Updating backend image..."
+        docker rmi urbapf-backend:local 2>/dev/null || true
         docker load -i urbapf-backend.tar
     fi
     if [ -f urbapf-frontend.tar ]; then
+        echo "Updating frontend image..."
+        docker rmi urbapf-frontend:local 2>/dev/null || true
         docker load -i urbapf-frontend.tar
     fi
 
-    echo "Starting services..."
+    echo "Restarting services..."
+    # Usamos up -d directamente para que Docker decida qué contenedores recrear
     docker compose up -d
 
     echo "Cleaning up server space..."

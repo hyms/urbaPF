@@ -9,7 +9,7 @@ services:
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: ${DB_NAME:-urbapf}
-      DB_USER: ${DB_USER:-postgres}
+      DB_USER: postgres
       DB_PASSWORD: ${DB_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRY_DAYS: ${JWT_EXPIRY_DAYS}
@@ -41,12 +41,12 @@ services:
       - "5432:5432"
     environment:
       POSTGRES_DB: ${DB_NAME:-urbapf}
-      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-urbapf}"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ${DB_NAME:-urbapf}"]
       interval: 5s
       timeout: 5s
       retries: 5
