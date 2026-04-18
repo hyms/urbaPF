@@ -33,10 +33,11 @@ fi
 
 if [ "$TARGET" == "all" ] || [ "$TARGET" == "frontend" ]; then
     echo "--- Building Frontend ---"
-    
+
     # Build with NO CACHE to force latest changes
-    docker build --no-cache \
-        -t urbapf-frontend:local -f ./frontend/Dockerfile ./frontend
+    docker build -t urbapf-frontend:local \
+        --build-arg VITE_API_URL=/api \
+        -f ./frontend/Dockerfile ./frontend
     docker save -o urbapf-frontend.tar urbapf-frontend:local
 fi
 
@@ -45,8 +46,9 @@ echo "--- Transferring files ---"
 # Eliminar tars antiguos en el servidor para evitar corrupciones
 ssh -i "$PEM_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "ubuntu@$SERVER_ADDRESS" "mkdir -p ~/urbapf_deploy && rm -f ~/urbapf_deploy/*.tar"
 
-rsync -avzP -e "ssh -i \"$PEM_PATH\" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
+    rsync -avzP -e "ssh -i \"$PEM_PATH\" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
     ./docker-compose.yml \
+    ./.env \
     ./certs/ \
     ./firebase-service-account.json \
     ubuntu@"$SERVER_ADDRESS":~/urbapf_deploy/
@@ -69,7 +71,13 @@ ssh -i "$PEM_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "
     set -e
     cd ~/urbapf_deploy
 
-    echo "Loading images..."
+    echo "Stopping current services..."
+    docker compose down
+
+    echo "Removing old images..."
+    docker rmi urbapf-backend:local urbapf-frontend:local 2>/dev/null || true
+
+    echo "Loading new images..."
     if [ -f urbapf-backend.tar ]; then
         docker load -i urbapf-backend.tar
     fi
@@ -77,9 +85,11 @@ ssh -i "$PEM_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "
         docker load -i urbapf-frontend.tar
     fi
 
-    echo "Restarting services..."
-    # docker compose up -d se encarga de recrear solo lo necesario
+    echo "Starting services..."
     docker compose up -d
+
+    echo "Cleaning up server space..."
+    docker image prune -f
 
     echo "Status:"
     docker compose ps

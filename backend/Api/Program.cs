@@ -21,18 +21,29 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Initialize Firebase Admin
 var firebaseCredPath = builder.Configuration["FIREBASE_SERVICE_ACCOUNT_PATH"] ?? "/app/firebase-service-account.json";
+bool firebaseInitialized = false;
+
 if (File.Exists(firebaseCredPath))
 {
-    FirebaseApp.Create(new AppOptions
+    try
     {
-        Credential = GoogleCredential.FromFile(firebaseCredPath)
-    });
-    Console.WriteLine("[Firebase] Admin SDK initialized successfully.");
+        FirebaseApp.Create(new AppOptions
+        {
+            Credential = GoogleCredential.FromFile(firebaseCredPath)
+        });
+        firebaseInitialized = true;
+        Console.WriteLine("[Firebase] Admin SDK initialized successfully from file.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[Firebase] Failed to initialize from file: {ex.Message}");
+    }
 }
-else
+
+if (!firebaseInitialized)
 {
     var firebaseJson = builder.Configuration["FIREBASE_SERVICE_ACCOUNT_JSON"];
-    if (!string.IsNullOrEmpty(firebaseJson))
+    if (!string.IsNullOrWhiteSpace(firebaseJson) && firebaseJson.Length > 10)
     {
         try
         {
@@ -41,17 +52,19 @@ else
             {
                 Credential = credential
             });
-            Console.WriteLine("[Firebase] Admin SDK initialized from JSON.");
+            firebaseInitialized = true;
+            Console.WriteLine("[Firebase] Admin SDK initialized from JSON string.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[Firebase] Failed to initialize from JSON: {ex.Message}");
+            Console.WriteLine($"[Firebase] Failed to initialize from JSON string: {ex.Message}");
         }
     }
-    else
-    {
-        Console.WriteLine("[Firebase] Not configured. Push notifications will be disabled.");
-    }
+}
+
+if (!firebaseInitialized)
+{
+    Console.WriteLine("[Firebase] Not configured or failed to initialize. Push notifications will be disabled.");
 }
 
 var jwtSecret = builder.Configuration["JWT_SECRET"] ?? "UrbaPFSuperSecretKey2026!ThisMustBeLongEnough";
