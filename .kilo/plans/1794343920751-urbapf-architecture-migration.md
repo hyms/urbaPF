@@ -257,10 +257,17 @@ pnpm test
 5. Refactor Routes to call Application Services
 6. Run tests to verify
 
-### Phase 2: Documentation
-1. Create `docs/` structure
-2. Write `global-spec.md`
-3. Write module specs/plans/tests for each bounded context
+### Phase 2: Documentation ✅ COMPLETE
+1. Create `docs/` structure ✅
+2. Write `global-spec.md` ✅
+3. Write module specs/plans/tests for each bounded context ✅
+   - `docs/modules/auth/{spec,plan,tests}.md` ✅
+   - `docs/modules/polls/{spec,plan,tests}.md` ✅
+   - `docs/modules/posts/{spec,plan,tests}.md` ✅
+   - `docs/modules/alerts/{spec,plan,tests}.md` ✅
+   - `docs/modules/users/{spec,plan,tests}.md` ✅
+   - `docs/modules/condominiums/{spec,plan,tests}.md` ✅
+   - `docs/modules/incidents/{spec,plan,tests}.md` ✅
 
 ### Phase 3: React Native Migration
 1. Backup current `frontend/` → `frontend-web-archive/`
@@ -271,9 +278,9 @@ pnpm test
 6. Build core screens: Home, Polls, Posts, Alerts, Profile
 7. Implement offline sync engine
 
-### Phase 4: README + agents.md
-1. Rewrite `README.md` with badges, Mermaid, decisions, quick start
-2. Update `agents.md` with new rules
+### Phase 4: README + agents.md ✅ COMPLETE
+1. Rewrite `README.md` with badges, Mermaid, decisions, quick start ✅
+2. Update `AGENTS.md` with new rules (DDD, SDD, TDD, RN, security) ✅
 
 ### Phase 5: Validation
 1. Backend: `dotnet test` → 40%+ coverage
