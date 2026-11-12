@@ -1,0 +1,210 @@
+using Dapper;
+using FluentAssertions;
+using Microsoft.Extensions.Configuration;
+using Moq;
+using UrbaPF.Application.Abstractions;
+using UrbaPF.Application.DTOs;
+using UrbaPF.Application.Interfaces;
+using UrbaPF.Infrastructure.Services;
+using UrbaPF.Infrastructure.Data;
+using Npgsql;
+using UrbaPF.Domain.Enums;
+
+namespace UrbaPF.Tests.Services;
+
+public class AuthServiceTests
+{
+    private readonly Mock<IUserRepository> _userRepositoryMock;
+    private readonly Mock<IRefreshTokenRepository> _refreshTokenRepositoryMock;
+    private readonly IConfiguration _configuration;
+    private readonly IPasswordHasher _passwordHasher;
+    private readonly Func<DateTime> _utcNow;
+    private readonly DateTime _fixedDateTime;
+
+    private static readonly string TestPasswordHash;
+
+    static AuthServiceTests()
+    {
+        var hasher = new PasswordHasher();
+        TestPasswordHash = hasher.Hash("password123");
+    }
+
+    public AuthServiceTests()
+    {
+        _userRepositoryMock = new Mock<IUserRepository>();
+        _refreshTokenRepositoryMock = new Mock<IRefreshTokenRepository>();
+        _passwordHasher = new PasswordHasher();
+        _fixedDateTime = new DateTime(2026, 1, 1, 12, 0, 0, DateTimeKind.Utc);
+        _utcNow = () => _fixedDateTime;
+
+        var inMemorySettings = new Dictionary<string, string?> {
+            {"JWT_SECRET", "UrbaPFSuperSecretKey2026!ThisMustBeLongEnoughForHS256"},
+            {"JWT_EXPIRY_MINUTES", "60"},
+            {"REFRESH_TOKEN_EXPIRY_DAYS", "30"}
+        };
+        _configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(inMemorySettings)
+            .Build();
+    }
+
+    private AuthService CreateAuthService()
+    {
+        return new AuthService(_userRepositoryMock.Object, _refreshTokenRepositoryMock.Object, _configuration, _passwordHasher, _utcNow);
+    }
+
+    private UserDto CreateTestUser(string email = "test@test.com", string password = "password123", int status = 1)
+    {
+        return new UserDto
+        {
+            Id = Guid.NewGuid(),
+            Email = email,
+            PasswordHash = _passwordHasher.Hash(password),
+            FullName = "Test User",
+            Role = UserRole.Guard,
+            CredibilityLevel = 3,
+            Status = status,
+            Phone = "12345678",
+            CreatedAt = _fixedDateTime,
+            LastLoginAt = null
+        };
+    }
+
+    [Test]
+    public async Task Login_WithValidCredentials_ReturnsTokenWithRefreshToken()
+    {
+        var email = "test@test.com";
+        var password = "password123";
+        var user = CreateTestUser(email, password);
+        
+        _userRepositoryMock.Setup(x => x.GetByEmailWithPasswordAsync(email)).ReturnsAsync(user);
+        _userRepositoryMock.Setup(x => x.GetByIdAsync(user.Id)).ReturnsAsync(user);
+        _userRepositoryMock.Setup(x => x.UpdateLastLoginAsync(user.Id)).Returns(Task.CompletedTask);
+        _refreshTokenRepositoryMock.Setup(x => x.SaveAsync(user.Id, It.IsAny<string>(), It.IsAny<DateTime>())).Returns(Task.CompletedTask);
+
+        var authService = CreateAuthService();
+        var result = await authService.LoginAsync(email, password);
+
+        result.Response.Should().NotBeNull();
+        result.Error.Should().BeNull();
+        result.Response!.Token.Should().NotBeNullOrEmpty();
+        result.Response.RefreshToken.Should().NotBeNullOrEmpty();
+        result.Response.User.Should().NotBeNull();
+    }
+
+    [Test]
+    public async Task Login_WithInvalidPassword_ReturnsError()
+    {
+        var email = "test@test.com";
+        var user = CreateTestUser(email, "correctpassword");
+        
+        _userRepositoryMock.Setup(x => x.GetByEmailWithPasswordAsync(email)).ReturnsAsync(user);
+
+        var authService = CreateAuthService();
+        var result = await authService.LoginAsync(email, "wrongpassword");
+
+        result.Response.Should().BeNull();
+        result.Error.Should().Be("Contraseña incorrecta");
+    }
+
+    [Test]
+    public async Task Login_WithNonExistentUser_ReturnsError()
+    {
+        _userRepositoryMock.Setup(x => x.GetByEmailWithPasswordAsync("notfound@test.com")).ReturnsAsync((UserDto?)null);
+
+        var authService = CreateAuthService();
+        var result = await authService.LoginAsync("notfound@test.com", "password");
+
+        result.Response.Should().BeNull();
+        result.Error.Should().Be("Usuario no encontrado");
+    }
+
+    [Test]
+    public async Task Login_WithInactiveUser_ReturnsError()
+    {
+        var email = "inactive@test.com";
+        var user = CreateTestUser(email, "password", status: 0);
+        
+        _userRepositoryMock.Setup(x => x.GetByEmailWithPasswordAsync(email)).ReturnsAsync(user);
+
+        var authService = CreateAuthService();
+        var result = await authService.LoginAsync(email, "password");
+
+        result.Response.Should().BeNull();
+        result.Error.Should().Be("Usuario inactivo");
+    }
+
+    [Test]
+    public async Task Register_WithNewEmail_ReturnsUserId()
+    {
+        var createDto = new CreateUserDto { Email = "new@test.com", FullName = "New User", Phone = null };
+        
+        _userRepositoryMock.Setup(x => x.GetByEmailAsync(createDto.Email)).ReturnsAsync((UserDto?)null);
+        _userRepositoryMock.Setup(x => x.CreateAsync(It.IsAny<CreateUserDto>(), It.IsAny<string>(), It.IsAny<UserRole>())).ReturnsAsync(Guid.NewGuid());
+
+        var authService = CreateAuthService();
+        var result = await authService.RegisterUserAsync(createDto, "password123", UserRole.Neighbor); // Default to Neighbor role
+
+        result.UserId.Should().NotBeNull();
+        result.Error.Should().BeNull();
+    }
+
+    [Test]
+    public async Task Register_WithExistingEmail_ReturnsError()
+    {
+        var existingUser = new UserDto { Email = "existing@test.com" };
+        var createDto = new CreateUserDto { Email = "existing@test.com", FullName = "Existing User", Phone = null };
+        
+        _userRepositoryMock.Setup(x => x.GetByEmailAsync(existingUser.Email)).ReturnsAsync(existingUser);
+
+        var authService = CreateAuthService();
+        var result = await authService.RegisterUserAsync(createDto, "password", UserRole.Neighbor);
+
+        result.UserId.Should().BeNull();
+        result.Error.Should().Be("El email ya está registrado");
+    }
+
+    [Test]
+    public async Task ChangePassword_WithCorrectOldPassword_ReturnsSuccess()
+    {
+        var password = "password123";
+        var user = CreateTestUser("test@test.com", password);
+        var newPassword = "newpassword";
+        
+        _userRepositoryMock.Setup(x => x.GetByIdAsync(user.Id)).ReturnsAsync(user);
+        _userRepositoryMock.Setup(x => x.GetByEmailWithPasswordAsync(user.Email)).ReturnsAsync(user);
+        _userRepositoryMock.Setup(x => x.UpdatePasswordHashAsync(user.Id, It.IsAny<string>())).Returns(Task.CompletedTask);
+
+        var authService = CreateAuthService();
+        var result = await authService.ChangePasswordAsync(user.Id, password, newPassword);
+
+        result.Success.Should().BeTrue();
+        result.Error.Should().BeNull();
+    }
+
+    [Test]
+    public async Task ChangePassword_WithIncorrectOldPassword_ReturnsError()
+    {
+        var user = CreateTestUser();
+        
+        _userRepositoryMock.Setup(x => x.GetByIdAsync(user.Id)).ReturnsAsync(user);
+        _userRepositoryMock.Setup(x => x.GetByEmailWithPasswordAsync(user.Email)).ReturnsAsync(user);
+
+        var authService = CreateAuthService();
+        var result = await authService.ChangePasswordAsync(user.Id, "wrongoldpassword", "newpassword");
+
+        result.Success.Should().BeFalse();
+        result.Error.Should().Be("Contraseña antigua incorrecta.");
+    }
+
+    [Test]
+    public async Task ChangePassword_WithNonExistentUser_ReturnsError()
+    {
+        _userRepositoryMock.Setup(x => x.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync((UserDto?)null);
+
+        var authService = CreateAuthService();
+        var result = await authService.ChangePasswordAsync(Guid.NewGuid(), "oldpassword", "newpassword");
+
+        result.Success.Should().BeFalse();
+        result.Error.Should().Be("Usuario no encontrado.");
+    }
+}

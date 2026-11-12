@@ -2,16 +2,17 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS development
 WORKDIR /app
 
-COPY backend/UrbaPF.sln ./
-COPY backend/Api/*.csproj ./Api/
-COPY backend/Domain/*.csproj ./Domain/
-COPY backend/Infrastructure/*.csproj ./Infrastructure/
-COPY backend/tests/*.csproj ./tests/
-RUN dotnet restore
+COPY backend/UrbaPF.sln ./UrbaPF.sln
+COPY backend/UrbaPF.Api/*.csproj ./UrbaPF.Api/
+COPY backend/UrbaPF.Domain/*.csproj ./UrbaPF.Domain/
+COPY backend/UrbaPF.Application/*.csproj ./UrbaPF.Application/
+COPY backend/UrbaPF.Infrastructure/*.csproj ./UrbaPF.Infrastructure/
+COPY backend/UrbaPF.Tests/*.csproj ./UrbaPF.Tests/
+RUN dotnet restore UrbaPF.sln
 
 COPY backend/ .
 
-WORKDIR /app/Api
+WORKDIR /app/UrbaPF.Api
 RUN dotnet build -c Debug
 
 ENV DOTNET_RUNNING_IN_CONTAINER=true

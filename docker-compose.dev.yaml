@@ -25,17 +25,17 @@ services:
     networks:
       - urbapf-network
 
-  # Frontend Web - Quasar con hot reload
-  frontend:
+  # Admin Web - Vue 3 + Vuetify con hot reload
+  admin-web:
     build:
-      context: ./frontend
+      context: ./admin-web
       dockerfile: Dockerfile.dev
     ports:
       - "5173:5173"
     environment:
       - VITE_API_URL=http://localhost:5000/api
     volumes:
-      - ./frontend:/app
+      - ./admin-web:/app
       - /app/node_modules
     depends_on:
       - backend

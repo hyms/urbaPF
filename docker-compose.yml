@@ -22,9 +22,9 @@ services:
     networks:
       - urbapf-network
 
-  frontend:
-    container_name: urbapf-frontend
-    image: urbapf-frontend:local
+  admin-web:
+    container_name: urbapf-admin-web
+    image: urbapf-admin-web:local
     ports:
       - "80:80"
     depends_on:

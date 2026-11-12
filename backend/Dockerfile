@@ -4,10 +4,11 @@ WORKDIR /src
 
 # 1. Copiar la solución y los proyectos
 COPY UrbaPF.sln .
-COPY Api/UrbaPF.Api.csproj ./Api/
-COPY Domain/UrbaPF.Domain.csproj ./Domain/
-COPY Infrastructure/UrbaPF.Infrastructure.csproj ./Infrastructure/
-COPY tests/UrbaPF.Tests.csproj ./tests/
+COPY UrbaPF.Api/UrbaPF.Api.csproj ./UrbaPF.Api/
+COPY UrbaPF.Domain/UrbaPF.Domain.csproj ./UrbaPF.Domain/
+COPY UrbaPF.Application/UrbaPF.Application.csproj ./UrbaPF.Application/
+COPY UrbaPF.Infrastructure/UrbaPF.Infrastructure.csproj ./UrbaPF.Infrastructure/
+COPY UrbaPF.Tests/UrbaPF.Tests.csproj ./UrbaPF.Tests/
 
 # 2. Restaurar dependencias
 RUN dotnet restore
@@ -16,7 +17,7 @@ RUN dotnet restore
 COPY . .
 
 # 4. Publicar la aplicación
-WORKDIR "/src/Api"
+WORKDIR "/src/UrbaPF.Api"
 RUN dotnet publish "UrbaPF.Api.csproj" -c Release -o /app/publish
 
 # Final stage - .NET 10 Runtime

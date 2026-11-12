@@ -79,6 +79,15 @@ plugins/
 **/yarn-error.log*
 **/pnpm-debug.log*
 
+# Kotlin/Gradle
+**/.gradle/
+**/build/
+mobile-kmp/.gradle/
+mobile-kmp/**/build/
+mobile-kmp/gradle/wrapper/
+mobile-kmp/gradlew
+mobile-kmp/gradlew.bat
+
 # OS
 .DS_Store
 Thumbs.db

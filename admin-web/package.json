@@ -1,0 +1,35 @@
+{
+  "name": "urbapf-admin-web",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "vue-tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@mdi/font": "^7.4.47",
+    "axios": "^1.12.2",
+    "pinia": "^3.0.3",
+    "vue": "^3.5.22",
+    "vue-i18n": "^11.1.10",
+    "vue-router": "^4.5.1",
+    "vuetify": "^3.10.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.18.8",
+    "@vitejs/plugin-vue": "^6.0.1",
+    "@vue/test-utils": "^2.4.6",
+    "jsdom": "^26.1.0",
+    "sass": "^1.93.2",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.7",
+    "vite-plugin-vuetify": "^2.1.2",
+    "vitest": "^3.2.4",
+    "vue-tsc": "^3.1.0"
+  }
+}
