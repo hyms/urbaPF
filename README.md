@@ -1,156 +1,182 @@
-# UrbaPF - Sistema de Coordinación Vecinal
+# UrbaPF
 
-[![Build](https://img.shields.io/github/actions/workflow/status/urba-pf/urba-pf/ci.yml?label=Build&style=for-the-badge)](https://github.com/urba-pf/urba-pf/actions)
-[![Coverage](https://img.shields.io/codecov/c/gh/urba-pf/urba-pf?label=Coverage&style=for-the-badge)](https://codecov.io/gh/urba-pf/urba-pf)
-[![Tech Stack](https://img.shields.io/badge/Tech%20Stack-React%20Native%20%2F%20.NET%2010-blue?style=for-the-badge)](./docs/global-spec.md)
-[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+[![Build status](https://img.shields.io/github/actions/workflow/status/urba-pf/urba-pf/ci.yml?label=Build&style=for-the-badge)](https://github.com/urba-pf/urba-pf/actions)
+[![Test Coverage](https://img.shields.io/codecov/c/gh/urba-pf/urba-pf?label=Test%20Coverage&style=for-the-badge)](https://codecov.io/gh/urba-pf/urba-pf)
+[![Tech Stack](https://img.shields.io/badge/Tech%20Stack-KMP%20%2F%20Vue%203%20%2F%20.NET%2010-6f42c1?style=for-the-badge)](./docs/global-spec.md)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
 
-Plataforma integral de gestión comunitaria diseñada para centralizar la seguridad, la comunicación y la democracia participativa en barrios y condominios de Santa Cruz, Bolivia.
+Plataforma de coordinación vecinal para barrios y condominios de Santa Cruz, Bolivia. La v1.0.0 separa la operación de campo del trabajo administrativo: una app móvil **offline-first** para vecinos y guardias, y un panel web interno para gestión, finanzas y auditoría.
+
+> Estado: este README documenta la arquitectura destino v1.0.0. La migración de código se ejecuta por fases después de aprobar `docs/` y `AGENTS.md`.
+
+## Arquitectura
 
 ```mermaid
-graph TD
-    A[React Native App<br/>Expo Managed + Zustand<br/>Offline-First SQLite] -->|REST + Axios<br/>JWT + Refresh| B[.NET 10 API<br/>Minimal APIs<br/>Clean Architecture + DDD]
-    B --> C[(PostgreSQL 16+<br/>PostGIS + Dapper<br/>FluentMigrator)]
-    B --> D[Cloudflare R2<br/>Archivos y evidencias]
-    B --> E[WhatsApp Business API<br/>Notificaciones]
+flowchart LR
+    M["Mobile KMP<br/>SQLDelight · Outbox<br/>Ktor · offline-first"]
+    A["Admin Web<br/>Vue 3 · Vuetify 3<br/>Pinia · online-only"]
+    API[".NET 10 DDD API<br/>Minimal APIs · JWT<br/>Idempotencia · Auditoría"]
+    DB[("PostgreSQL 16+<br/>PostGIS")]
+    R2["Cloudflare R2<br/>Imágenes y evidencias"]
+    FCM["Firebase Cloud Messaging<br/>Push"]
+    WA["WhatsApp Cloud API<br/>Alertas críticas"]
+    EV[("logs_eventos<br/>Append-only")]
+
+    M -->|"HTTPS · delta sync<br/>X-Idempotency-Key"| API
+    A -->|"HTTPS · REST"| API
+    API --> DB
+    API --> R2
+    API --> FCM
+    API --> WA
+    API --> EV
 ```
 
-## 🎯 Visión de Negocio
+## Decisiones Clave de Arquitectura
 
-Digitalizar la convivencia vecinal reduciendo la fricción de los grupos de WhatsApp y profesionalizando la respuesta ante emergencias y la toma de decisiones.
+### 1. Kotlin Multiplatform para el cliente de campo
 
-**Objetivo v1.0.0**: Baseline de producción funcional con arquitectura robusta, auditable y móvil-first.
+KMP permite compartir dominio, persistencia SQLDelight, outbox y contratos de red entre Android e iOS, mientras la UI se implementa primero en Android. Es la opción adecuada para una operación con conectividad intermitente: cada mutación se guarda localmente antes de intentar la red y se reconcilia con idempotencia cuando el dispositivo recupera conexión.
 
-## 🏛️ Bounded Contexts (Dominio)
+### 2. Vue 3 + Vuetify 3 para el panel administrativo
 
-| Contexto | Entidades clave | Responsabilidad |
-|----------|-----------------|-----------------|
-| Identity & Access | User, RefreshToken, Role, CredibilityLevel | Auth JWT + Refresh, validación vecinal (2 votos), roles, credibilidad 1-5 |
-| Governance | Poll, Vote, PollOption | Votaciones, firma SHA256, resultados inmutables |
-| Communication | Post, Comment, PostCategory | Tablón social, comentarios anidados, moderación por credibilidad |
-| Safety | Alert, Incident, AlertType | Emergencias geolocalizadas, workflow Reportado→Cerrado |
-| Community | Condominium, Lot, Expense | Condominios, manzanos/lotes, expensas, cuotas |
+El trabajo de oficina es online, intensivo en formularios, tablas y validación. Vue 3 + Vuetify 3 + TypeScript + Pinia + Vite ofrece un desarrollo rápido y consistente, con componentes accesibles y un ecosistema maduro. La migración desde Quasar conserva flujos funcionales, no la dependencia del framework anterior.
 
-## 🔐 Reglas de Gobernanza y Roles
+### 3. .NET 10 con DDD, SDD y SemVer 1.0.0
 
-| Acción | Visitante | Vecino | Guardia | Encargado | Admin |
-|--------|-----------|--------|---------|-----------|-------|
-| Ver publicaciones | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Ver emergencias | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Publicar | ❌ | ✅ | ❌ | ✅ | ✅ |
-| Votar | ❌ | ✅ | ❌ | ✅ | ❌ |
-| Crear votación | ❌ | 2 aprobaciones | ❌ | Directo | Gestiona |
-| Botón "En Camino" | ❌ | ❌ | ✅ | ❌ | ❌ |
-| Aprobar contenido | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Gestionar staff | ❌ | ❌ | ❌ | ❌ | ✅ |
+El backend mantiene una Application Layer ligera, Dapper y FluentMigrator, y separa dominio, aplicación, infraestructura y API. La documentación SDD (`spec.md`, `plan.md`, `tests.md`) es obligatoria antes de implementar. El contrato público se versiona desde `1.0.0` con SemVer 2.0; los cambios incompatibles exigen `MAJOR`.
 
-### Niveles de Credibilidad (1-5)
-- **5 Referente:** prioridad máxima, alertas directo a Guardias, máxima visibilidad.
-- **4 Confiable:** alertas directo a Guardias, alta visibilidad.
-- **3 Neutral:** aprobación Manager, visibilidad normal.
-- **2 Bajo:** aprobación Manager, visibilidad reducida.
-- **1 Irreverente:** aprobación Manager, comentarios colapsados/ocultos.
+### 4. Outbox, idempotencia y sync delta
 
-## 🗳️ Sistema de Votaciones
+El móvil no confirma nada sin respuesta del servidor. Un outbox durable, `X-Idempotency-Key`, `lastSyncTimestamp` y `serverSequence` evitan duplicados y permiten reanudar sin depender del reloj del dispositivo. Las imágenes se comprimen antes de subir a R2 y las respuestas de sync se negocian con Brotli/Gzip.
 
-- **Votantes:** Solo Vecinos y Encargados. Admin gestiona pero no vota.
-- **Creación:** Vecinos requieren 2 aprobaciones de Encargados; Encargados publican directo.
-- **Integridad:** Firma digital SHA256 (`UserId + OptionId + Timestamp + Secret`) por voto.
-- **Inmutabilidad:** Prohibido editar o eliminar votaciones en estado Active o Closed.
+### 5. Sesiones separadas por canal
 
-## 🚨 Protocolo de Emergencia
+`WebAdmin` y `MobileApp` son sesiones independientes para un mismo usuario. Un login web no cierra la sesión móvil. Cada canal mantiene una única sesión activa y su propia familia de refresh tokens.
 
-- **Ubicación:** Georeferencia obligatoria (PostGIS).
-- **Routing por credibilidad:** Nivel >= 4 → directo a Guardias; < 4 → aprobación de Manager.
-- **Re-notificación:** El creador puede re-enviar la alerta a todos los vecinos.
-- **Workflow:** Reportado → En Proceso → Resuelto → Cerrado.
-
-## 📐 Decisiones Clave de Arquitectura
-
-1. **Clean Architecture + DDD (ligero):** Capas separadas `Domain` → `Application` → `Infrastructure` → `Api`. Domain no referencia ni Application ni Infrastructure.
-2. **Application Layer ligera:** Application Services orquestran Domain Services. **Sin MediatR ni CQRS** (YAGNI).
-3. **Sin EF Core:** Acceso a datos con **Dapper 2.1.72**; migraciones con **FluentMigrator 8.0.1**.
-4. **Event Sourcing ligero:** Tabla `logs_eventos` append-only. Ningún estado crítico se actualiza sin insertar un evento en la misma transacción. Hash encadenado (`SHA256(prev_hash + event_json)`) para integridad.
-5. **Seguridad:** PBKDF2 (HMAC-SHA256) con 100k iteraciones; JWT de corta vida + Refresh Token.
-6. **Soft delete:** `UPDATE {table} SET deleted_at = CURRENT_TIMESTAMP WHERE id = @Id`.
-7. **Frontend:** React Native (Expo Managed) + Zustand + Expo Router; offline-first con expo-sqlite + sync engine propio.
-8. **Testing:** SDD + TDD. Backend: NUnit + Moq (Mock-First, sin DB real en unit tests). Frontend: Vitest + React Native Testing Library. Cobertura mínima 40%.
-9. **Versionado:** SemVer 2.0 (`v{MAJOR}.{MINOR}.{PATCH}`).
-
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerrequisitos
+
 - .NET 10 SDK
-- Node.js 20+ / pnpm 9+
-- PostgreSQL 16+ con PostGIS
-- Expo CLI (`npm i -g @expo/cli`)
+- JDK 21 y Android Studio (para KMP/Android)
+- Xcode (solo macOS, para el host iOS)
+- Node.js 20+ y pnpm 9+
+- Docker y Docker Compose
+- PostgreSQL 16+ con PostGIS (se puede usar el contenedor del proyecto)
+
+### Base de datos
+
+```bash
+docker compose -f docker-compose.dev.yaml up -d db
+```
 
 ### Backend
+
 ```bash
 cd backend
 dotnet restore
 dotnet run --project src/UrbaPF.Api
-# API en http://localhost:5000
-# Swagger en http://localhost:5000/swagger
+# API: http://localhost:5000
+# Swagger: http://localhost:5000/swagger
 ```
 
-### Frontend (React Native / Expo)
+### Admin Web
+
 ```bash
-cd frontend
+cd admin-web
 pnpm install
 pnpm dev
-# Expo DevTools en terminal, app en dispositivo/emulador
+# Admin: http://localhost:5173
+```
+
+> La carpeta `admin-web/` es el destino de la migración. El frontend Quasar actual permanece en `frontend/` hasta completar el traslado funcional.
+
+### Mobile KMP
+
+```bash
+cd mobile-kmp
+./gradlew :shared:allTests
+./gradlew :androidApp:assembleDebug
+# iOS (solo macOS): abrir mobile-kmp/iosApp en Xcode y ejecutar el scheme iOS.
 ```
 
 ### Tests
+
 ```bash
-# Backend (NUnit + coverage)
+# Backend
 cd backend
 dotnet test --collect:"XPlat Code Coverage"
 
-# Frontend (Vitest + coverage)
-cd frontend
+# Admin Web
+cd admin-web
 pnpm test --coverage
+pnpm typecheck
+
+# Mobile KMP
+cd mobile-kmp
+./gradlew :shared:allTests :androidApp:testDebugUnitTest
 ```
 
-## 📂 Estructura del Proyecto
+Cobertura mínima global: **40%**. Los tests unitarios del backend son Mock-First; PostgreSQL/PostGIS, R2 y proveedores externos se prueban en integración controlada.
 
-```
+## Bounded Contexts
+
+| Contexto | Responsabilidad | Documentación |
+|---|---|---|
+| `auth-session` | Identidad, credenciales, roles, credibilidad y sesiones por canal. | [`spec`](docs/modules/auth-session/spec.md) · [`plan`](docs/modules/auth-session/plan.md) · [`tests`](docs/modules/auth-session/tests.md) |
+| `governance-votes` | Votaciones, aprobaciones, votos firmados y resultados inmutables. | [`spec`](docs/modules/governance-votes/spec.md) · [`plan`](docs/modules/governance-votes/plan.md) · [`tests`](docs/modules/governance-votes/tests.md) |
+| `emergencies` | Alertas geolocalizadas, guardias, incidentes, FCM y WhatsApp. | [`spec`](docs/modules/emergencies/spec.md) · [`plan`](docs/modules/emergencies/plan.md) · [`tests`](docs/modules/emergencies/tests.md) |
+| `directory` | Comunidad, lotes, fichas, contactos y visibilidad. | [`spec`](docs/modules/directory/spec.md) · [`plan`](docs/modules/directory/plan.md) · [`tests`](docs/modules/directory/tests.md) |
+| `expenses` | Gastos, cargos por lote, pagos, evidencias y conciliación. | [`spec`](docs/modules/expenses/spec.md) · [`plan`](docs/modules/expenses/plan.md) · [`tests`](docs/modules/expenses/tests.md) |
+
+## Estructura del Proyecto
+
+```text
 backend/
 ├── src/
-│   ├── UrbaPF.Domain/        # Núcleo puro: Entidades, VOs, Domain Services, Repository Interfaces
-│   ├── UrbaPF.Application/   # Orquestación: Application Services, DTOs, Validators
-│   ├── UrbaPF.Infrastructure/# Repositorios (Dapper), Migraciones, Servicios externos, Event Store
-│   └── UrbaPF.Api/           # Presentación: Minimal APIs, Routes, DI, Middleware
-└── tests/                    # Unit + Integration (Mock-First)
-```
+│   ├── UrbaPF.Domain/          # Entidades, VOs, servicios de dominio e interfaces
+│   ├── UrbaPF.Application/     # Casos de uso, DTOs y validadores
+│   ├── UrbaPF.Infrastructure/  # Dapper, migraciones, R2, FCM, WhatsApp
+│   └── UrbaPF.Api/             # Minimal APIs, DI y middleware
+└── tests/
 
-```
-frontend/
-├── app/                      # Expo Router (file-based routing)
-│   ├── (auth)/               # Auth stack
-│   ├── (tabs)/               # Main tabs
-│   └── _layout.tsx
+mobile-kmp/
+├── shared/                     # Dominio, SQLDelight, Ktor, sync e idempotencia
+├── androidApp/                 # UI Android, cámara, ubicación y FCM
+└── iosApp/                     # Host iOS
+
+admin-web/
 ├── src/
-│   ├── api/                  # Axios + interceptores 401/refresh
-│   ├── store/                # Zustand stores
-│   ├── hooks/                # Custom hooks (useOfflineSync, useAuth)
-│   ├── components/           # UI reutilizable
-│   ├── utils/                # Crypto, date, validation
-│   ├── types/                # Tipos TypeScript
-│   └── db/                   # SQLite offline engine + sync engine
+│   ├── app/                    # Bootstrap y guards
+│   ├── layouts/                # Layouts autenticados
+│   ├── router/                 # Rutas y guards de rol
+│   ├── stores/                 # Pinia por dominio
+│   ├── services/               # Axios y endpoints
+│   ├── components/             # Componentes Vuetify
+│   ├── views/                  # Páginas por caso de uso
+│   └── types/                  # Contratos API
+└── vite.config.ts
+
+docs/
+├── global-spec.md
+└── modules/{auth-session,governance-votes,emergencies,directory,expenses}/
 ```
 
-## 📖 Documentación Detallada
+## Seguridad y Auditoría
 
-- [Especificación Global](docs/global-spec.md) — Visión, bounded contexts, stack, principios, quick start, roadmap.
-- [Módulos](docs/modules/) — Por dominio: `auth`, `polls`, `posts`, `alerts`, `users`, `condominiums`, `incidents`. Cada uno con `spec.md`, `plan.md`, `tests.md` (SDD).
-- [AGENTS.md](AGENTS.md) — Fuente de verdad técnica para agentes de desarrollo (DDD, SDD, TDD, React Native, reglas de oro).
+- PBKDF2 HMAC-SHA256 con 100.000 iteraciones.
+- JWT de corta vida + refresh rotatorio; una sesión activa por usuario y canal.
+- Autorización revalidada en servidor para cada caso de uso.
+- Cloudflare R2 privado con URLs prefirmadas de corta duración.
+- `logs_eventos` append-only con hash encadenado por comunidad.
+- Sin tokens, contraseñas ni PII innecesaria en logs.
 
-## 🇧🇴 Contexto Regional
+## Documentación
 
-Uso de terminología local: Manzano (Mza), Lote, Vobo, Expensas, Churrasquera, Portería.
+- [`docs/global-spec.md`](docs/global-spec.md): arquitectura, sync, seguridad, roadmap y Definition of Done.
+- [`AGENTS.md`](AGENTS.md): instrucciones técnicas obligatorias para agentes y contribuidores.
+- [`docs/modules/`](docs/modules/): especificación, plan y tests por bounded context.
 
-## 📄 Licencia
+## Licencia
 
-MIT License
+MIT License. Ver [`LICENSE`](LICENSE).
